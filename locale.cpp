@@ -223,11 +223,12 @@ char utf8_sigature[]="\xef\xbb\xbf";
 
 void skip_utf8_sigature(FILE *fp)
 {
-  char tt[3];
+	char tt[3];
 
-  tt[0]=0;
-  fread(tt, 1, 3, fp);
-  if (memcmp(tt, utf8_sigature, 3)) {
-    rewind(fp);
-  }
+	tt[0]=0;
+	fread(tt, 1, 3, fp);
+	if (memcmp(tt, utf8_sigature, 3)) {
+//		fseek(fp, 0, SEEK_SET);
+		rewind(fp);
+	}
 }

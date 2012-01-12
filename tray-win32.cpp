@@ -394,10 +394,7 @@ void load_tray_icon_win32()
       strcpy(tt, "en-");
       strcat(tt, iconame);
     } else {
-      if (current_method_type()==method_type_GTAB)
-        strcpy(tt, "en-gtab.png");
-      else
-        strcpy(tt, "en-tsin.png");
+      strcpy(tt, "en-tsin.png");
     }
 
     iconame = tt;

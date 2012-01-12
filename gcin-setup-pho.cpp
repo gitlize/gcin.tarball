@@ -81,7 +81,7 @@ void save_tsin_eng_pho_key()
 static GtkWidget *gcin_kbm_window = NULL;
 
 static int new_select_idx_tsin_space_opt;
-static GdkColor tsin_phrase_line_gcolor;
+static GdkColor tsin_phrase_line_gcolor, tsin_cursor_gcolor;
 
 
 static gboolean cb_ok( GtkWidget *widget,
@@ -149,6 +149,19 @@ static gboolean cb_ok( GtkWidget *widget,
   tsin_buffer_size = (int) gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinner_tsin_buffer_size));
   save_gcin_conf_int(TSIN_BUFFER_SIZE, tsin_buffer_size);
 
+  gchar *cstr;
+#if 0
+  cstr = gtk_color_selection_palette_to_string(&tsin_phrase_line_gcolor, 1);
+  dbg("color %s\n", cstr);
+  save_gcin_conf_str(TSIN_PHRASE_LINE_COLOR, cstr);
+  g_free(cstr);
+#endif
+
+
+  cstr = gtk_color_selection_palette_to_string(&tsin_cursor_gcolor, 1);
+  dbg("color %s\n", cstr);
+  save_gcin_conf_str(TSIN_CURSOR_COLOR, cstr);
+  g_free(cstr);
 
   send_gcin_message(
 #if UNIX
@@ -273,6 +286,57 @@ static gboolean cb_tsin_phrase_line_color( GtkWidget *widget,
 }
 
 
+static void cb_save_tsin_cursor_color(GtkWidget *widget, gpointer user_data)
+{
+  GtkColorSelectionDialog *color_selector = (GtkColorSelectionDialog *)user_data;
+  gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(color_selector)), &tsin_cursor_gcolor);
+
+#if !GTK_CHECK_VERSION(2,91,6)
+  gtk_widget_modify_bg(da_cursor, GTK_STATE_NORMAL, &tsin_cursor_gcolor);
+#else
+  GdkRGBA rgbbg;
+  gdk_rgba_parse(&rgbbg, gdk_color_to_string(&tsin_cursor_gcolor));
+  gtk_widget_override_background_color(da_cursor, GTK_STATE_FLAG_NORMAL, &rgbbg);
+#endif
+}
+
+
+static gboolean cb_tsin_cursor_color( GtkWidget *widget,
+                                   gpointer   data )
+{
+   GtkWidget *color_selector = gtk_color_selection_dialog_new (_(_L("詞音游標的顏色")));
+
+   gtk_color_selection_set_current_color(
+           GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(color_selector))),
+           &tsin_cursor_gcolor);
+
+
+#if 0
+   g_signal_connect (GTK_OBJECT (color_selector->ok_button),
+                     "clicked",
+                     G_CALLBACK (cb_save_tsin_cursor_color),
+                     (gpointer) color_selector);
+#if 1
+   g_signal_connect_swapped (GTK_OBJECT (color_selector->ok_button),
+                             "clicked",
+                             G_CALLBACK (gtk_widget_destroy),
+                             (gpointer) color_selector);
+#endif
+   g_signal_connect_swapped (GTK_OBJECT (color_selector->cancel_button),
+                             "clicked",
+                             G_CALLBACK (gtk_widget_destroy),
+                             (gpointer) color_selector);
+#endif
+
+   gtk_widget_show((GtkWidget*)color_selector);
+#if 1
+   if (gtk_dialog_run(GTK_DIALOG(color_selector)) == GTK_RESPONSE_OK)
+     cb_save_tsin_cursor_color((GtkWidget *)color_selector, (gpointer) color_selector);
+   gtk_widget_destroy((GtkWidget *)color_selector);
+#endif
+   return TRUE;
+}
+
 static GtkWidget *create_kbm_opts()
 {
 
@@ -372,6 +436,7 @@ GtkWidget *create_en_pho_key_sel(char *s)
 {
 GtkWidget *frame_tsin_sw = gtk_frame_new(s);
   GtkWidget *vbox_tsin_sw = gtk_vbox_new(FALSE, 0);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_tsin_sw), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (frame_tsin_sw), vbox_tsin_sw);
   gtk_container_set_border_width (GTK_CONTAINER (frame_tsin_sw), 1);
   gtk_container_add (GTK_CONTAINER (vbox_tsin_sw), create_eng_ch_opts());
@@ -412,6 +477,7 @@ void create_kbm_window()
   gtk_container_set_border_width (GTK_CONTAINER (gcin_kbm_window), 1);
 
   GtkWidget *vbox_top = gtk_vbox_new (FALSE, 3);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_top), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (gcin_kbm_window), vbox_top);
 
 
@@ -420,9 +486,12 @@ void create_kbm_window()
 
 
   GtkWidget *vbox_l = gtk_vbox_new (FALSE, 3);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_l), GTK_ORIENTATION_VERTICAL);
   gtk_box_pack_start (GTK_BOX (hbox_lr), vbox_l, TRUE, TRUE, 10);
 
   GtkWidget *vbox_r = gtk_vbox_new (FALSE, 3);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_r), GTK_ORIENTATION_VERTICAL);
+  gtk_grid_set_row_homogeneous(GTK_GRID(vbox_r), TRUE);
   gtk_box_pack_start (GTK_BOX (hbox_lr), vbox_r, TRUE, TRUE, 10);
 
 
@@ -438,6 +507,7 @@ void create_kbm_window()
   gtk_container_set_border_width (GTK_CONTAINER (frame_tsin_space_opt), 1);
 
   GtkWidget *box_tsin_space_opt = gtk_vbox_new (FALSE, 0);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(box_tsin_space_opt), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (frame_tsin_space_opt), box_tsin_space_opt);
   gtk_container_set_border_width (GTK_CONTAINER (box_tsin_space_opt), 1);
 
@@ -583,9 +653,27 @@ void create_kbm_window()
   spinner_tsin_buffer_size = gtk_spin_button_new (adj_gtab_in, 0, 0);
   gtk_container_add (GTK_CONTAINER (frame_tsin_buffer_size), spinner_tsin_buffer_size);
 
+  GtkWidget *frame_tsin_cursor_color = gtk_frame_new(_(_L("詞音游標的顏色")));
+  gtk_box_pack_start (GTK_BOX (vbox_r), frame_tsin_cursor_color, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (frame_tsin_cursor_color), 1);
+  GtkWidget *button_tsin_cursor_color = gtk_button_new();
+  g_signal_connect (G_OBJECT (button_tsin_cursor_color), "clicked",
+                    G_CALLBACK (cb_tsin_cursor_color), G_OBJECT (gcin_kbm_window));
+  da_cursor =  gtk_drawing_area_new();
+  gtk_container_add (GTK_CONTAINER (button_tsin_cursor_color), da_cursor);
+  gdk_color_parse(tsin_cursor_color, &tsin_cursor_gcolor);
+#if !GTK_CHECK_VERSION(2,91,6)
+  gtk_widget_modify_bg(da_cursor, GTK_STATE_NORMAL, &tsin_cursor_gcolor);
+#else
+  GdkRGBA rgbbg;
+  gdk_rgba_parse(&rgbbg, gdk_color_to_string(&tsin_cursor_gcolor));
+  gtk_widget_override_background_color(da_cursor, GTK_STATE_FLAG_NORMAL, &rgbbg);
+#endif
+  gtk_widget_set_size_request(da_cursor, 16, 2);
+  gtk_container_add (GTK_CONTAINER (frame_tsin_cursor_color), button_tsin_cursor_color);
 
   GtkWidget *hbox_cancel_ok = gtk_hbox_new (FALSE, 10);
-
+  gtk_grid_set_column_homogeneous(GTK_GRID(hbox_cancel_ok), TRUE);
   gtk_box_pack_start (GTK_BOX (vbox_top), hbox_cancel_ok , FALSE, FALSE, 5);
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
   if (button_order)
@@ -593,11 +681,17 @@ void create_kbm_window()
   else
     gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
   GtkWidget *button_ok = gtk_button_new_from_stock (GTK_STOCK_OK);
-
+#if !GTK_CHECK_VERSION(2,91,2)
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 5);
   else
     gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 5);
+#else
+  if (button_order)
+    gtk_grid_attach_next_to (GTK_BOX (hbox_cancel_ok), button_ok, button_cancel, GTK_POS_LEFT, 1, 1);
+  else
+    gtk_grid_attach_next_to (GTK_BOX (hbox_cancel_ok), button_ok, button_cancel, GTK_POS_RIGHT, 1, 1);
+#endif
 
   g_signal_connect (G_OBJECT (button_cancel), "clicked",
                             G_CALLBACK (close_kbm_window),

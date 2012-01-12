@@ -12,7 +12,7 @@ static GtkWidget **buttonArr;
 static gchar **buttonStr;
 static int maxButtonStrlen=9;
 // static GdkAtom atom_cutbuffer0;
-static char *geomstr;
+static char geomstr[5];
 static GtkWidget *snoop_button;
 #if !GTK_CHECK_VERSION(2,12,0)
 static GtkTooltips *button_bar_tips;
@@ -73,11 +73,12 @@ static void update_hist_button()
 
 static void show_hist_window()
 {
+  gtk_window_parse_geometry(GTK_WINDOW(hist_window),geomstr);
+
   update_hist_button();
 
   gtk_window_resize(GTK_WINDOW(hist_window), 1, 1);
-  gtk_widget_show_all (hist_window);
-  gtk_window_parse_geometry(GTK_WINDOW(hist_window),geomstr);
+  gtk_widget_show (hist_window);
   gtk_window_present(GTK_WINDOW(hist_window));
 }
 
@@ -330,18 +331,14 @@ void gcb_main()
   old_gcb_position_x = gcb_position_x;
   old_gcb_position_y = gcb_position_y;
 
-  if (mainwin) {
+  if (mainwin)
     gtk_widget_destroy(mainwin);
-    mainwin = NULL;
-  }
 #if 0
   if (button_bar_tips)
     gtk_widget_destroy(button_bar_tips);
 #endif
-  if (hist_window) {
+  if (hist_window)
     gtk_widget_destroy(hist_window);
-    hist_window = NULL;
-  }
 
   if (!gcb_enabled)
     return;
@@ -349,10 +346,9 @@ void gcb_main()
 //  printf("gcb_position:%d\n", gcb_position);
 
   static char geo[][2]={{0,0},{'+','-'},{'+','+'},{'-','-'},{'-','+'}};
-  g_free(geomstr);
-  geomstr = g_strdup_printf("%c%d%c%d",
+  sprintf(geomstr, "%c%d%c%d",
   geo[gcb_position][0], gcb_position_x, geo[gcb_position][1], gcb_position_y);
-  dbg("geomstr %s\n", geomstr);
+//  puts(geomstr);
 
   if (!buttonArr) {
     buttonArr=(GtkWidget**)g_malloc(gcb_button_n * sizeof(GtkWidget *));
@@ -401,9 +397,9 @@ void gcb_main()
 
   hbox = gtk_hbox_new (FALSE, 1);
   gtk_container_add (GTK_CONTAINER(mainwin), hbox);
-#if 0
+
   gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
-#endif
+
   for(i=0;i<gcb_button_n;i++) {
     buttonArr[i] = gtk_button_new_with_label ("---");
 //    gtk_container_set_border_width(GTK_CONTAINER(buttonArr[i]),0);
@@ -422,6 +418,7 @@ void gcb_main()
   }
 
   vbox = gtk_vbox_new (FALSE, 1);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER(hist_window), vbox);
 
   for(i=0;i<gcb_history_n;i++) {
@@ -448,20 +445,13 @@ void gcb_main()
 #endif
 
 
-//  gtk_widget_show_all(hbox);
-//  gtk_widget_show (vbox);
-  gtk_widget_show_all (mainwin);
+  gtk_widget_show_all(hbox);
+  gtk_widget_show (vbox);
+  gtk_widget_show (mainwin);
 
-#if 0
-  gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
-#endif
 
   pclipboard_prim = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
   pclipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-
-#if 0
-  gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
-#endif
 
   set_snoop_button(buttonArr[0]);
   get_selection(pclipboard);
@@ -469,12 +459,9 @@ void gcb_main()
   gtk_container_set_border_width(GTK_CONTAINER(hbox),0);
   gtk_container_set_border_width(GTK_CONTAINER(mainwin),0);
 
+  gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
 #if GTK_CHECK_VERSION(2,6,0)
   g_signal_connect(pclipboard, "owner-change", G_CALLBACK (cb_owner_change), NULL);
   g_signal_connect(pclipboard_prim, "owner-change", G_CALLBACK (cb_owner_change), NULL);
-#endif
-
-#if 1
-  gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
 #endif
 }

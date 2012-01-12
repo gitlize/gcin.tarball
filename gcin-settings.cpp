@@ -92,7 +92,7 @@ void load_setttings()
   gcin_eng_phrase_enabled = get_gcin_conf_int(GCIN_ENG_PHRASE_ENABLED, 1);
   gcin_tray_hf_win_kbm = get_gcin_conf_int(GCIN_TRAY_HF_WIN_KBM, 0);
 #if UNIX
-  gcin_init_im_enabled = get_gcin_conf_int(GCIN_INIT_IM_ENABLED, 0);
+  gcin_init_im_enabled = get_gcin_conf_int(GCIN_INIT_IM_ENABLED, 1);
 #else
   gcin_init_im_enabled = true;
 #endif
@@ -148,7 +148,7 @@ void load_setttings()
   tsin_tab_phrase_end = get_gcin_conf_int(TSIN_TAB_PHRASE_END, 1);
   tsin_tail_select_key = get_gcin_conf_int(TSIN_TAIL_SELECT_KEY, 0);
   tsin_buffer_editing_mode = get_gcin_conf_int(TSIN_BUFFER_EDITING_MODE, 1);
-  tsin_use_pho_near = get_gcin_conf_int(TSIN_USE_PHO_NEAR, 0);
+  tsin_use_pho_near = get_gcin_conf_int(TSIN_USE_PHO_NEAR, 1);
 
   phonetic_char_dynamic_sequence = get_gcin_conf_int(PHONETIC_CHAR_DYNAMIC_SEQUENCE, 1);
   phonetic_huge_tab = get_gcin_conf_int(PHONETIC_HUGE_TAB, 0);

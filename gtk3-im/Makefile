@@ -4,7 +4,6 @@ OBJS = imgcin.o gtkimcontextgcin.o
 GTK3IM=gtk-3.0/immodules
 GTKINC=`pkg-config --cflags gtk+-3.0`
 LDFLAGS=`pkg-config --libs gtk+-3.0`
-LDFLAGS+='-Wl,--as-needed'
 IMMODULES=$(libdir)/$(GTK3IM)
 IMMODULES_LOCAL=/usr/$(LIB)/$(GTK3IM)
 
@@ -40,7 +39,7 @@ install:
 	if [ $(prefix) = /usr/local ]; then \
 		install -d $(IMMODULES_LOCAL); \
 		install -m 755 im-gcin.so $(IMMODULES_LOCAL); \
-		gtk-query-immodules-3.0$(GTK_QUERY_IM_64) --update-cache; \
+		gtk-query-immodules-3.0 --update-cache; \
 	else \
 		install -d $(IMMODULES); \
 		install -m 755 im-gcin.so $(IMMODULES); \

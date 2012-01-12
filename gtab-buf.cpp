@@ -570,7 +570,6 @@ GEDIT *insert_gbuf_cursor(char **sel, int selN, u_int64_t key, gboolean b_gtab_e
   pbuf->c_sel = 0;
   pbuf->keys[0] = key;
   pbuf->keysN=1;
-//  dbg("insert_gbuf_cursor %s %d\n", sel[0],b_gtab_en_no_spc);
   pbuf->flag = b_gtab_en_no_spc ? FLAG_CHPHO_GTAB_BUF_EN_NO_SPC:0;
 
   if (gcin_punc_auto_send && ggg.gbufN==ggg.gbuf_cursor && selN==1 && strstr(_(auto_end_punch), sel[0])) {
@@ -608,9 +607,9 @@ GEDIT *insert_gbuf_cursor1(char *s, u_int64_t key, gboolean b_gtab_en_no_spc)
    if (!gtab_phrase_on())
      return NULL;
 
+//   dbg("insert_gbuf_cursor1 %s %x\n", s, key);
    char **sel = tmalloc(char *, 1);
    sel[0] = strdup(s);
-//   dbg("insert_gbuf_cursor1 %s %llx %d\n", s, key, b_gtab_en_no_spc);
    GEDIT *e = insert_gbuf_cursor(sel, 1, key, b_gtab_en_no_spc);
    clear_after_put();
    return e;
@@ -620,8 +619,6 @@ void insert_gbuf_cursor_phrase(char *s, void *key, int N)
 {
   u_int *key32 = (u_int *)key;
   u_int64_t *key64 = (u_int64_t *)key;
-
-//  dbg("insert_gbuf_cursor_phrase\n");
 
   int i;
   for(i=0; i < N; i++) {
@@ -665,7 +662,7 @@ void insert_gbuf_nokey(char *s)
    if (!gtab_phrase_on())
      return;
 
-   dbg("insert_gbuf_nokey\n");
+//   dbg("insert_gbuf_nokey\n");
 
    int i;
    u_int64_t keys[32];
@@ -694,7 +691,7 @@ void insert_gbuf_nokey(char *s)
 
    qsort(keys, keysN, sizeof(u_int64_t), qcmp_key_N);
 
-   GEDIT *e = insert_gbuf_cursor1(s, keys[0], FALSE /* TRUE */);
+   GEDIT *e = insert_gbuf_cursor1(s, keys[0], TRUE);
    if (keysN > 8)
      keysN = 8;
 
@@ -986,12 +983,11 @@ void save_gtab_buf_phrase(KeySym key)
 
 gboolean save_gtab_buf_shift_enter()
 {
-	int start = ggg.gbufN == ggg.gbuf_cursor ? 0:ggg.gbuf_cursor;
-	int N = ggg.gbufN - start;
+	int N = ggg.gbufN - ggg.gbuf_cursor;
 	if (!N)
 		return 0;
 
-	save_gtab_buf_phrase_idx(start, N);
+	save_gtab_buf_phrase_idx(ggg.gbuf_cursor, N);
 	gbuf_cursor_end();
 	return 1;
 }
@@ -1133,7 +1129,7 @@ gboolean gtab_pre_select_idx(int c)
   gbuf[ggg.gbufN-1].flag |= FLAG_CHPHO_PHRASE_TAIL;
 
   hide_gtab_pre_sel();
-  if (gcin_edit_display_ap_only() && gcin_on_the_spot_key)
+  if (gcin_edit_display_ap_only())
     hide_win_gtab();
 
   return TRUE;

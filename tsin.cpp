@@ -909,7 +909,6 @@ void disp_pre_sel_page()
 
 static void close_selection_win()
 {
-//  dbg("close_selection_win\n");
   hide_selections_win();
   tss.current_page=tss.sel_pho=tss.ctrl_pre_sel = 0;
   tss.pre_selN = 0;
@@ -1524,24 +1523,6 @@ static void tsin_create_win_save_phrase(int idx0, int len)
   create_win_save_phrase(wsp, len);
 }
 
-void tsin_sel_cursor_LR(gboolean is_inc)
-{
-  is_inc ^= pho_candicate_R2L;
-  int N;
-  N = phrase_count + pho_count - tss.current_page;
-  if (N > phkbm.selkeyN)
-    N = phkbm.selkeyN;
-
-  if (is_inc) {
-    tss.pho_menu_idx = (tss.pho_menu_idx+1) % N;
-  } else {
-    tss.pho_menu_idx--;
-    if (tss.pho_menu_idx < 0)
-      tss.pho_menu_idx = N-1;
-  }
-
-  disp_current_sel_page();
-}
 
 int feedkey_pp(KeySym xkey, int kbstate)
 {
@@ -1562,10 +1543,6 @@ int feedkey_pp(KeySym xkey, int kbstate)
 
   if (caps_eng_tog) {
     gboolean new_tsin_pho_mode =!(kbstate&LockMask);
-#if UNIX
-    if (xkey == XK_Caps_Lock)
-      new_tsin_pho_mode = !new_tsin_pho_mode; // X11 caplock is not on/off immediately
-#endif
     if (current_CS->tsin_pho_mode != new_tsin_pho_mode) {
       close_selection_win();
       tsin_set_eng_ch(new_tsin_pho_mode);
@@ -1637,8 +1614,7 @@ int feedkey_pp(KeySym xkey, int kbstate)
         if (shift_m) {
           if (!tss.c_len)
             return 0;
-		  int start = tss.c_len == tss.c_idx?0:tss.c_idx;
-          tsin_create_win_save_phrase(start,  tss.c_len - start);
+          tsin_create_win_save_phrase(tss.c_idx,  tss.c_len - tss.c_idx);
           move_cursor_end();
           return 1;
         } else {
@@ -1677,20 +1653,12 @@ int feedkey_pp(KeySym xkey, int kbstate)
 #if UNIX
      case XK_KP_Left:
 #endif
-        if (tss.sel_pho) {
-          tsin_sel_cursor_LR(FALSE);
-          return TRUE;
-        } else
-          return cursor_left();
+        return cursor_left();
      case XK_Right:
 #if UNIX
      case XK_KP_Right:
 #endif
-        if (tss.sel_pho) {
-          tsin_sel_cursor_LR(TRUE);
-          return TRUE;
-        } else
-          return cursor_right();
+        return cursor_right();
      case XK_Caps_Lock:
         if (caps_eng_tog) {
 #if 0
@@ -1757,8 +1725,9 @@ tab_phrase_end:
        N = phrase_count + pho_count - tss.current_page;
        if (N > phkbm.selkeyN)
          N = phkbm.selkeyN;
-       if (tss.pho_menu_idx >=pho_candicate_col_N)
-         tss.pho_menu_idx-=pho_candicate_col_N;
+       tss.pho_menu_idx--;
+       if (tss.pho_menu_idx < 0)
+         tss.pho_menu_idx = N-1;
        disp_current_sel_page();
        return 1;
      case XK_Prior:
@@ -1823,8 +1792,7 @@ change_char:
            int N = phrase_count + pho_count - tss.current_page;
            if (N > phkbm.selkeyN)
              N = phkbm.selkeyN;
-           if (tss.pho_menu_idx+pho_candicate_col_N < N)
-             tss.pho_menu_idx = tss.pho_menu_idx+pho_candicate_col_N;
+           tss.pho_menu_idx = (tss.pho_menu_idx+1) % N;
            disp_current_sel_page();
          }
        }

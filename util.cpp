@@ -243,12 +243,9 @@ void p_err(char *format, ...) {
 #endif
 	char tt[512];
 	vsprintf_s(tt, sizeof(tt), format, ap);
-	WCHAR exe[512];
-	GetModuleFileNameW(NULL, exe, ARRAYSIZE(exe));
-
-	WCHAR u16[512];
-	utf8_to_16(tt, u16, ARRAYSIZE(u16));
-	MessageBoxW(NULL, u16, exe, MB_OK);
+	char exe[512];
+	GetModuleFileNameA(NULL, exe, sizeof(exe));
+	MessageBoxA(NULL, tt, exe, MB_OK);
 	exit(0);
 	va_end(ap);
 
@@ -371,7 +368,7 @@ void box_warn(char *fmt,...)
   GtkWidget *dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE,
-                                    "%s", out);
+                                   out);
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
 }
