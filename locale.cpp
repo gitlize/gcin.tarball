@@ -1,6 +1,6 @@
 #include "gcin.h"
 
-#if !GCIN_IME && !TSF
+#if !GCIN_IME && !TSF && !GCIN_EXIT
 void utf8_big5_n(char *s, int len, char out[])
 {
   out[0]=0;
@@ -223,12 +223,11 @@ char utf8_sigature[]="\xef\xbb\xbf";
 
 void skip_utf8_sigature(FILE *fp)
 {
-	char tt[3];
+  char tt[3];
 
-	tt[0]=0;
-	fread(tt, 1, 3, fp);
-	if (memcmp(tt, utf8_sigature, 3)) {
-//		fseek(fp, 0, SEEK_SET);
-		rewind(fp);
-	}
+  tt[0]=0;
+  fread(tt, 1, 3, fp);
+  if (memcmp(tt, utf8_sigature, 3)) {
+    rewind(fp);
+  }
 }

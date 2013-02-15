@@ -381,10 +381,10 @@ static gboolean button_scroll_event(GtkWidget *widget,GdkEventScroll *event, gpo
 
   switch (event->direction) {
     case GDK_SCROLL_UP:
-	  win_sym_page_up();
+      win_sym_page_up();
       break;
     case GDK_SCROLL_DOWN:
-	  win_sym_page_down();
+      win_sym_page_down();
       break;
     default:
       break;
@@ -397,9 +397,9 @@ static gboolean button_scroll_event(GtkWidget *widget,GdkEventScroll *event, gpo
 
 static void mouse_button_callback_up_down( GtkWidget *widget,GdkEventButton *event, gpointer data)
 {
-	GdkEventScroll sc;
-	sc.direction = data ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
-	button_scroll_event(NULL, &sc, NULL);
+  GdkEventScroll sc;
+  sc.direction = data ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
+  button_scroll_event(NULL, &sc, NULL);
 }
 
 void create_win_sym()
@@ -433,14 +433,7 @@ void create_win_sym()
     return;
   }
 
-  gwin_sym = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_has_resize_grip(GTK_WINDOW(gwin_sym), FALSE);
-#if UNIX
-  gtk_window_set_resizable(GTK_WINDOW(gwin_sym), FALSE);
-#endif
-#if WIN32
-  set_no_focus(gwin_sym);
-#endif
+  gwin_sym = create_no_focus_win();
 
   cur_in_method = current_CS->in_method;
 
@@ -448,7 +441,6 @@ void create_win_sym()
   gtk_container_add (GTK_CONTAINER (gwin_sym), hbox_top);
 
   GtkWidget *vbox_top = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_top), GTK_ORIENTATION_VERTICAL);
   gtk_box_pack_start (GTK_BOX (hbox_top), vbox_top, TRUE, TRUE, 0);
 
   gtk_container_set_border_width (GTK_CONTAINER (vbox_top), 0);
@@ -500,7 +492,6 @@ void create_win_sym()
   gtk_box_pack_start (GTK_BOX (hbox_top), gtk_vseparator_new(), FALSE, FALSE, 0);
 
   GtkWidget *vbox_arrow = gtk_vbox_new (TRUE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_arrow), GTK_ORIENTATION_VERTICAL);
   gtk_box_pack_start (GTK_BOX (hbox_top), vbox_arrow, TRUE, TRUE, 0);
   GtkWidget *eve_up=gtk_event_box_new(), *eve_down=gtk_event_box_new();
   gtk_event_box_set_visible_window (GTK_EVENT_BOX(eve_up), FALSE);

@@ -52,7 +52,7 @@ void get_line()
 {
   while (!feof(fr)) {
     bzero(tt, sizeof(tt));
-	myfgets(tt, sizeof(tt), fr);
+    myfgets(tt, sizeof(tt), fr);
     lineno++;
 
     int len=strlen(tt);
@@ -308,6 +308,11 @@ int main(int argc, char **argv)
       th.flag |= FLAG_GTAB_UNIQUE_AUTO_SEND;
       cmd_arg(&cmd, &arg);
     } else
+    if (sequ(cmd,"%flag_keypad_input_key")) {
+      dbg("flag_unique_auto_send\n");
+      th.flag |= FLAG_GTAB_KEYPAD_INPUT_KEY;
+      cmd_arg(&cmd, &arg);
+    } else
       break;
   }
 
@@ -349,6 +354,9 @@ int main(int argc, char **argv)
       if (sequ(cmd,"%quick")) break;
       k=kno[mtolower(cmd[0])]-1;
 
+      if (k>=MAX_GTAB_QUICK_KEYS)
+        p_err("%d only key index < %d is allowed to used as %quick", lineno, MAX_GTAB_QUICK_KEYS);
+
       int N = 0;
       char *p = arg;
 
@@ -360,6 +368,10 @@ int main(int argc, char **argv)
       } else
       if (strlen(cmd)==2) {
         int k1=kno[mtolower(cmd[1])]-1;
+
+        if (k1>=MAX_GTAB_QUICK_KEYS)
+          p_err("%d only key index < %d is allowed to used as %quick", lineno, MAX_GTAB_QUICK_KEYS);
+
         while (*p) {
           char tp[4];
           int len=u8cpy(tp, p);

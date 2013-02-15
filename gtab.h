@@ -17,9 +17,11 @@ typedef struct {
   u_char ch[CH_SZ];
 } ITEM64;
 
+#define MAX_GTAB_QUICK_KEYS 46
+
 typedef struct {
-  char quick1[46][10][CH_SZ];
-  char quick2[46][46][10][CH_SZ];
+  char quick1[MAX_GTAB_QUICK_KEYS][10][CH_SZ];
+  char quick2[MAX_GTAB_QUICK_KEYS][MAX_GTAB_QUICK_KEYS][10][CH_SZ];
 } QUICK_KEYS;
 
 
@@ -33,6 +35,7 @@ enum {
   FLAG_GTAB_VERTICAL_SELECTION=0x40,
   FLAG_GTAB_PRESS_FULL_AUTO_SEND=0x80,
   FLAG_GTAB_UNIQUE_AUTO_SEND=0x100,
+  FLAG_GTAB_KEYPAD_INPUT_KEY=0x200,
 };
 
 enum {
@@ -114,6 +117,7 @@ typedef struct {
   char WILD_QUES, WILD_STAR;
   struct _GCIN_module_callback_functions *mod_cb_funcs;
   char key_ch, in_cycle;
+  char *phrase_txt;
 } INMD;
 
 enum {

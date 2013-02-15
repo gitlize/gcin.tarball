@@ -243,9 +243,12 @@ void p_err(char *format, ...) {
 #endif
 	char tt[512];
 	vsprintf_s(tt, sizeof(tt), format, ap);
-	char exe[512];
-	GetModuleFileNameA(NULL, exe, sizeof(exe));
-	MessageBoxA(NULL, tt, exe, MB_OK);
+	WCHAR exe[512];
+	GetModuleFileNameW(NULL, exe, ARRAYSIZE(exe));
+
+	WCHAR u16[512];
+	utf8_to_16(tt, u16, ARRAYSIZE(u16));
+	MessageBoxW(NULL, u16, exe, MB_OK);
 	exit(0);
 	va_end(ap);
 
@@ -355,7 +358,7 @@ void win32_init_win(GtkWidget *win)
 #endif
 #endif
 
-#if !GCIN_IME && !CLIENT_LIB
+#if !GCIN_IME && !CLIENT_LIB && !GCIN_EXIT
 void box_warn(char *fmt,...)
 {
   va_list args;
@@ -368,7 +371,7 @@ void box_warn(char *fmt,...)
   GtkWidget *dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_CLOSE,
-                                   out);
+                                    "%s", out);
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
 }

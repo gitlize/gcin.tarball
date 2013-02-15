@@ -43,7 +43,7 @@ static KEY keys[][COLN]={
 
 {{XK_Shift_L,_L("  Shift  "),0,K_HOLD},{'z',_L(" z ")},{'x',_L(" x ")},{'c',_L(" c ")},{'v',_L(" v ")},{'b',_L(" b ")},{'n',_L(" n ")},{'m',_L(" m ")},{',',_L(" , "),'<'},{'.',_L(" . "),'>'},{'/',_L(" / "),'?'},{XK_Shift_R,_L(" Shift"),0,K_HOLD|K_FILL},{XK_KP_Multiply,_L(" * "),0,8},
 {XK_Up,_L("↑"),0,8}},
-{{XK_Control_L,_L("Ctrl"),0,K_HOLD},{XK_Super_L,_L("◆")},{XK_Alt_L,_L("Alt"),0,K_HOLD},{' ',_L("Space"),0,1}, {XK_Alt_R,_L("Alt"),0,K_HOLD},{XK_Super_R,_L("◆")},{XK_Menu,_L("■")}, {XK_Control_R,_L("Ctrl"),0,K_HOLD},
+{{XK_Control_L,_L("Ctrl"),0,K_HOLD},{XK_Super_L,_L("◆")},{XK_Alt_L,_L("Alt"),0,K_HOLD},{' ',_L("Space"),0, K_FILL}, {XK_Alt_R,_L("Alt"),0,K_HOLD},{XK_Super_R,_L("◆")},{XK_Menu,_L("■")}, {XK_Control_R,_L("Ctrl"),0,K_HOLD},
 {XK_Left, _L("←"),0,8},{XK_Down,_L("↓"),0,8},{XK_Right, _L("→"),0,8}}
 };
 
@@ -59,12 +59,15 @@ void mod_fg_all(GtkWidget *lab, GdkColor *col)
   gtk_widget_modify_fg(lab, GTK_STATE_SELECTED, col);
   gtk_widget_modify_fg(lab, GTK_STATE_PRELIGHT, col);
 #else
-  GdkRGBA rgbfg;
-  gdk_rgba_parse(&rgbfg, gdk_color_to_string(col));
-  gtk_widget_override_color(lab, GTK_STATE_FLAG_NORMAL, &rgbfg);
-  gtk_widget_override_color(lab, GTK_STATE_FLAG_ACTIVE, &rgbfg);
-  gtk_widget_override_color(lab, GTK_STATE_FLAG_SELECTED, &rgbfg);
-  gtk_widget_override_color(lab, GTK_STATE_FLAG_PRELIGHT, &rgbfg);
+  GdkRGBA rgb, *prgb = NULL;
+  if (col) {
+    gdk_rgba_parse(&rgb, gdk_color_to_string(col));
+    prgb = &rgb;
+  }
+  gtk_widget_override_color(lab, GTK_STATE_FLAG_NORMAL, prgb);
+  gtk_widget_override_color(lab, GTK_STATE_FLAG_ACTIVE, prgb);
+  gtk_widget_override_color(lab, GTK_STATE_FLAG_SELECTED, prgb);
+  gtk_widget_override_color(lab, GTK_STATE_FLAG_PRELIGHT, prgb);
 #endif
 }
 
@@ -134,6 +137,8 @@ static void cb_button_click(GtkWidget *wid, KEY *k)
 
   dbg("cb_button_click keysym %d\n", keysym);
 
+  gtk_window_present(GTK_WINDOW(gwin_kbm));
+
   if (k->flag & K_HOLD) {
     if (k->flag & K_PRESS) {
       clear_hold(k);
@@ -176,14 +181,7 @@ static void create_win_kbm()
 {
   gdk_color_parse("red", &red);
 
-  gwin_kbm = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_has_resize_grip(GTK_WINDOW(gwin_kbm), FALSE);
-#if UNIX
-  gtk_window_set_resizable(GTK_WINDOW(gwin_kbm), FALSE);
-#endif
-#if WIN32
-  set_no_focus(gwin_kbm);
-#endif
+  gwin_kbm = create_no_focus_win();
 
   gtk_container_set_border_width (GTK_CONTAINER (gwin_kbm), 0);
   GtkWidget *hbox_top = gtk_hbox_new (FALSE, 0);
@@ -191,11 +189,9 @@ static void create_win_kbm()
 
 
   GtkWidget *vbox_l = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_l), GTK_ORIENTATION_VERTICAL);
-  gtk_box_pack_start (GTK_BOX (hbox_top), vbox_l, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox_top), vbox_l, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox_l), 0);
   GtkWidget *vbox_r = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_r), GTK_ORIENTATION_VERTICAL);
   gtk_box_pack_start (GTK_BOX (hbox_top), vbox_r, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox_r), 0);
 
@@ -203,7 +199,7 @@ static void create_win_kbm()
   for(i=0;i<keysN;i++) {
     GtkWidget *hboxl = gtk_hbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (hboxl), 0);
-    gtk_box_pack_start (GTK_BOX (vbox_l), hboxl, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox_l), hboxl, TRUE, TRUE, 0);
     GtkWidget *hboxr = gtk_hbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (hboxr), 0);
     gtk_box_pack_start (GTK_BOX (vbox_r), hboxr, FALSE, FALSE, 0);
@@ -224,23 +220,21 @@ static void create_win_kbm()
 
       gtk_container_set_border_width (GTK_CONTAINER (but), 0);
 
-      if (flag & K_FILL)
-        gtk_box_pack_start (GTK_BOX (hbox), but, TRUE, TRUE, 0);
-      else
-        gtk_box_pack_start (GTK_BOX (hbox), but, FALSE, FALSE, 0);
+      gboolean fill = (flag & K_FILL) > 0;
+      gtk_box_pack_start (GTK_BOX (hbox), but, fill, fill, 0);
 
       GtkWidget *v = gtk_vbox_new (FALSE, 0);
-      gtk_orientable_set_orientation(GTK_ORIENTABLE(v), GTK_ORIENTATION_VERTICAL);
       gtk_container_set_border_width (GTK_CONTAINER (v), 0);
       gtk_container_add (GTK_CONTAINER (but), v);
       GtkWidget *laben = ppk->laben=gtk_label_new(_(ppk->enkey));
       set_label_font_size(laben, gcin_font_size_win_kbm_en);
-      gtk_box_pack_start (GTK_BOX (v), laben, FALSE, FALSE, 0);
+
+      gtk_box_pack_start (GTK_BOX (v), laben, fill, fill, 0);
 
       if (i>0&&i<5) {
         GtkWidget *lab = ppk->lab = gtk_label_new("  ");
 //        set_label_font_size(lab, gcin_font_size_win_kbm);
-        gtk_box_pack_start (GTK_BOX (v), lab, FALSE, FALSE, 0);
+        gtk_box_pack_start (GTK_BOX (v), lab, fill, fill, 0);
       }
     }
   }
@@ -305,7 +299,7 @@ static void move_win_kbm()
     }
   } else {
     ox = dpy_xl - width;
-    oy = dpy_yl - height - 16;
+    oy = dpy_yl - height - 31;
   }
 
   gtk_window_move(GTK_WINDOW(gwin_kbm), ox, oy);
@@ -494,7 +488,11 @@ void update_win_kbm()
         if (!keyname[0])
           continue;
 
+#if 0
         if (loop==0 && !(keyname[0]&0x80))
+#else
+		if (loop==0 && !(keyname[0]&0x80) && toupper(i)==toupper(keyname[0]))
+#endif        
           continue;
 
         if (loop==1) {

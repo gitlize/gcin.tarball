@@ -17,7 +17,7 @@ static GtkWidget *check_button_gtab_dup_select_bell,
                  *check_button_gtab_que_wild_card,
                  *check_button_gtab_phrase_pre_select;
 
-extern GtkWidget *check_button_gcin_capslock_lower;
+extern GtkWidget *check_button_gcin_capslock_lower, *opt_tsin_space;
 extern gboolean button_order;
 
 struct {
@@ -52,12 +52,14 @@ void save_menu_val(char *config, GtkWidget *opt)
   save_gcin_conf_int(config, auto_select_by_phrase_opts[idx].num);
 }
 
+void save_tsin_space_opt();
 
 static gboolean cb_gtab_conf_ok( GtkWidget *widget,
                                    GdkEvent  *event,
                                    gpointer   data )
-{
+{	
   save_tsin_eng_pho_key();
+  save_tsin_space_opt();
   save_gcin_conf_int(GTAB_DUP_SELECT_BELL,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gtab_dup_select_bell)));
 
@@ -241,6 +243,7 @@ static gboolean cb_gtab_help( GtkWidget *widget,
 
 
 GtkWidget *create_en_pho_key_sel(char *s);
+GtkWidget *create_tsin_space_opts();
 
 void create_gtab_conf_window()
 {
@@ -263,7 +266,6 @@ void create_gtab_conf_window()
   gtk_container_set_border_width (GTK_CONTAINER (gcin_gtab_conf_window), 3);
 
   GtkWidget *vbox_top = gtk_vbox_new (FALSE, 10);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_top), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (gcin_gtab_conf_window), vbox_top);
 
   GtkWidget *hbox_lr = gtk_hbox_new (FALSE, 10);
@@ -274,7 +276,6 @@ void create_gtab_conf_window()
   gtk_container_set_border_width (GTK_CONTAINER (frame_gtab_l), 5);
   gtk_box_pack_start (GTK_BOX (hbox_lr), frame_gtab_l, FALSE, FALSE, 0);
   GtkWidget *vbox_gtab_l = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_gtab_l), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (frame_gtab_l), vbox_gtab_l);
   gtk_container_set_border_width (GTK_CONTAINER (vbox_gtab_l), 10);
 
@@ -283,7 +284,6 @@ void create_gtab_conf_window()
   gtk_container_set_border_width (GTK_CONTAINER (frame_gtab_r), 5);
   gtk_box_pack_start (GTK_BOX (hbox_lr), frame_gtab_r, FALSE, FALSE, 0);
   GtkWidget *vbox_gtab_r = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_gtab_r), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (frame_gtab_r), vbox_gtab_r);
   gtk_container_set_border_width (GTK_CONTAINER (vbox_gtab_r), 10);
 
@@ -416,6 +416,8 @@ void create_gtab_conf_window()
      gtab_que_wild_card);
 
 
+  gtk_box_pack_start (GTK_BOX (vbox_gtab_r), create_tsin_space_opts(), FALSE, FALSE, 0);
+
   GtkWidget *button_edit_append = gtk_button_new_with_label(_(_L("編輯內定輸入法的使用者外加字詞")));
   gtk_box_pack_start (GTK_BOX (vbox_gtab_r), button_edit_append, FALSE, FALSE, 0);
 
@@ -424,7 +426,6 @@ void create_gtab_conf_window()
 
 
   GtkWidget *hbox_cancel_ok = gtk_hbox_new (FALSE, 10);
-  gtk_grid_set_column_homogeneous(GTK_GRID(hbox_cancel_ok), TRUE);
   gtk_box_pack_start (GTK_BOX (vbox_top), hbox_cancel_ok, FALSE, FALSE, 0);
 
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
@@ -438,17 +439,11 @@ void create_gtab_conf_window()
                             G_OBJECT (gcin_gtab_conf_window));
 
   GtkWidget *button_ok = gtk_button_new_from_stock (GTK_STOCK_OK);
-#if !GTK_CHECK_VERSION(2,91,2)
+
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 0);
   else
     gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 0);
-#else
-  if (button_order)
-    gtk_grid_attach_next_to (GTK_BOX (hbox_cancel_ok), button_ok, button_cancel, GTK_POS_LEFT, 1, 1);
-  else
-    gtk_grid_attach_next_to (GTK_BOX (hbox_cancel_ok), button_ok, button_cancel, GTK_POS_RIGHT, 1, 1);
-#endif
 
   g_signal_connect_swapped (G_OBJECT (button_ok), "clicked",
                             G_CALLBACK (cb_gtab_conf_ok),

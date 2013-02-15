@@ -59,7 +59,10 @@ void disp_gtab(char *str)
     else
       win_gtab_disp_half_full();
   }
-
+#if GTK_CHECK_VERSION(2,91,6)
+  // bug in gtk3
+  set_label_font_size(label_gtab, gcin_font_size_gtab_in);
+#endif
   adj_gtab_win_pos();
 }
 
@@ -103,12 +106,18 @@ void gtab_disp_empty(char *tt, int N)
 {
   int i;
 
-  if (!need_label_edit())
+  if (N < 1)
+    N = 1;
+
+  if (!need_label_edit() && gcin_pop_up_win)
     return;
 
   for (i=0;i < N; i++)
-//    strcat(tt, _(_L("﹍")));
+#if 0
+    strcat(tt, _(_L("﹍")));
+#else
     strcat(tt, _(_L("　")));
+#endif
 }
 
 void clear_gtab_in_area()
@@ -197,6 +206,7 @@ void change_gtab_font_size()
 }
 
 void show_win_gtab();
+gboolean gtab_vertical_select_on();
 
 void disp_gtab_sel(char *s)
 {
@@ -213,12 +223,13 @@ void disp_gtab_sel(char *s)
     return;
 #endif
 
-  if (!s[0])
-    gtk_widget_hide(label_gtab_sele);
+  if (!s[0] && (gcin_pop_up_win||gtab_vertical_select_on()))
+      gtk_widget_hide(label_gtab_sele);
   else {
     if (gwin_gtab && !GTK_WIDGET_VISIBLE(gwin_gtab))
        show_win_gtab();
-    gtk_widget_show(label_gtab_sele);
+    if (s[0])
+      gtk_widget_show(label_gtab_sele);
   }
 
 //  dbg("disp_gtab_sel '%s'\n", s);
@@ -327,28 +338,13 @@ void set_gtab_input_method_name(char *s)
 gboolean use_tsin_sel_win();
 void init_tsin_selection_win();
 
+
 void create_win_gtab()
 {
   if (gwin_gtab)
     return;
 
-  gwin_gtab = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_has_resize_grip(GTK_WINDOW(gwin_gtab), FALSE);
-#if UNIX
-  gtk_window_set_resizable(GTK_WINDOW(gwin_gtab), FALSE);
-#endif
-#if WIN32
-  set_no_focus(gwin_gtab);
-#endif
-  gtk_container_set_border_width (GTK_CONTAINER (gwin_gtab), 0);
-  gtk_widget_realize (gwin_gtab);
-
-#if UNIX
-  GdkWindow *gdkwin = gtk_widget_get_window(gwin_gtab);
-  set_no_focus(gwin_gtab);
-#else
-  win32_init_win(gwin_gtab);
-#endif
+  gwin_gtab = create_no_focus_win();
 
   if (use_tsin_sel_win())
     init_tsin_selection_win();
@@ -405,6 +401,10 @@ void disp_label_edit(char *str)
     return;
 
   show_hide_label_edit();
+#if GTK_CHECK_VERSION(2,91,6)
+  // bug in gtk3
+  set_label_font_size(label_edit, gcin_font_size);
+#endif
 
   gtk_label_set_markup(GTK_LABEL(label_edit), str);
 }
@@ -467,7 +467,6 @@ void create_win_gtab_gui_simple()
   last_cursor_off = FALSE;
 
   GtkWidget *vbox_top = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox_top), GTK_ORIENTATION_VERTICAL);
 
   GtkWidget *event_box_gtab;
   if (gtab_in_area_button) {
@@ -572,7 +571,7 @@ void create_win_gtab_gui_simple()
   //  dbg("gtk_label_new label_input_method_name\n");
 
     gtk_container_add (GTK_CONTAINER (gtab_in_area_button?event_box_input_method_name:frame_input_method_name), label_input_method_name);
-    g_signal_connect_swapped (GTK_OBJECT (event_box_input_method_name), "button-press-event",
+    g_signal_connect_swapped (G_OBJECT (event_box_input_method_name), "button-press-event",
           G_CALLBACK (inmd_switch_popup_handler), NULL);
 
     box_gtab_im_name = event_box_input_method_name;

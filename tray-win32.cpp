@@ -24,11 +24,11 @@ void cb_trad_sim_toggle();
 #if WIN32
 void cb_sim2trad(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 {
-  win32exec("sim2trad");
+  win32exec("sim2trad.exe");
 }
 void cb_trad2sim(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 {
-  win32exec("trad2sim");
+  win32exec("trad2sim.exe");
 }
 #else
 void cb_sim2trad(GtkCheckMenuItem *checkmenuitem, gpointer dat)
@@ -356,14 +356,10 @@ static void cb_popup_state(GtkStatusIcon *status_icon, guint button, guint activ
 
 #define GCIN_TRAY_PNG "gcin-tray.png"
 
+void disp_win_screen_status(char *in_method, char *half_status);
 
 void load_tray_icon_win32()
 {
-#if UNIX
-  if (!gcin_win32_icon)
-    return;
-#endif
-
 #if WIN32
   // when login, creating icon too early may cause block in gtk_status_icon_new_from_file
   if (win32_tray_disabled || !gcin_status_tray)
@@ -394,13 +390,16 @@ void load_tray_icon_win32()
       strcpy(tt, "en-");
       strcat(tt, iconame);
     } else {
-      strcpy(tt, "en-tsin.png");
+      if (current_method_type()==method_type_GTAB)
+        strcpy(tt, "en-gtab.png");
+      else
+        strcpy(tt, "en-tsin.png");
     }
 
     iconame = tt;
   }
 
-//  dbg("iconame %s\n", iconame);
+  dbg("iconame %s\n", iconame);
   char fname[128];
   fname[0]=0;
   if (iconame)
@@ -436,6 +435,13 @@ void load_tray_icon_win32()
   get_icon_path(icon_st, fname_state);
 //  dbg("wwwwwwww %s\n", fname_state);
 
+  if (gcin_status_win)
+    disp_win_screen_status(fname, fname_state);
+
+#if UNIX
+  if (!gcin_win32_icon || !gcin_status_tray)
+    return;
+#endif
 
   if (icon_main) {
 //    dbg("set %s %s\n", fname, fname_state);
@@ -463,7 +469,7 @@ void load_tray_icon_win32()
 
   if (icon_main) {
     char tt[64];
-    if (current_CS && inmd[current_CS->in_method].cname[0])
+    if (current_CS && inmd[current_CS->in_method].cname && inmd[current_CS->in_method].cname[0])
       strcpy(tt, inmd[current_CS->in_method].cname);
 
     if (!iconame || !strcmp(iconame, GCIN_TRAY_PNG) || !tsin_pho_mode())

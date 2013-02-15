@@ -35,6 +35,35 @@ void init_pre_sel();
 void mask_key_typ_pho(phokey_t *key);
 extern u_int64_t vmaskci;
 
+int ph_key_length(u_int64_t k)
+{
+  int klen=0;
+  if (ph_key_sz==2) {
+    int k1,k2,k3,k4;
+    phokey_t kk = (phokey_t) k;
+    k4=(kk&7);
+    kk>>=3;
+    k3=(kk&15);
+    kk>>=4;
+    k2=(kk&3);
+    kk>>=2;
+    k1=(kk&31);
+    if (k1)
+      klen++;
+    if (k2)
+      klen++;
+    if (k3)
+      klen++;
+    if (k4)
+      klen++;
+  } else {
+    klen = 3; // temporary fix
+  }
+
+//  dbg("ph_key_length %d\n", klen);
+  return klen;
+}
+
 u_char scanphr_e(int chpho_idx, int plen, gboolean pho_incr, int *rselN)
 {
   if (plen >= MAX_PHRASE_LEN)
@@ -163,6 +192,7 @@ empty:
 //    sel[selN].phidx = sti - 1;
     sel[selN].usecount = usecount;
     utf8cpyN(sel[selN].str, (char *)mtch, match_len);
+    bzero(sel[selN].phkey, sizeof(sel[selN].phkey));
     memcpy(sel[selN].phkey, mtk, match_len*ph_key_sz);
     selN++;
   }
@@ -179,8 +209,10 @@ empty:
     selN = nselN;
   }
 
-  if (selN==1 && sel[0].len<=2)
-    goto empty;
+  if (selN==1) {
+    if (sel[0].len==1 || (sel[0].len==2 && ph_key_length(sel[0].phkey[1])<2))
+      goto empty;
+  }
 
   qsort(sel, selN, sizeof(PRE_SEL), qcmp_pre_sel_usecount);
 

@@ -32,9 +32,14 @@ static char typ_pho_len[]={5, 2, 4, 3};
 
 gboolean same_query_show_pho_win();
 
-gboolean typ_pho_empty()
+gboolean typ_pho_empty3()
 {
   return !poo.typ_pho[0] &&!poo.typ_pho[1] &&!poo.typ_pho[2] &&!poo.typ_pho[3];
+}
+
+gboolean typ_pho_empty()
+{
+  return typ_pho_empty3() &&!poo.typ_pho[3];
 }
 
 gboolean pho_has_input()
@@ -251,7 +256,8 @@ void clrin_pho()
   poo.maxi=poo.ityp3_pho=0;
   poo.cpg=0;
 
-  if (gcin_pop_up_win && !same_query_show_pho_win())
+  if (gcin_pop_up_win && !same_query_show_pho_win()
+      && inmd[default_input_method].method_type==method_type_PHO)
     hide_win_pho();
 }
 
@@ -401,8 +407,9 @@ void putkey_pho(u_short key, int idx)
 
   if (poo.same_pho_query_state==SAME_PHO_QUERY_pho_select && ggg.gbufN)
     insert_gbuf_nokey(pho_str);
-  else
+  else {
     send_text(pho_str);
+  }
 
   lookup_gtab(pho_str);
 
@@ -410,6 +417,7 @@ void putkey_pho(u_short key, int idx)
 
   clr_in_area_pho();
   ClrSelArea();
+  ClrPhoSelArea();
 
   if (is_gtab_query_mode())
     set_gtab_target_displayed();
@@ -569,7 +577,7 @@ int feedkey_pho(KeySym xkey, int kbstate)
 
       goto llll3;
     case '<':
-       if (!poo.ityp3_pho) {
+       if (!poo.ityp3_pho && tsin_shift_punc) {
          return pre_punctuation(xkey);
        }
        if (poo.cpg >= phkbm.selkeyN)
@@ -608,7 +616,7 @@ int feedkey_pho(KeySym xkey, int kbstate)
       if (xkey >= 127 || xkey < ' ')
         return 0;
 
-      if (shift_m) {
+      if (shift_m && tsin_shift_punc) {
 //        return shift_char_proc(xkey, kbstate);
         if (pre_punctuation(xkey))
           return 1;

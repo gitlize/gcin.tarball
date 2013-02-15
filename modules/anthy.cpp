@@ -886,10 +886,12 @@ gboolean module_feedkey(int kv, int kvstate)
       disp_input();
       return TRUE;
     case XK_F11:
-      system("kasumi &");
+      if (system("kasumi &") < 0)  {
+      }   
       return TRUE;
     case XK_F12:
-      system("kasumi -a &");
+      if (system("kasumi -a &") < 0) {
+      }
       return TRUE;
     case XK_Up:
       if (b_is_empty)

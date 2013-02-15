@@ -37,7 +37,11 @@ static GtkWidget *opt_im_toggle_keys, *check_button_gcin_remote_client,
        *check_button_gcin_init_im_enabled,
        *check_button_gcin_eng_phrase_enabled,
        *check_button_gcin_win_sym_click_close,
-       *check_button_gcin_punc_auto_send;
+       *check_button_gcin_punc_auto_send,
+       *check_button_gcin_ctrl_punc,
+       *check_button_ini_tsin_pho_mode,
+       *check_button_gcin_escape_clear_edit_buffer,
+       *check_button_gcin_buffer_select_char_auto_left;
 #if USE_GCB
 static GtkWidget *spinner_gcb_position_x, *spinner_gcb_position_y;
 static GtkWidget *spinner_gcb_history_n, *spinner_gcb_button_n;
@@ -205,7 +209,10 @@ static void save_gtab_list()
     char *icon = pinmd->icon;
     char *disabled = pinmd->disabled?"!":"";
 
-    fprintf(fp, "%s%s %c %s %s\n", disabled,name, pinmd->key_ch, file, icon);
+    if (pinmd->phrase_txt)
+      fprintf(fp, "%s%s %c %s %s %s\n", disabled,name, pinmd->key_ch, file, icon, pinmd->phrase_txt);
+    else
+      fprintf(fp, "%s%s %c %s %s\n", disabled,name, pinmd->key_ch, file, icon);
   }
 
   fclose(fp);
@@ -268,6 +275,9 @@ static void cb_ok (GtkWidget *button, gpointer data)
   save_gcin_conf_int(GCIN_INIT_IM_ENABLED,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_init_im_enabled)));
 
+  save_gcin_conf_int(TSIN_PHO_MODE,
+    !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_ini_tsin_pho_mode)));
+
   save_gcin_conf_int(GCIN_ENG_PHRASE_ENABLED,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_eng_phrase_enabled)));
 
@@ -279,6 +289,16 @@ static void cb_ok (GtkWidget *button, gpointer data)
 
   save_gcin_conf_int(GCIN_PUNC_AUTO_SEND,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_punc_auto_send)));
+    
+  save_gcin_conf_int(GCIN_ESCAPE_CLEAR_EDIT_BUFFER,
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_escape_clear_edit_buffer)));    
+
+  save_gcin_conf_int(GCIN_CTRL_PUNC,
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_ctrl_punc)));
+
+  save_gcin_conf_int(GCIN_BUFFER_SELECT_CHAR_AUTO_LEFT,
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_buffer_select_char_auto_left)));
+    
 #if UNIX
   save_gcin_conf_int(GCIN_SINGLE_STATE,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_single_state)));
@@ -315,6 +335,8 @@ static void cb_ok (GtkWidget *button, gpointer data)
 	  GDK_DISPLAY(),
 #endif
 	  "reload");
+	  	  
+   load_setttings();
 }
 
 static void cb_cancel (GtkWidget *widget, gpointer data)
@@ -452,7 +474,13 @@ add_columns (GtkTreeView *treeview)
   g_object_set_data (G_OBJECT (renderer), "column", (gint *)COLUMN_KEY);
 
   gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (treeview),
-                                               -1, _(_L("Ctrl-Alt-鍵")), renderer,
+                                               -1,
+#if UNIX
+											   _(_L("Ctrl-Alt-鍵"))
+#else
+											   _(_L("Ctrl-Shift-鍵"))
+#endif
+											   , renderer,
                                                "text", COLUMN_KEY,
                                                "editable", COLUMN_EDITABLE,
                                                NULL);
@@ -660,6 +688,8 @@ static GtkWidget *create_gcb_pos_opts()
 #include <dirent.h>
 #endif
 
+GtkWidget *gtk_hpaned_new (void);
+
 void create_gtablist_window (void)
 {
   if (gtablist_window) {
@@ -682,7 +712,6 @@ void create_gtablist_window (void)
                       G_CALLBACK (callback_win_delete), NULL);
 
   vbox = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (gtablist_window), vbox);
 
   sw = gtk_scrolled_window_new (NULL, NULL);
@@ -747,6 +776,16 @@ void create_gtablist_window (void)
 #endif
 
 
+  GtkWidget *hbox_ini_tsin_pho_mode = gtk_hbox_new (FALSE, 10);
+  gtk_box_pack_start (GTK_BOX(vboxR), hbox_ini_tsin_pho_mode, FALSE, FALSE, 0);
+  GtkWidget *label_ini_tsin_pho_mode = gtk_label_new(_(_L("Shift切換中英初始英數")));
+  gtk_box_pack_start (GTK_BOX (hbox_ini_tsin_pho_mode), label_ini_tsin_pho_mode,  FALSE, FALSE, 0);
+  check_button_ini_tsin_pho_mode = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_ini_tsin_pho_mode),check_button_ini_tsin_pho_mode,  FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_ini_tsin_pho_mode),
+     !ini_tsin_pho_mode);
+
+
   GtkWidget *hbox_gcin_shift_space_eng_full = gtk_hbox_new (FALSE, 10);
   gtk_box_pack_start (GTK_BOX (vboxR), hbox_gcin_shift_space_eng_full, FALSE, FALSE, 0);
   GtkWidget *label_gcin_shift_space_eng_full = gtk_label_new(_(_L("shift-space 進入全形英文模式")));
@@ -778,7 +817,7 @@ void create_gtablist_window (void)
 
   GtkWidget *hbox_phonetic_speak = gtk_hbox_new(FALSE, 10);
   gtk_box_pack_start (GTK_BOX (vboxL), hbox_phonetic_speak , FALSE, FALSE, 0);
-  GtkWidget *label_phonetic_speak = gtk_label_new(_(_L("輸入時念出發音")));
+  GtkWidget *label_phonetic_speak = gtk_label_new(_(_L("念出發音(初始)")));
   gtk_box_pack_start (GTK_BOX (hbox_phonetic_speak), label_phonetic_speak , FALSE, FALSE, 0);
   check_button_phonetic_speak = gtk_check_button_new ();
   gtk_box_pack_start (GTK_BOX (hbox_phonetic_speak), check_button_phonetic_speak, FALSE, FALSE, 0);
@@ -805,6 +844,14 @@ void create_gtablist_window (void)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_bell_off),
      gcin_bell_off);
 
+  GtkWidget *hbox_gcin_ctrl_punc = gtk_hbox_new (FALSE, 10);
+  gtk_box_pack_start (GTK_BOX (vboxR), hbox_gcin_ctrl_punc, FALSE, FALSE, 0);
+  GtkWidget *label_gcin_ctrl_punc = gtk_label_new(_(_L("Ctrl 輸入標點符號")));
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_ctrl_punc), label_gcin_ctrl_punc,  FALSE, FALSE, 0);
+  check_button_gcin_ctrl_punc = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_ctrl_punc),check_button_gcin_ctrl_punc,  FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_ctrl_punc),
+     gcin_ctrl_punc);
 
   GtkWidget *hbox_gcin_punc_auto_send = gtk_hbox_new (FALSE, 10);
   gtk_box_pack_start (GTK_BOX (vboxL), hbox_gcin_punc_auto_send, FALSE, FALSE, 0);
@@ -814,6 +861,24 @@ void create_gtablist_window (void)
   gtk_box_pack_start (GTK_BOX (hbox_gcin_punc_auto_send),check_button_gcin_punc_auto_send,  FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_punc_auto_send),
      gcin_punc_auto_send);
+
+  GtkWidget *hbox_gcin_escape_clear_edit_buffer = gtk_hbox_new (FALSE, 10);
+  gtk_box_pack_start (GTK_BOX (vboxL), hbox_gcin_escape_clear_edit_buffer, FALSE, FALSE, 0);
+  GtkWidget *label_gcin_escape_clear_edit_buffer = gtk_label_new(_(_L("Esc清除編輯區內容")));
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_escape_clear_edit_buffer), label_gcin_escape_clear_edit_buffer,  FALSE, FALSE, 0);
+  check_button_gcin_escape_clear_edit_buffer = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_escape_clear_edit_buffer),check_button_gcin_escape_clear_edit_buffer,  FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_escape_clear_edit_buffer),
+     gcin_escape_clear_edit_buffer);
+
+  GtkWidget *hbox_gcin_buffer_select_char_auto_left = gtk_hbox_new (FALSE, 10);
+  gtk_box_pack_start (GTK_BOX (vboxL), hbox_gcin_buffer_select_char_auto_left, FALSE, FALSE, 0);
+  GtkWidget *label_gcin_buffer_select_char_auto_left = gtk_label_new(_(_L("選字後游標自動往左移")));
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_buffer_select_char_auto_left), label_gcin_buffer_select_char_auto_left,  FALSE, FALSE, 0);
+  check_button_gcin_buffer_select_char_auto_left = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_gcin_buffer_select_char_auto_left),check_button_gcin_buffer_select_char_auto_left,  FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_buffer_select_char_auto_left),
+     gcin_buffer_select_char_auto_left);
 
 
 #if USE_GCB
@@ -900,7 +965,6 @@ void create_gtablist_window (void)
   }
 
   hbox = gtk_hbox_new (TRUE, 4);
-  gtk_grid_set_column_homogeneous(GTK_GRID(hbox), TRUE);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
   button = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
@@ -914,17 +978,11 @@ void create_gtablist_window (void)
   button2 = gtk_button_new_from_stock (GTK_STOCK_OK);
   g_signal_connect (G_OBJECT (button2), "clicked",
                     G_CALLBACK (cb_ok), model);
-#if !GTK_CHECK_VERSION(2,91,2)
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox), button2, TRUE, TRUE, 0);
   else
     gtk_box_pack_start (GTK_BOX (hbox), button2, TRUE, TRUE, 0);
-#else
-  if (button_order)
-    gtk_grid_attach_next_to (GTK_BOX (hbox), button2, button, GTK_POS_LEFT, 1, 1);
-  else
-    gtk_grid_attach_next_to (GTK_BOX (hbox), button2, button, GTK_POS_RIGHT, 1, 1);
-#endif
+
 #if UNIX
   gtk_window_set_default_size (GTK_WINDOW (gtablist_window), 480, 450);
 #else

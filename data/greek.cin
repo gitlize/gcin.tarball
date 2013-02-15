@@ -1,7 +1,7 @@
 %ename greek
 %prompt αβγ
 %selkey 1234567890
-%endkey abdefghijklmnoqrsuvwxyzABDEFGHIJKLMNOPQRSUVWXYZ`
+%endkey abdefghiklmnoqrsuvwxyzABDEFGHIKLMNOPQRSUVWXYZ`
 %space_style 2
 %keep_key_case
 %flag_disp_partial_match
@@ -18,7 +18,6 @@ f	f
 g	g
 h	h
 i	i
-j	j
 k	k
 l	l
 m	m
@@ -44,7 +43,6 @@ F	F
 G	G
 H	H
 I	I
-J	J
 K	K
 L	L
 M	M

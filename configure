@@ -9,11 +9,13 @@ if [ "$1" = "-h" -o "$1" = "--help" -o "$1" = "-help" ]; then
     echo "  --use_i18n=Y   : enable i18n"
     echo "  --use_tsin=N   : disable Tsin input method"
     echo "  --use_anthy=N  : disable Anthy input method"
-    echo "  --use_chewing=N: disable Chewing input method"
+#    echo "  --use_chewing=N: disable Chewing input method"
     echo "  --use_gcb=N    : disable gcb (gtk copy-paste buffer)"
     echo "  --use_qt3=N    : disable Qt3 immodule"
     echo "  --use_qt4=N    : disable Qt4 immodule"
     echo "  --use_gtk3=N   : disable GTK+ 3.x immodule"
+    echo "  --gcinlibdir=dir   : runtime path of gcin's *.so"
+    echo "  --doc_version_dir=N  : doc path use /usr/share/doc/gcin instead of  /doc/gcin-x.x.x"
     exit
 fi
 
@@ -35,7 +37,7 @@ if [ $? = 0 ]; then
   FREEBSD=1
 fi
 
-SO_FLAGS="-shared"
+SO_FLAGS="-Wl,--as-needed -shared"
 MAC_OS=0
 uname | grep Darwin > /dev/null 2> /dev/null
 if [ $? = 0 ]; then
@@ -51,7 +53,7 @@ use_i18n='N'
 use_tsin='Y'
 use_gcb='Y'
 use_anthy='Y'
-use_chewing='Y'
+#use_chewing='Y'
 use_qt3='N'
 use_qt4='Y'
 use_gtk3='Y'
@@ -76,30 +78,51 @@ for opt do
   ;;
   --use_anthy*) use_anthy=`echo $opt | cut -d '=' -f 2`
   ;;
-  --use_chewing*) use_chewing=`echo $opt | cut -d '=' -f 2`
-  ;;
+#  --use_chewing*) use_chewing=`echo $opt | cut -d '=' -f 2`
+# ;;
   --use_qt3*) use_qt3=`echo $opt | cut -d '=' -f 2`
   ;;
   --use_qt4*) use_qt4=`echo $opt | cut -d '=' -f 2`
   ;;
   --use_gtk3*) use_gtk3=`echo $opt | cut -d '=' -f 2`
+  ;;
+  --gcinlibdir*) gcinlibdir=`echo $opt | cut -d '=' -f 2`
+  ;;
+  --doc_version_dir*) doc_version_dir=`echo $opt | cut -d '=' -f 2`
   esac
 done
 
 echo "prefix: $prefix"
 
+#for i in gtk+-3.0 gtk+-2.0
+for i in gtk+-2.0 gtk+-3.0
+do
+  echo -n ".... Testing $i : "
+  GTKINC=`pkg-config --cflags $i 2>/dev/null`
 
-GTK=gtk+-2.0
+  if [ $? != 0 ]; then
+    echo "not found"
+    continue
+  fi
 
-echo -n ".... Testing $GTK : "
+  GTKLDFLAGS=`pkg-config --libs $i`
+  if [ $? = 0 ]; then
+    GTK=$i
+    echo "found"
+    break
+  fi
+done
 
-GTKINC=`pkg-config --cflags $GTK`
-
-if [ $? != 0 ]; then
-  echo "$GTK or above required --cflags"
+if [ $GTK = '' ]; then
+  echo "According to pkg-config, GTK 2.0 or 3.0 WAS NOT FOUND."
+  echo "please install rpm/package libgtk+2.0_0-devel or libgtk+3.0_0-devel"
   rm -f config.mak
-  exit -1;
+  exits
 fi
+
+echo "$GTK will be used."
+echo "GTKINC: $GTKINC"
+echo "GTKLDFLAGS: $GTKLDFLAGS"
 
 ## problem in MacOS, by candyz
 if [ $MAC_OS = 1 ]; then
@@ -120,16 +143,7 @@ if [ ! -x /bin/bash ]; then
 fi
 
 
-GTKLDFLAGS=`pkg-config --libs $GTK`
 
-if [ $? != 0 ]; then
-  echo "$GTK or above required --libs"
-  echo "please install rpm/package libgtk+2.0_0-devel"
-  rm -f config.mak
-  exit -1;
-else
-  echo " found."
-fi
 
 echo -n ".... Testing anthy    :  "
 USE_ANTHY=`pkg-config --libs anthy`
@@ -146,25 +160,28 @@ else
   fi
 fi
 
-echo -n ".... Testing chewing  :  "
-USE_CHEWING=`pkg-config --libs chewing`
-if [ $? != 0 ]; then
-  USE_CHEWING=N
-  echo "It's ok if you don't want libchewing support."
-else
-  if [ $use_chewing = "N" ]; then
-    USE_CHEWING='N'
-    echo "disabled."
-  else
-    USE_CHEWING='Y'
-    echo "found."
-  fi
-fi
+#echo -n ".... Testing chewing  :  "
+#USE_CHEWING=`pkg-config --libs chewing`
+#if [ $? != 0 ]; then
+#  USE_CHEWING=N
+#  echo "It's ok if you don't want libchewing support."
+#else
+#  if [ $use_chewing = "N" ]; then
+#    USE_CHEWING='N'
+#    echo "disabled."
+#  else
+#    USE_CHEWING='Y'
+#    echo "found."
+#  fi
+#fi
+
 
 
 LIB='lib'
-if [ -d /usr/lib64foo -a -d /lib64 ]; then
-LIB='lib64foo'
+if [ -d /usr/lib64 -a -d /lib64 -a ! -d /lib/x86_64-linux-gnu ]; then
+LIB='lib64'
+# for fedora 64bit
+GTK_QUERY_IM_64='-64'
 fi
 
 QT_IM='N'
@@ -233,9 +250,21 @@ optdir=/opt
 GCIN_VERSION=`cat VERSION.gcin`
 sed -e "s/__gcin_version__/$GCIN_VERSION/" < gcin.spec.in > gcin.spec
 
+if [ -z "$gcinlibdir" ]; then
+  gcinlibdir=$libdir/gcin
+fi
+
 if [ $QT_IM = 'N' ]; then
   mv gcin.spec gcin.spec.tmp
   grep -v qt3/plugins/inputmethods gcin.spec.tmp > gcin.spec
+else
+  for i in /usr/share/qt/bin/moc /usr/lib/qt/bin/moc /usr/lib64/qt/bin/moc /usr/lib/qt3/bin/moc /usr/share/qt3/bin/moc /usr/lib64/qt3/bin/moc
+  do
+    [ ! -x $i ] && continue
+    QT_MOC=$i
+    echo "QT_MOC=$QT_MOC"
+    break;
+  done
 fi
 
 
@@ -245,9 +274,9 @@ if [ $QT4_IM = 'N' ]; then
   mv gcin.spec gcin.spec.tmp
   grep -v qt4/plugins/inputmethods gcin.spec.tmp > gcin.spec
 else
-  for i in /usr/share/qt4/bin/moc /usr/lib/qt4/bin/moc /usr/lib64/qt4/bin/moc
+  for i in /usr/share/qt4/bin/moc /usr/lib/qt4/bin/moc /usr/lib64/qt4/bin/moc /usr/bin/moc
   do
-	[ -x $i ] && QT4_MOC=$i
+    [ -x $i ] && QT4_MOC=$i && echo "QT4_MOC=$QT4_MOC"
   done
 fi
 
@@ -256,7 +285,7 @@ if [ $USE_ANTHY = 'Y' ] || [ $USE_CHEWING = 'Y' ]; then
   BUILD_MODULE='Y'
 fi
 
-OPTFLAGS="-O"
+OPTFLAGS="-g -O"
 
 if [ -z $CC ]; then
   CC=gcc
@@ -276,9 +305,9 @@ echo "bindir_r=$bindir" >> config.mak
 echo "datadir=\$(DESTDIR)$datadir" >> config.mak
 echo "datadir_r=$datadir" >> config.mak
 echo "libdir=\$(DESTDIR)$libdir" >> config.mak
-echo "gcinlibdir=\$(libdir)/gcin" >> config.mak
+echo "gcinlibdir=\$(DESTDIR)$gcinlibdir" >> config.mak
 echo "includedir=\$(DESTDIR)$includedir" >> config.mak
-echo "LDFLAGS=$GTKLDFLAGS -lX11 -ldl -lm" >> config.mak
+echo "LDFLAGS=-Wl,--as-needed $GTKLDFLAGS -lX11 -ldl -lm" >> config.mak
 echo "GCIN_VERSION=$GCIN_VERSION" >> config.mak
 echo "GCIN_TABLE_DIR=\$(datadir_r)/gcin/table" >> config.mak
 echo "GCIN_OGG_DIR=\$(datadir_r)/gcin/ogg" >> config.mak
@@ -286,8 +315,15 @@ echo "GCIN_TABLE_DIR_i=\$(datadir)/gcin/table" >> config.mak
 echo "GCIN_SCRIPT_DIR=\$(datadir_r)/gcin/script" >> config.mak
 echo "GCIN_SCRIPT_DIR_i=\$(datadir)/gcin/script" >> config.mak
 echo "OPTFLAGS=$OPTFLAGS" >> config.mak
-echo "DOC_DIR=\$(datadir_r)/doc/gcin-$GCIN_VERSION" >> config.mak
-echo "DOC_DIR_i=\$(datadir)/doc/gcin-$GCIN_VERSION" >> config.mak
+
+if [ "$doc_version_dir" = 'N' ]; then
+  echo "DOC_DIR=\$(datadir_r)/doc/gcin" >> config.mak
+  echo "DOC_DIR_i=\$(datadir)/doc/gcin" >> config.mak
+else
+  echo "DOC_DIR=\$(datadir_r)/doc/gcin-$GCIN_VERSION" >> config.mak
+  echo "DOC_DIR_i=\$(datadir)/doc/gcin-$GCIN_VERSION" >> config.mak
+fi
+
 echo "GCIN_ICON_DIR=\$(datadir_r)/icons/gcin" >> config.mak
 echo "SYS_ICON_DIR=\$(datadir_r)/icons" >> config.mak
 echo "GCIN_ICON_DIR_i=\$(datadir)/icons/gcin" >> config.mak
@@ -309,11 +345,13 @@ echo "USE_ANTHY=$USE_ANTHY" >> config.mak
 echo "USE_CHEWING=$USE_CHEWING" >> config.mak
 echo "USE_GCB=$use_gcb" >> config.mak
 echo "BUILD_MODULE=$BUILD_MODULE" >> config.mak
+echo "GTK_QUERY_IM_64=$GTK_QUERY_IM_64" >> config.mak
 [ $QT4_IM = 'Y' ] && echo "QT4_MOC=$QT4_MOC" >> config.mak
+[ $QT_IM = 'Y' ] && echo "QT_MOC=$QT_MOC" >> config.mak
 
+echo "GCIN_DEBUG=0" >> config.mak
 if [ $prefix = /usr/local ]; then
   echo "gcin_ld_run_path=$PWD:\$(gcinlibdir)" >> config.mak
-  echo "GCIN_DEBUG=0" >> config.mak
 else
   echo "gcin_ld_run_path=\$(gcinlibdir)" >> config.mak
 fi

@@ -136,7 +136,8 @@ void create_win_save_phrase(WSP_S *wsp, int wspN)
   SAVE_SESS *sess = tzmalloc(SAVE_SESS, 1);
 
   GtkWidget *main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_has_resize_grip(GTK_WINDOW(main_window), FALSE);
+//  gtk_window_set_has_resize_grip(GTK_WINDOW(main_window), FALSE);
+  gtk_window_set_keep_above(GTK_WINDOW(main_window), TRUE);
   sess->win = main_window;
 
   gtk_window_set_default_size(GTK_WINDOW (main_window), 20, 10);
@@ -149,7 +150,6 @@ void create_win_save_phrase(WSP_S *wsp, int wspN)
 #endif
 
   GtkWidget *vbox = gtk_vbox_new (FALSE, 0);
-  gtk_orientable_set_orientation(GTK_ORIENTABLE(vbox), GTK_ORIENTATION_VERTICAL);
   gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
   char tt[512];

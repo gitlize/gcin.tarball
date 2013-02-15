@@ -53,12 +53,12 @@ static void draw_icon()
 #else
   int dw = da->allocation.width, dh = da->allocation.height;
 #endif
-  int w, h;
 
+  int w, h;
   GdkColor color_fg;
 
 
-//  dbg("wh %d,%d\n", dw,dh);
+//  dbg("draw_icon wh %d,%d\n", dw,dh);
 
   gdk_color_parse("black", &color_fg);
 #if !GTK_CHECK_VERSION(2,90,6)
@@ -201,11 +201,13 @@ void load_tray_icon()
     int dw = da->allocation.width, dh = da->allocation.height;
 #endif
 
+//  dbg("load_tray_icon w:h %d,%d\n", dw,dh);
+
   if (!pixbuf || gdk_pixbuf_get_width (pixbuf) != dw || gdk_pixbuf_get_height (pixbuf) != dh) {
     char icon_fname[128];
     get_icon_path(GCIN_TRAY_PNG, icon_fname);
     GError *err = NULL;
-//    dbg("icon_name %s\n", icon_fname);
+    dbg("icon_name %s\n", icon_fname);
     pixbuf = gdk_pixbuf_new_from_file_at_size(icon_fname, dw, dh, &err);
     if (!pixbuf)
       p_err("cannot load file %s", icon_fname);
@@ -222,7 +224,7 @@ void load_tray_icon()
     if (pixbuf_ch_fname)
       pixbuf_ch_fname[0] = 0;
   } else
-  if (!pixbuf_ch_fname || strcmp(fname, pixbuf_ch_fname)) {
+  if (!pixbuf_ch_fname || strcmp(fname, pixbuf_ch_fname) || gdk_pixbuf_get_width (pixbuf_ch) != dw || gdk_pixbuf_get_height (pixbuf_ch) != dh) {
     free(pixbuf_ch_fname);
     pixbuf_ch_fname = strdup(fname);
 
@@ -367,10 +369,10 @@ gboolean create_tray(gpointer data)
 //  gtk_event_box_set_visible_window (event_box, FALSE);
   gtk_container_add (GTK_CONTAINER (egg_tray_icon), event_box);
 #if GTK_CHECK_VERSION(2,12,0)
-  gtk_widget_set_tooltip_text (event_box, _("左:中英切換 中:小鍵盤 右:選項"));
+  gtk_widget_set_tooltip_text (event_box, _("左:選擇輸入法 中:小鍵盤 右:選項"));
 #else
   GtkTooltips *tips = gtk_tooltips_new ();
-  gtk_tooltips_set_tip (GTK_TOOLTIPS (tips), event_box, _("左:中英切換 中:小鍵盤 右:選項"), NULL);
+  gtk_tooltips_set_tip (GTK_TOOLTIPS (tips), event_box, _("左:選擇輸入法換 中:小鍵盤 右:選項"), NULL);
 #endif
 
   g_signal_connect (G_OBJECT (event_box), "button-press-event",

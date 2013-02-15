@@ -1,0 +1,6 @@
+usr/bin
+usr/share/applications
+usr/lib/*/gcin/gcin*.so
+usr/lib/*/gcin/*intcode*.so
+debian/im-switch/gcin etc/X11/xinit/xinput.d
+debian/gcin.xpm usr/share/pixmaps

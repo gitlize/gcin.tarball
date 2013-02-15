@@ -94,6 +94,7 @@ enum {
 typedef enum {
   TSIN_SPACE_OPT_SELECT_CHAR = 1,
   TSIN_SPACE_OPT_INPUT = 2,
+  TSIN_SPACE_OPT_FLUSH_EDIT = 4,
 } TSIN_SPACE_OPT;
 
 enum {
@@ -158,6 +159,7 @@ void check_CS();
 gint64 current_time();
 void get_win_size(GtkWidget *win, int *width, int *height);
 void change_win_fg_bg(GtkWidget *win, GtkWidget *label);
+GtkWidget *create_no_focus_win();
 void set_no_focus(GtkWidget *win);
 void change_win_bg(GtkWidget *win);
 gboolean gcin_edit_display_ap_only();

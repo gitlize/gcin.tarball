@@ -2,7 +2,7 @@
 ulimit -c unlimited
 rm -f core.*
 export PATH=.:$PATH
-export GCIN_TABLE_DIR=./data
+export GCIN_TABLE_DIR=$PWD/data
 echo "GCIN_TABLE_DIR=$GCIN_TABLE_DIR"
 export GCIN_IM_CLIENT_NO_AUTO_EXEC=
 pkill gcin.test
@@ -14,7 +14,7 @@ export LANG=zh_CN.UTF-8
 export XMODIFIERS=@im=gcin_test
 #export GCIN_OUTPUT_FILTER=./gcin_filter
 export GCIN_ERR_COREDUMP
-#export GCIN_PHO_KBM="pinyin-asdf asdfghjkl;"
+export GCIN_PHO_KBM="pinyin-no-tone 3825416790 1 1"
 ./gcin.test --g-fatal-warnings &
 gcinpid=$!
 sleep 1

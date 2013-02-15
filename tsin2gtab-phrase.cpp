@@ -98,6 +98,7 @@ void init_gcin_program_files();
 int main(int argc, char **argv)
 {
   gtk_init(&argc, &argv);
+  set_is_chs();
 
 #if 1
   if (argc != 3)

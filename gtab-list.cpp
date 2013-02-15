@@ -41,6 +41,7 @@ void load_gtab_list(gboolean skip_disabled)
     free(pinmd->filename); pinmd->filename=NULL;
     free(pinmd->cname); pinmd->cname=NULL;
     free(pinmd->icon); pinmd->icon=NULL;
+    free(pinmd->phrase_txt); pinmd->phrase_txt=NULL;
   }
 
   inmdN = 0;
@@ -56,6 +57,7 @@ void load_gtab_list(gboolean skip_disabled)
     char key[32];
     char file[32];
     char icon[128];
+    char phrase_txt[128];
 
     inmd = trealloc(inmd, INMD, inmdN);
 
@@ -63,6 +65,7 @@ void load_gtab_list(gboolean skip_disabled)
     key[0]=0;
     file[0]=0;
     icon[0]=0;
+    phrase_txt[0]=0;
 
     line[0]=0;
     myfgets(line, sizeof(line), fp);
@@ -77,7 +80,7 @@ void load_gtab_list(gboolean skip_disabled)
       continue;
 
 
-    sscanf(line, "%s %s %s %s", name, key, file, icon);
+    sscanf(line, "%s %s %s %s %s %s", name, key, file, icon, phrase_txt);
 //    dbg("%s %c\n", line, key[0]);
 
     if (strlen(name) < 1)
@@ -117,9 +120,14 @@ void load_gtab_list(gboolean skip_disabled)
       for(i=0; method_codes[i].id; i++)
         if (!strcmp(file, method_codes[i].id))
           break;
+
       if (method_codes[i].id) {
         pinmd->method_type = method_codes[i].method_type;
-      }
+      } else
+      if (strstr(file,".gtab"))
+        pinmd->method_type = method_type_GTAB;
+      else
+        p_err("unknown file type %s", file);
     }
 
     pinmd->in_cycle =
@@ -140,8 +148,11 @@ void load_gtab_list(gboolean skip_disabled)
 
     pinmd->cname = strdup(name);
 
-    if (strlen(icon))
+    if (icon[0])
       pinmd->icon = strdup(icon);
+
+    if (phrase_txt[0] && phrase_txt[0]!='-')
+      pinmd->phrase_txt = strdup(phrase_txt);
   }
   fclose(fp);
 
