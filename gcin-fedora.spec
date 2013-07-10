@@ -1,5 +1,5 @@
 Name:           gcin
-Version:        2.7.9
+Version:        2.8.0
 Release:        liu%{?dist}
 Summary:        Input method for Traditional Chinese
 
@@ -130,8 +130,7 @@ fi
 %{_bindir}/txt2gtab-phrase
 %{_datadir}/applications/fedora-gcin-tools.desktop
 %{_datadir}/gcin/
-%{_datadir}/icons/gcin/
-%{_datadir}/icons/gcin*.png
+%{_datadir}/icons/*
 %{_libdir}/gcin/*module.so
 %{_libdir}/gcin/gcin*.so
 

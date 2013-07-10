@@ -96,14 +96,14 @@ static void cb_ts_export()
    if (button_order)
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯出的檔案名稱")),
                               GTK_WINDOW(main_window),
-                              GTK_FILE_CHOOSER_ACTION_OPEN,
+                              GTK_FILE_CHOOSER_ACTION_SAVE,
                               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                               NULL);
    else
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯出的檔案名稱")),
                               GTK_WINDOW(main_window),
-                              GTK_FILE_CHOOSER_ACTION_OPEN,
+                              GTK_FILE_CHOOSER_ACTION_SAVE,
                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                               GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                               NULL);

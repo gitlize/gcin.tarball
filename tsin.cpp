@@ -793,7 +793,7 @@ static void get_sel_pho()
 
 
 void clear_sele();
-void set_sele_text(int tN, int i, char *text, int len);
+void set_sele_text(int i, char *text, int len);
 void disp_arrow_up(), disp_arrow_down();
 void disp_tsin_select(int index);
 
@@ -808,12 +808,12 @@ static void disp_current_sel_page()
 
     if (idx < phrase_count) {
       int tlen = utf8_tlen((char *)selstr[i], sellen[i]);
-      set_sele_text(phrase_count + pho_count, i, (char *)selstr[i], tlen);
+      set_sele_text(i, (char *)selstr[i], tlen);
     } else
     if (idx < phrase_count + pho_count) {
       int v = idx - phrase_count + tss.startf;
       char *tstr = pho_idx_str(v);
-      set_sele_text(phrase_count + pho_count, i, tstr, -1);
+      set_sele_text(i, tstr, -1);
     } else
       break;
   }
@@ -902,7 +902,7 @@ void disp_pre_sel_page()
   for(i=0; i < tss.pre_selN; i++) {
     int tlen = utf8_tlen(tss.pre_sel[i].str, tss.pre_sel[i].len);
 
-    set_sele_text(tss.pre_selN, i, tss.pre_sel[i].str, tlen);
+    set_sele_text(i, tss.pre_sel[i].str, tlen);
   }
 
 #if 0
@@ -1197,8 +1197,8 @@ int tsin_sele_by_idx(int c)
   return b_added;
 }
 
-static char shift_sele[]="!@#$%^&*()asdfghjkl:zxcvbnm<>?qwertyuiop";
-static char noshi_sele[]="1234567890asdfghjkl;zxcvbnm,./qwertyuiop";
+char shift_sele[]="!@#$%^&*()asdfghjkl:zxcvbnm<>?qwertyuiop{}";
+char noshi_sele[]="1234567890asdfghjkl;zxcvbnm,./qwertyuiop[]";
 
 char strip_shift_key(KeySym xkey)
 {
@@ -1358,6 +1358,7 @@ void tsin_scan_pre_select(gboolean b_incr);
 
 static int cursor_backspace()
 {
+	dbg("cursor_backspace\n");
         close_selection_win();
         poo.ityp3_pho=0;
         tss.pre_selN = 0;
@@ -1683,6 +1684,11 @@ int feedkey_tsin(KeySym xkey, int kbstate)
 
    switch (xkey) {
      case XK_Escape:
+	   if (tss.sel_pho) {
+		  close_selection_win();
+		  return TRUE;
+	   }
+
        tsin_reset_in_pho0();
        if (typ_pho_empty()) {
          if (!tss.c_len)
@@ -1858,10 +1864,10 @@ tab_phrase_end:
            flush_tsin_buffer();
 
          close_selection_win();
-         
+
          if (tsin_space_opt == TSIN_SPACE_OPT_FLUSH_EDIT)
            return TRUE;
-           
+
          goto asc_char;
        }
 
@@ -2020,13 +2026,15 @@ clear_edit_buffer:
    KeySym key_pad;
    key_pad = keypad_proc(xkey);
 
+//   dbg("key_pad %d\n", key_pad);
+
    if (!xkey || (xkey > 0x7e && !key_pad))
      return 0;
 
    if (key_pad && !tss.c_len && !tss.tsin_half_full)
      return 0;
 
-   gboolean key_has_pho = xkey < 127 && phkbm.phokbm[xkey][0].num || phkbm.phokbm[xkey][0].typ;
+   gboolean key_has_pho = xkey < 127 && (phkbm.phokbm[xkey][0].num || phkbm.phokbm[xkey][0].typ);
 
    if (!tsin_pho_mode() || poo.typ_pho[0]!=BACK_QUOTE_NO && (shift_m || key_pad ||
        (!key_has_pho))) {

@@ -29,8 +29,20 @@ static GtkClipboard *pclipboard;
 static GtkWidget *opt_gcin_edit_display;
 extern GtkWidget *main_window;
 static GdkColor gcin_win_gcolor_fg, gcin_win_gcolor_bg, gcin_sel_key_gcolor;
+static GtkWidget *opt_tray;
 extern gboolean button_order;
 
+#if USE_INDICATOR
+static struct {
+  char *name;
+  int key;
+} tray_options[]={
+  {"單一圖示", GCIN_TRAY_UNIX},
+  {"GTK 雙圖示", GCIN_TRAY_WIN32},
+  {"Unity indicator", GCIN_TRAY_INDICATOR}
+};
+int tray_optionsN = sizeof(tray_options)/sizeof(tray_options[0]);
+#endif
 
 typedef struct {
   GdkColor *color;
@@ -136,7 +148,12 @@ static gboolean cb_appearance_conf_ok( GtkWidget *widget,
   save_gcin_conf_int(GCIN_INNER_FRAME, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_inner_frame)));
 #if TRAY_ENABLED
   save_gcin_conf_int(GCIN_STATUS_TRAY, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_status_tray)));
+#if USE_INDICATOR
+ save_gcin_conf_int(GCIN_WIN32_ICON,
+                     tray_options[gtk_combo_box_get_active(GTK_COMBO_BOX(opt_tray))].key);
+#else
   save_gcin_conf_int(GCIN_WIN32_ICON, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_win32_icon)));
+#endif
 #endif
 
   gchar *cstr = gtk_color_selection_palette_to_string(&gcin_win_gcolor_fg, 1);
@@ -432,6 +449,41 @@ static gboolean cb_appearance_help( GtkWidget *widget,
   return TRUE;
 }
 
+#if USE_INDICATOR
+static int get_currnet_tray_option_idx()
+{
+  int i;
+  for(i=0; i < tray_optionsN; i++)
+    if (tray_options[i].key == gcin_win32_icon)
+      return i;
+
+  p_err("tsin-space-opt->%d is not valid", gcin_win32_icon);
+  return -1;
+}
+
+GtkWidget *create_status_icon_opts()
+{
+  GtkWidget *hbox = gtk_hbox_new (FALSE, 1);
+
+  opt_tray = gtk_combo_box_new_text ();
+  gtk_box_pack_start (GTK_BOX (hbox), opt_tray, FALSE, FALSE, 0);
+
+  int i;
+  int current_idx = get_currnet_tray_option_idx();
+
+  for(i=0; i < tray_optionsN; i++) {
+    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (opt_tray), tray_options[i].name);
+  }
+
+  dbg("current_idx:%d\n", current_idx);
+
+  gtk_combo_box_set_active (GTK_COMBO_BOX (opt_tray), current_idx);
+
+  return hbox;
+}
+#endif
+
+
 void create_appearance_conf_window()
 {
   if (gcin_appearance_conf_window) {
@@ -459,12 +511,12 @@ void create_appearance_conf_window()
 
   GtkWidget *hboxLR = gtk_hbox_new (FALSE, 20);
   gtk_box_pack_start (GTK_BOX (vbox_top), hboxLR, FALSE, FALSE, 0);
-  
+
   GtkWidget *vbox_L = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (hboxLR), vbox_L, FALSE, FALSE, 0);
   GtkWidget *vbox_R = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (hboxLR), vbox_R, FALSE, FALSE, 0);
-  
+
 
   GtkWidget *hbox_gcin_font_size = gtk_hbox_new (FALSE, 10);
   gtk_box_pack_start (GTK_BOX (vbox_L), hbox_gcin_font_size, FALSE, FALSE, 0);
@@ -616,12 +668,16 @@ void create_appearance_conf_window()
 
   GtkWidget *hbox_label_gcin_status_tray_windows_style = gtk_hbox_new(FALSE, 0);
 #if UNIX
+#if USE_INDICATOR
+  gtk_box_pack_start (GTK_BOX(hbox_gcin_status_tray), create_status_icon_opts(), FALSE, FALSE, 20);
+#else
   gtk_box_pack_start (GTK_BOX(hbox_gcin_status_tray), hbox_label_gcin_status_tray_windows_style, FALSE, FALSE, 20);
   GtkWidget *label_gcin_status_tray_windows_style = gtk_label_new(_(_L("雙圖示")));
   gtk_box_pack_start (GTK_BOX(hbox_label_gcin_status_tray_windows_style), label_gcin_status_tray_windows_style, FALSE, FALSE, 0);
   check_button_gcin_win32_icon = gtk_check_button_new ();
   gtk_box_pack_start (GTK_BOX(hbox_label_gcin_status_tray_windows_style), check_button_gcin_win32_icon, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_gcin_win32_icon), gcin_win32_icon);
+#endif
 #else
   gtk_box_pack_start (GTK_BOX(hbox_gcin_status_tray), hbox_label_gcin_status_tray_windows_style, FALSE, FALSE, 10);
 #endif

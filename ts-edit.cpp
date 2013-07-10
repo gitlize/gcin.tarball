@@ -424,6 +424,7 @@ if (b_contrib) {
   exit(0);
 }
 
+#if 0
 #define MAX_SAME_CHAR_PHO (16)
 
 typedef struct {
@@ -431,7 +432,6 @@ typedef struct {
   int phokeysN;
   GtkWidget *opt_menu;
 } char_pho;
-
 
 
 static char_pho bigpho[MAX_PHRASE_LEN];
@@ -562,6 +562,7 @@ static void cb_button_add(GtkButton *button, gpointer user_data)
   gtk_widget_show_all(hbox_buttons);
 
 }
+#endif
 
 Display *dpy;
 

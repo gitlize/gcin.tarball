@@ -14,6 +14,7 @@ OBJS=gcin.o eve.o util.o gcin-conf.o gcin-settings.o locale.o gcin-icon.o about.
      $(gcin_pho_o) $(gcin_gtab_o) gcin-common.o phrase.o t2s-lookup.o gtab-use-count.o \
      win-save-phrase.o unix-exec.o pho-kbm-name.o statistic.o tsin-scan.o gcin-module.o lang.o \
      gcin-module-cb.o gtab-init.o fullchar.o gtab-tsin-fname.o win-screen-status.o
+     
 
 OBJS_TSLEARN=tslearn.o util.o gcin-conf.o pho-util.o tsin-util.o gcin-send.o pho-sym.o \
              table-update.o locale.o gcin-settings.o gcin-common.o gcin-icon.o pho-dbg.o  \
@@ -79,6 +80,11 @@ endif
 ifeq ($(USE_GCB),Y)
 CFLAGS += -DUSE_GCB=1
 OBJS += gcb.o
+endif
+
+ifeq ($(USE_INDICATOR),Y)
+CFLAGS += -DUSE_INDICATOR=1 -I/usr/include/libappindicator-0.1
+OBJS += tray-indicator.o
 endif
 
 OBJ_IMSRV=im-addr.o im-dispatch.o im-srv.o gcin-crypt.o
@@ -205,9 +211,10 @@ ibin:	gcin-nocur
 	rm -f $(bindir)/ts-contribute; ln -sf ts-edit $(bindir)/ts-contribute
 	install $(GCIN_SO) $(gcinlibdir)
 
+icons_apps=$(datadir)/icons/hicolor/64x64/apps 
 install:
-	install -d $(datadir)/icons
-	install -m 644 gcin.png $(datadir)/icons
+	install -d $(icons_apps)
+	install -m 644 gcin.png $(icons_apps)
 	$(MAKE) -C icons install
 	install -d $(gcinlibdir)
 	install $(GCIN_SO) $(gcinlibdir)
@@ -220,7 +227,7 @@ install:
 	if [ $(QT_IM) = 'Y' ]; then $(MAKE) -C qt-im install; fi
 	if [ $(QT4_IM) = 'Y' ]; then $(MAKE) -C qt4-im install; fi
 	if [ $(prefix) = /usr/local ]; then \
-	   install -m 644 gcin.png /usr/share/icons; \
+	   install -m 644 gcin.png /usr/share/icons/hicolor/64x64/apps; \
 	   install -d $(DOC_DIR); \
 	   install -m 644 README.html Changelog.html $(DOC_DIR); \
 	   install $(PROGS) $(bindir); \

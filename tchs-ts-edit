@@ -2,8 +2,8 @@
 ulimit -c unlimited
 rm -f core.*
 export PATH=.:$PATH
-export GCIN_TABLE_DIR=$PWD/data
-echo "GCIN_TABLE_DIR=$GCIN_TABLE_DIR"
+#export GCIN_TABLE_DIR=$PWD/data
+#echo "GCIN_TABLE_DIR=$GCIN_TABLE_DIR"
 export GCIN_IM_CLIENT_NO_AUTO_EXEC=
 pkill gcin.test
 unset LC_CTYPE
@@ -15,4 +15,5 @@ export XMODIFIERS=@im=gcin_test
 #export GCIN_OUTPUT_FILTER=./gcin_filter
 export GCIN_ERR_COREDUMP
 export GCIN_PHO_KBM="pinyin-no-tone 3825416790 1 1"
-./ts-edit
+#./ts-edit
+./ts-contribute

@@ -14,8 +14,20 @@
 	</style>
   </head>
   <body text="#000000">
-    ** UTF-8 encoding **<br style="font-family: Times New
-      Roman,Times,serif;">
+    ** UTF-8 encoding **<br>
+    2.8.1<br>
+    - 詞音在編輯區有字的時候，按 keypad 的按鍵會造成 gcin crash 的問題，感謝 winlin 回報問題。<br>
+    - 匯出詞庫無法輸入 filename 的問題。<br>
+    - Ubuntu Unity Indicator 圖示顯示的支援，內定是原有的雙圖示，可以在
+    gcin-tools→外觀設定→面板狀態中選擇。採用 dlopen libappindicator.so 的方式，所以沒有
+    libappindicator.so, gcin 仍然可以正常執行。<br>
+    - icon menu 新增切換全半形。<br>
+    - 行列10鍵的支援<br>
+    - gcin2tab 新增 -android 參數，可用來刪除無法在 gcin Android 使用的罕用字。<br>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    - <a href="http://hyperrate.com/thread.php?tid=29086">gtab
+      ctrl+space中英切換後</a>，前次未完成的拆碼沒清掉<br>
+    <br style="font-family: Times New Roman,Times,serif;">
     2.8.0<br style="font-family: Times New Roman,Times,serif;">
     - Ubuntu 上 gtk_show_uri 不 正常，現在改成用 gcin 自己的 script 開啟
     browser，gcin-tools 中現在可以開啟 Help 的 /usr/share/doc/gcin/README.html
@@ -26,8 +38,8 @@
     與Capslock狀態完全一致<br>
     - 在關於gcin 裏面，如果在沒有 open browser 時click URL，會造成 gcin 鎖死的問題。<br>
     - 新增選項 gcin-tool→內定輸 入法開啟&amp;關 閉→選字後游標自動往左移，內定是關閉，詞音&amp;gtab 都可以用。<br>
-    - win32 only: vim windows 版現在可以依command/input
-    mode 自動切換 gcin 的中英了，限 Shift 切換，Capslock 不支援。<br>
+    - win32 only: vim windows 版現在可以依command/input mode 自動切換 gcin 的中英了，限
+    Shift 切換，Capslock 不支援。<br>
     - 在詞音內 =+ 如果沒有當成注音輸 入鍵，現在會被可以正常輸入 =+ 了。<br>
     - bug: 拼音沒辦法選用 shift 56789的 預選詞。<br>
     - <a href="http://hyperrate.com/thread.php?tid=28129">有聲調 拼音</a><a
@@ -2085,7 +2097,7 @@ http://www.csie.nctu.edu.tw/~cp76/linux/mozilla/mdk-firefox-thunderbird-1.0.6/co
     &nbsp;&nbsp; &nbsp;%space_style 4<br style="font-family: Times New
       Roman,Times,serif;">
     &nbsp;&nbsp;
-    &nbsp;%keep_key_case&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;%keep_key_case&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     &lt;---------------------------<br style="font-family: Times New
       Roman,Times,serif;">
     &nbsp;&nbsp; &nbsp;%keyname begin<br style="font-family: Times New
@@ -2486,9 +2498,8 @@ http://www.csie.nctu.edu.tw/~cp76/linux/mozilla/mdk-firefox-thunderbird-1.0.6/co
     <br style="font-family: Times New Roman,Times,serif;">
     0.6.1:<br style="font-family: Times New Roman,Times,serif;">
     - 詞音如果編 輯區內有文字時，向上鍵現在不會移動到應用程式的游標位置。感謝&nbsp;
-    garychang.bbs@bbs.ee.ttu.edu.tw,
-    PCMan.bbs@bbs.sayya.org 提供的 patch 。<br style="font-family: Times New
-      Roman,Times,serif;">
+    garychang.bbs@bbs.ee.ttu.edu.tw, PCMan.bbs@bbs.sayya.org 提供的 patch 。<br
+      style="font-family: Times New Roman,Times,serif;">
     - GTK_IM_MODULE connection 沒有 closed 的問題。<br style="font-family:
       Times New Roman,Times,serif;">
     - 設定 GTK_IM_MODULE=gcin 有時會跑到 ROOT input style 的問題，gcin 視窗不會跟 著
@@ -2879,15 +2890,12 @@ http://www.csie.nctu.edu.tw/~cp76/linux/mozilla/mdk-firefox-thunderbird-1.0.6/co
       Roman,Times,serif;">
     ㄇ4&nbsp;&nbsp;&nbsp; 》&nbsp; (書'名'號)<br style="font-family: Times
       New Roman,Times,serif;">
-    ㄌ&nbsp;&nbsp;&nbsp;&nbsp;
-    …&nbsp;&nbsp; (省'略'號)<br style="font-family: Times New
-      Roman,Times,serif;">
-    ㄆ4&nbsp;&nbsp;&nbsp;
-    —&nbsp;&nbsp; (破折 號)<br style="font-family: Times New
-      Roman,Times,serif;">
-    ㄒ&nbsp;&nbsp;&nbsp;&nbsp;
-    ℃&nbsp;&nbsp; (攝氏 Celsius)<br style="font-family: Times New
-      Roman,Times,serif;">
+    ㄌ&nbsp;&nbsp;&nbsp;&nbsp; …&nbsp;&nbsp; (省'略'號)<br
+      style="font-family: Times New Roman,Times,serif;">
+    ㄆ4&nbsp;&nbsp;&nbsp; —&nbsp;&nbsp; (破折 號)<br style="font-family:
+      Times New Roman,Times,serif;">
+    ㄒ&nbsp;&nbsp;&nbsp;&nbsp; ℃&nbsp;&nbsp; (攝氏 Celsius)<br
+      style="font-family: Times New Roman,Times,serif;">
     ㄒ2&nbsp;&nbsp;&nbsp; ㏄&nbsp;&nbsp; (毫升)<br style="font-family: Times
       New Roman,Times,serif;">
     <br style="font-family: Times New Roman,Times,serif;">

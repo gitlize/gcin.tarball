@@ -118,10 +118,15 @@ void load_setttings()
   gcin_status_tray = get_gcin_conf_int(GCIN_STATUS_TRAY, 1);
 #endif
   gcin_win_sym_click_close = get_gcin_conf_int(GCIN_WIN_SYM_CLICK_CLOSE, 1);
+  
 #if WIN32
-  gcin_win32_icon = 1;
+  gcin_win32_icon = GCIN_TRAY_WIN32;
 #else
-  gcin_win32_icon = get_gcin_conf_int(GCIN_WIN32_ICON, 1);
+  gcin_win32_icon = get_gcin_conf_int(GCIN_WIN32_ICON, GCIN_TRAY_WIN32);
+#if !USE_INDICATOR
+  if (gcin_win32_icon == GCIN_TRAY_INDICATOR)
+    gcin_win32_icon = GCIN_TRAY_WIN32;
+#endif  
 #endif
 
   gtab_dup_select_bell = get_gcin_conf_int(GTAB_DUP_SELECT_BELL, 0);

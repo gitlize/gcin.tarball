@@ -283,7 +283,6 @@ static MITEM mitems[] = {
 
 static GtkWidget *tray_menu=NULL;
 
-GtkWidget *create_tray_menu(MITEM *mitems);
 void update_item_active_all();
 
 gint inmd_switch_popup_handler (GtkWidget *widget, GdkEvent *event);

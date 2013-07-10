@@ -2,8 +2,8 @@
 ulimit -c unlimited
 rm -f core.*
 export PATH=.:$PATH
-export GCIN_TABLE_DIR=$PWD/data
-echo "GCIN_TABLE_DIR=$GCIN_TABLE_DIR"
+#export GCIN_TABLE_DIR=$PWD/data
+#echo "GCIN_TABLE_DIR=$GCIN_TABLE_DIR"
 export GCIN_IM_CLIENT_NO_AUTO_EXEC=
 pkill gcin.test
 unset LC_CTYPE

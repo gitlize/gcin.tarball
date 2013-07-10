@@ -17,12 +17,14 @@ int html_browser(char *fname);
 
 #define FURL_WIN32 "http://hyperrate.com/dir.php?eid=215"
 #define FURL_LINUX "http://hyperrate.com/dir.php?eid=67"
+#define FURL_ANDROID "http://hyperrate.com/dir.php?eid=255"
 
 #define LOG_URL "http://www.csie.nctu.edu.tw/~cp76/gcin/download/Changelog.html"
 #define ET26_URL "http://hyperrate.com/thread.php?tid=22661"
 #define PUNC_URL "http://hyperrate.com/thread.php?tid=19444#19444"
 #define ADD_PHRASE_URL "http://hyperrate.com/thread.php?tid=23991#23991"
 #define SPLIT_PHRASE_URL "http://hyperrate.com/thread.php?tid=26361"
+#define IE_URL "http://hyperrate.com/thread.php?tid=22898#22898"
 
 static void callback_url( GtkWidget *widget, gpointer   data)
 {
@@ -111,11 +113,15 @@ static struct {
 		{_L("討論區"), FURL_WIN32 },	
 		{_L("gcin也有 Linux版"), FURL_LINUX},
 #endif		
+		{_L("gcin也有 Android版"), FURL_ANDROID},
 		{_L("gcin改變記錄"), LOG_URL},
 		{_L("推薦使用26鍵的注音鍵盤"), ET26_URL},
 		{_L("使用詞音輸入標點符號"), PUNC_URL},
 		{_L("如何新增詞"), ADD_PHRASE_URL},
 		{_L("如何手動斷詞"), SPLIT_PHRASE_URL},
+#if WIN32
+		{_L("IE內使用gcin"), IE_URL},
+#endif
 		{NULL}
 	};
 	
@@ -130,7 +136,7 @@ static struct {
 
 
 #if UNIX
-    image = gtk_image_new_from_file (SYS_ICON_DIR"/gcin.png");
+    image = gtk_image_new_from_file (SYS_ICON_DIR"/hicolor/64x64/apps/gcin.png");
 #else
     char gcin_png[128];
     sys_icon_fname("gcin.png", gcin_png);

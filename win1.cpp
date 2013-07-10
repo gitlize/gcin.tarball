@@ -231,7 +231,7 @@ void clear_sele()
 
 char *htmlspecialchars(char *s, char out[]);
 
-void set_sele_text(int tN, int i, char *text, int len)
+void set_sele_text(int i, char *text, int len)
 {
   if (len < 0)
     len=strlen(text);
@@ -335,6 +335,9 @@ void disp_selections(int x, int y)
 
   if (y + win1_yl > dpy_yl)
     y = win_y - win1_yl;
+    
+  if (y < 0)
+    y = 0;
 
   gtk_window_move(GTK_WINDOW(gwin1), x, y);
 

@@ -130,8 +130,7 @@ fi
 %{_bindir}/txt2gtab-phrase
 %{_datadir}/applications/fedora-gcin-tools.desktop
 %{_datadir}/gcin/
-%{_datadir}/icons/gcin/
-%{_datadir}/icons/gcin*.png
+%{_datadir}/icons/*
 %{_libdir}/gcin/*module.so
 %{_libdir}/gcin/gcin*.so
 

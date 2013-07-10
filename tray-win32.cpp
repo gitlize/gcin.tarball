@@ -13,6 +13,8 @@
 #include "pho-kbm-name.h"
 
 gboolean tsin_pho_mode();
+void toggle_half_full_char_sub();
+
 extern int tsin_half_full, gb_output;
 extern int win32_tray_disabled;
 GtkStatusIcon *icon_main=NULL, *icon_state=NULL;
@@ -48,13 +50,6 @@ void cb_tog_phospeak(GtkCheckMenuItem *checkmenuitem, gpointer dat)
   phonetic_speak= gtk_check_menu_item_get_active(checkmenuitem);
 }
 
-#if 0
-void show_inmd_menu();
-void cb_inmd_menu(GtkCheckMenuItem *checkmenuitem, gpointer dat)
-{
-  show_inmd_menu();
-}
-#endif
 
 void close_all_clients();
 void do_exit();
@@ -105,7 +100,7 @@ void kbm_toggle_(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 
 void create_about_window();
 
-static void cb_about_window(GtkCheckMenuItem *checkmenuitem, gpointer dat)
+void cb_about_window(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 {
   create_about_window();
 }
@@ -134,7 +129,7 @@ static MITEM mitems_main[] = {
 
 void set_output_buffer_bak_to_clipboard();
 void set_output_buffer_bak_to_clipboard();
-static void cb_set_output_buffer_bak_to_clipboard(GtkCheckMenuItem *checkmenuitem, gpointer dat)
+void cb_set_output_buffer_bak_to_clipboard(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 {
   set_output_buffer_bak_to_clipboard();
 }
@@ -143,7 +138,8 @@ void load_setttings(), load_tab_pho_file();;
 void update_win_kbm();
 void update_win_kbm_inited();
 extern gboolean win_kbm_inited, stat_enabled;
-static void cb_fast_phonetic_kbd_switch(GtkCheckMenuItem *checkmenuitem, gpointer dat)
+
+void fast_phonetic_kbd_switch()
 {
   char bak[128], cur[128];
   get_gcin_conf_fstr(PHONETIC_KEYBOARD, cur, "");
@@ -153,8 +149,19 @@ static void cb_fast_phonetic_kbd_switch(GtkCheckMenuItem *checkmenuitem, gpointe
   save_gcin_conf_str(PHONETIC_KEYBOARD_BAK, cur);
   load_setttings();
   load_tab_pho_file();
-  update_win_kbm_inited();
+  update_win_kbm_inited();	
 }
+
+void cb_fast_phonetic_kbd_switch(GtkCheckMenuItem *checkmenuitem, gpointer dat)
+{
+	fast_phonetic_kbd_switch();
+}
+
+void cb_half_full_char(GtkCheckMenuItem *checkmenuitem, gpointer dat)
+{
+  toggle_half_full_char_sub();
+}
+
 
 static MITEM mitems_state[] = {
   {NULL, NULL, cb_fast_phonetic_kbd_switch},
@@ -162,6 +169,7 @@ static MITEM mitems_state[] = {
   {N_(_L("簡→正體")), NULL, cb_sim2trad},
   {N_(_L("简体输出")), NULL, cb_trad_sim_toggle_, &gb_output},
   {N_(_L("打字速度")), NULL, cb_stat_toggle_, &stat_enabled},
+  {N_(_L("全半形切換")), NULL, cb_half_full_char, NULL},
   {N_(_L("送字到剪貼區")), NULL, cb_set_output_buffer_bak_to_clipboard},
   {NULL}
 };
@@ -239,17 +247,7 @@ void inmd_popup_tray();
 
 static void cb_activate(GtkStatusIcon *status_icon, gpointer user_data)
 {
-#if UNIX && 0
-//  dbg("cb_activate\n");
-  toggle_im_enabled();
-
-  GdkRectangle rect;
-  bzero(&rect, sizeof(rect));
-  GtkOrientation ori;
-  gtk_status_icon_get_geometry(status_icon, NULL, &rect, &ori);
-#else
   inmd_popup_tray();
-#endif
 }
 
 static void cb_popup(GtkStatusIcon *status_icon, guint button, guint activate_time, gpointer user_data)
@@ -269,16 +267,12 @@ static void cb_popup(GtkStatusIcon *status_icon, guint button, guint activate_ti
 //      dbg("tray_menu %x\n", tray_menu);
       if (!tray_menu)
         tray_menu = create_tray_menu(mitems_main);
-#if 0
-      gtk_menu_popup(GTK_MENU(tray_menu), NULL, NULL, gtk_status_icon_position_menu, status_icon, button, activate_time);
-#else
       gtk_menu_popup(GTK_MENU(tray_menu), NULL, NULL, NULL, NULL, button, activate_time);
-#endif
       break;
   }
 }
 
-void toggle_half_full_char();
+
 static void cb_activate_state(GtkStatusIcon *status_icon, gpointer user_data)
 {
 //  dbg("cb_activate\n");
@@ -286,7 +280,7 @@ static void cb_activate_state(GtkStatusIcon *status_icon, gpointer user_data)
     kbm_toggle();
     update_item_active_all();
   } else
-    toggle_half_full_char();
+    toggle_half_full_char_sub();
 }
 
 
@@ -439,7 +433,7 @@ void load_tray_icon_win32()
     disp_win_screen_status(fname, fname_state);
 
 #if UNIX
-  if (!gcin_win32_icon || !gcin_status_tray)
+  if (gcin_win32_icon==GCIN_TRAY_UNIX|| !gcin_status_tray)
     return;
 #endif
 

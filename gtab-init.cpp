@@ -337,7 +337,8 @@ void init_gtab(int inmdno)
   maxv++;
 
   free(inp->keymap);
-  inp->keymap = tzmalloc(char, maxv);
+          
+  inp->keymap = tzmalloc(char, 128);
 
   if (!(th.flag & FLAG_GTAB_SYM_KBM)) {
     inp->keymap[(int)'?']=inp->WILD_QUES;

@@ -242,7 +242,8 @@ direct:
     if (pid) {
       close(pfdw[0]);
       close(pfdr[1]);
-      write(pfdw[1], text, len);
+      if (write(pfdw[1], text, len) < 0) {
+      }
       close(pfdw[1]);
       int rn = read(pfdr[0], filter_text, sizeof(filter_text) - 1);
       filter_text[rn] = 0;
@@ -661,10 +662,15 @@ extern void destroy_tray_icon();
 #if UNIX
 void destroy_tray()
 {
-  if (current_gcin_win32_icon)
+  if (current_gcin_win32_icon==GCIN_TRAY_WIN32)
     destroy_tray_win32();
   else
+  if (current_gcin_win32_icon==GCIN_TRAY_UNIX)
     destroy_tray_icon();
+#if USE_INDICATOR
+  else
+    destroy_tray_indicator();
+#endif
 }
 #endif
 
@@ -679,13 +685,17 @@ void disp_tray_icon()
 
   current_gcin_win32_icon = gcin_win32_icon;
 
-  if (gcin_win32_icon)
+  if (gcin_win32_icon==GCIN_TRAY_WIN32)
 #endif
-
     load_tray_icon_win32();
 #if UNIX
   else
+  if (gcin_win32_icon==GCIN_TRAY_UNIX)
     load_tray_icon();
+#if USE_INDICATOR
+  else
+    load_tray_icon_indicator();
+#endif
 #endif
 }
 #endif
@@ -780,6 +790,7 @@ void toggle_im_enabled()
       if (!current_method_type())
         init_gtab(current_CS->in_method);
 
+	  ClrIn();
 
       init_state_chinese(current_CS, TRUE);
       reset_current_in_win_xy();
@@ -859,25 +870,8 @@ gboolean win_is_visible()
 void disp_gtab_half_full(gboolean hf);
 void tsin_toggle_half_full();
 
-void toggle_half_full_char()
+void toggle_half_full_char_sub()
 {
-#if WIN32
-  if (test_mode)
-    return;
-#endif
-
-  check_CS();
-
-  if (!gcin_shift_space_eng_full) {
-    current_CS->b_half_full_char = 0;
-    tss.tsin_half_full=0;
-    disp_im_half_full();
-    return;
-  }
-
-
-//  dbg("toggle_half_full_char\n");
-
   if (current_method_type() == method_type_TSIN && current_CS->im_state == GCIN_STATE_CHINESE) {
     tsin_toggle_half_full();
   }
@@ -899,7 +893,26 @@ void toggle_half_full_char()
   }
 
   save_CS_current_to_temp();
-//  dbg("half full toggle\n");
+}
+
+void toggle_half_full_char()
+{
+#if WIN32
+  if (test_mode)
+    return;
+#endif
+
+  check_CS();
+
+  if (!gcin_shift_space_eng_full) {
+    current_CS->b_half_full_char = 0;
+    tss.tsin_half_full=0;
+    disp_im_half_full();
+    return;
+  }
+
+//  dbg("toggle_half_full_char\n");
+  toggle_half_full_char_sub() ;
 }
 
 void init_tab_pp(gboolean init);
@@ -964,7 +977,7 @@ gboolean init_in_method2(ClientState *cs, int in_no)
       set_wselkey(pho_selkey);
       cs->in_method = in_no;
       if (cs==current_CS || !current_CS)
-		init_tab_pp(init_im);		
+		init_tab_pp(init_im);
       break;
     case method_type_SYMBOL_TABLE:
       toggle_symbol_table();
@@ -1006,7 +1019,7 @@ gboolean init_in_method2(ClientState *cs, int in_no)
       dbg("method_type_GTAB\n");
       if (cs==current_CS || !current_CS)
 		init_gtab(in_no);
-		
+
       if (!inmd[in_no].DefChars)
         return FALSE;
       cs->in_method = in_no;
@@ -1270,6 +1283,11 @@ gboolean ProcessKeyPress(KeySym keysym, u_int kev_state)
       return 0;
   }
 
+  if (gcin_ctrl_punc && (kev_state&(Mod1Mask|Mod5Mask|ShiftMask|ControlMask))==ControlMask && keysym < 127) {
+    if (feed_phrase(keysym, kev_state))
+      return TRUE;
+  }
+
 //  dbg("state %x\n", kev_state);
   if ((current_CS->im_state & (GCIN_STATE_ENG_FULL)) ) {
     return full_char_proc(keysym);
@@ -1354,11 +1372,6 @@ gboolean ProcessKeyPress(KeySym keysym, u_int kev_state)
     if (timeout_handle)
       g_source_remove(timeout_handle);
     timeout_handle = g_timeout_add(200, timeout_raise_window, NULL);
-  }
-
-  if (gcin_ctrl_punc && (kev_state&ControlMask)) {
-    if (feed_phrase(keysym, kev_state))
-      return TRUE;
   }
 
 
@@ -1476,12 +1489,12 @@ void gcin_reset();
 #if UNIX
 gboolean is_tip_window(Window inpwin)
 {
-   // Dirty fix for chrome, doesn't work well.   
+   // Dirty fix for chrome, doesn't work well.
    if (!inpwin)
      return FALSE;
    XWindowAttributes att;
    XGetWindowAttributes(dpy, inpwin, &att);
-   
+
    dbg("%d, %d\n", att.width, att.height);
 // chrome window is override_redirect
 //   if (att.override_redirect)
@@ -1601,13 +1614,13 @@ int gcin_FocusOut(ClientState *cs)
 
   if (!cs->client_win)
     return FALSE;
-    
-#if UNIX    
+
+#if UNIX
   if (is_tip_window(cs->client_win)) {
 	return FALSE;
   }
-#endif    
-    
+#endif
+
 
   if (t - last_focus_out_time < 100000) {
     last_focus_out_time = t;

@@ -103,6 +103,12 @@ enum {
   GCIN_EDIT_DISPLAY_BOTH=4,
 };
 
+enum {
+  GCIN_TRAY_UNIX=0,
+  GCIN_TRAY_WIN32=1,
+  GCIN_TRAY_INDICATOR=2,
+};
+
 #define ROW_ROW_SPACING (2)
 
 

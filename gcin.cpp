@@ -478,10 +478,15 @@ gboolean delayed_start_cb(gpointer data)
 #if TRAY_ENABLED
   if (gcin_status_tray) {
 #if UNIX
-    if (gcin_win32_icon)
+    if (gcin_win32_icon==GCIN_TRAY_WIN32)
       init_tray_win32();
     else
+    if (gcin_win32_icon==GCIN_TRAY_UNIX)
       init_tray();
+#if USE_INDICATOR      
+    else
+      init_tray_indicator();
+#endif      
 #endif
   }
 #endif
