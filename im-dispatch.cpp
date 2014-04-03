@@ -19,7 +19,11 @@
 #if UNIX
 static int myread(int fd, void *buf, int bufN)
 #else
+#if SHARED_MEMORY
+static int myread(GCIN_SHM fd, void *buf, int bufN)
+#else
 static int myread(HANDLE fd, void *buf, int bufN)
+#endif
 #endif
 {
   int ofs=0, toN = bufN;
@@ -57,6 +61,9 @@ static int myread(HANDLE fd, void *buf, int bufN)
   };
   return ofs;
 #else
+#if SHARED_MEMORY
+  return gcin_shm_read(fd, buf, bufN);
+#else
   while (toN) {
     DWORD bytes = 0;
      for(int loop=0;loop < 10000; loop++) {
@@ -89,6 +96,7 @@ static int myread(HANDLE fd, void *buf, int bufN)
   };
   return bufN;
 #endif
+#endif
 }
 
 
@@ -108,6 +116,19 @@ int find_im_client(HANDLE hand)
 	return i;
 }
 
+#if SHARED_MEMORY
+void add_im_client(GCIN_SHM hand, int i, DWORD pid)
+{
+	if (i==gcin_clientsN) {
+		gcin_clientsN++;
+		gcin_clients=trealloc(gcin_clients, GCIN_ENT, gcin_clientsN);
+	}
+
+	ZeroMemory(&gcin_clients[i], sizeof(GCIN_ENT));
+	gcin_clients[i].fd = hand;
+	gcin_clients[i].pid = pid;
+}
+#else
 int add_im_client(HANDLE hand)
 {
 	int i = find_im_client(0);
@@ -120,7 +141,7 @@ int add_im_client(HANDLE hand)
 	gcin_clients[i].fd = hand;
 	return i;
 }
-
+#endif
 #endif
 
 extern GCIN_PASSWD my_passwd;
@@ -146,10 +167,17 @@ extern int output_bufferN;
 #if UNIX
 int write_enc(int fd, void *p, int n)
 #else
+#if SHARED_MEMORY
+int write_enc(GCIN_SHM fd, void *p, int n)
+#else
 int write_enc(HANDLE fd, void *p, int n)
+#endif
 #endif
 {
 #if WIN32
+#if SHARED_MEMORY
+  return gcin_shm_write(fd, p, n);
+#else
   int loop=0;
   int twN=0;
   while (n > 0 && loop < 50) {
@@ -167,6 +195,7 @@ int write_enc(HANDLE fd, void *p, int n)
   }
 
   return twN;
+#endif
 #else
   if (!fd)
     return 0;
@@ -202,7 +231,11 @@ typedef int socklen_t;
 #if UNIX
 static void shutdown_client(int fd)
 #else
+#if SHARED_MEMORY
+void shutdown_client(GCIN_SHM fd)
+#else
 static void shutdown_client(HANDLE fd)
+#endif
 #endif
 {
 //  dbg("client shutdown rn %d\n", rn);
@@ -235,7 +268,11 @@ static void shutdown_client(HANDLE fd)
 #if UNIX
   close(fd);
 #else
+#if SHARED_MEMORY
+  gcin_shm_close(fd);
+#else
   CloseHandle(fd);
+#endif
 //  CloseHandle(handle);
 #endif
 }
@@ -251,12 +288,20 @@ extern int dpy_x_ofs, dpy_y_ofs;
 #if UNIX
 void process_client_req(int fd)
 #else
+#if SHARED_MEMORY
+void process_client_req(GCIN_SHM fd)
+#else
 void process_client_req(HANDLE fd)
+#endif
 #endif
 {
   GCIN_req req;
 #if DBG
   dbg("svr--> process_client_req %d\n", fd);
+#endif
+
+#if SHARED_MEMORY
+  gcin_start_shm_read(fd);
 #endif
   int rn = myread(fd, &req, sizeof(req));
 
@@ -398,6 +443,10 @@ void process_client_req(HANDLE fd)
         output_bufferN ? output_bufferN + 1 : 0; // include '\0'
       to_gcin_endian_4(&reply.flag);
       to_gcin_endian_4(&reply.datalen);
+
+#if SHARED_MEMORY
+	  gcin_start_shm_write(fd);
+#endif
       write_enc(fd, &reply, sizeof(reply));
 
 //      dbg("server reply.flag %x\n", reply.flag);
@@ -419,7 +468,7 @@ void process_client_req(HANDLE fd)
 #if   DBG
 	  dbg("%s %x %x predit:%d\n", req.req_no == GCIN_req_test_key_press?"key_press":"key_release",
 	  req.keyeve.key, req.keyeve.state, cs->use_preedit);
-#endif	  
+#endif
 
       if (req.req_no==GCIN_req_test_key_press)
         status = ProcessTestKeyPress(req.keyeve.key, req.keyeve.state);
@@ -432,6 +481,10 @@ void process_client_req(HANDLE fd)
       reply.datalen = 0;
       to_gcin_endian_4(&reply.flag);
       to_gcin_endian_4(&reply.datalen);
+
+#if SHARED_MEMORY
+	  gcin_start_shm_write(fd);
+#endif
       write_enc(fd, &reply, sizeof(reply));
       break;
 #endif
@@ -485,9 +538,9 @@ void process_client_req(HANDLE fd)
       update_in_win_pos();
       break;
     case GCIN_req_set_flags:
-#if DBG    
+#if DBG
       dbg("GCIN_req_set_flags\n");
-#endif      
+#endif
       if (BITON(req.flag, FLAG_GCIN_client_handle_raise_window)) {
 #if DBG
         dbg("********* raise * window\n");
@@ -503,7 +556,9 @@ void process_client_req(HANDLE fd)
       rflags = 0;
       if (gcin_pop_up_win)
         rflags = FLAG_GCIN_srv_ret_status_use_pop_up;
-
+#if SHARED_MEMORY
+	  gcin_start_shm_write(fd);
+#endif
       write_enc(fd, &rflags, sizeof(rflags));
       break;
     case GCIN_req_get_preedit:
@@ -521,6 +576,10 @@ void process_client_req(HANDLE fd)
         attrN=0;
         str[0]=0;
       }
+
+#if SHARED_MEMORY
+	  gcin_start_shm_write(fd);
+#endif
       int len = strlen(str)+1; // including \0
       if (write_enc(fd, &len, sizeof(len)) < 0)
 		  break;
@@ -543,9 +602,9 @@ void process_client_req(HANDLE fd)
       }
       break;
     case GCIN_req_reset:
-#if DBG    
+#if DBG
       dbg("GCIN_req_reset\n");
-#endif      
+#endif
       gcin_reset();
       break;
     case GCIN_req_message:

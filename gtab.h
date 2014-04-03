@@ -89,7 +89,8 @@ typedef struct {
   QUICK_KEYS *qkeys;
   int use_quick;
   u_int flag;
-#define MAX_CNAME (4*CH_SZ+1)
+//#define MAX_CNAME (4*CH_SZ+1)
+#define MAX_CNAME (31)
   char *cname;
   char *keycol;
   int KeyS;               /* number of keys needed */

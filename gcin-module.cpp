@@ -81,6 +81,9 @@ void init_GCIN_module_main_functions(GCIN_module_main_functions *func)
   func->mf_dpy_yl = &dpy_yl;
   func->mf_pho_chars = pho_chars;
   func->mf_box_warn = box_warn;
+#if DEBUG
+  func->mf___gcin_dbg_ = __gcin_dbg_;
+#endif  
 
 #if WIN32
   func->mf_test_mode = &test_mode;

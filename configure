@@ -144,16 +144,26 @@ fi
 
 USE_INDICATOR=N
 # Why does  appindicator-0.1.pc inclues version number, stupid
-if [ -f /usr/include/libappindicator*/libappindicator/app-indicator.h ]; then
-  echo "Uniy libappindicator : found"
-  USE_INDICATOR=Y
+#if [ -f /usr/include/libappindicator*/libappindicator/app-indicator.h ]; then
+#  echo "Uniy libappindicator : found"
+#  USE_INDICATOR=Y
+#fi
+
+echo -n ".... Testing indicator(Ubuntu)    :  "
+INDICATOR_LIB=`pkg-config --libs appindicator3-0.1 2>/dev/null`
+INDICATOR_INC=`pkg-config --cflags appindicator3-0.1 2>/dev/null`
+if [ $? != 0 ]; then
+  echo "Not found. It's ok if you don't want indicator support."
+else
+  USE_INDICATOR='Y'
+  echo "found."
 fi
 
 echo -n ".... Testing anthy    :  "
 USE_ANTHY=`pkg-config --libs anthy`
 if [ $? != 0 ]; then
   USE_ANTHY=N
-  echo "It's ok if you don't want anthy support."
+  echo "Not found. It's ok if you don't want anthy support."
 else
   if [ $use_anthy = "N" ]; then
     USE_ANTHY='N'
@@ -163,7 +173,6 @@ else
     echo "found."
   fi
 fi
-
 
 
 #echo -n ".... Testing chewing  :  "
@@ -321,6 +330,11 @@ echo "GCIN_TABLE_DIR_i=\$(datadir)/gcin/table" >> config.mak
 echo "GCIN_SCRIPT_DIR=\$(datadir_r)/gcin/script" >> config.mak
 echo "GCIN_SCRIPT_DIR_i=\$(datadir)/gcin/script" >> config.mak
 echo "OPTFLAGS=$OPTFLAGS" >> config.mak
+
+if [ "$USE_INDICATOR" = 'Y' ]; then
+  echo "INDICATOR_INC=$INDICATOR_INC" >> config.mak
+  echo "INDICATOR_LIB=$INDICATOR_LIB" >> config.mak
+fi
 
 if [ "$doc_version_dir" = 'N' ]; then
   echo "DOC_DIR=\$(datadir_r)/doc/gcin" >> config.mak

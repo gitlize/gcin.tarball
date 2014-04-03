@@ -5,12 +5,24 @@
 enum {
   REQ_CONTRIBUTE=1,
   REQ_DOWNLOAD=2,
+  REQ_CONTRIBUTE2=3,
+  REQ_DOWNLOAD2=4,
 };
 
 typedef struct {
   int cmd;
   int flag;
 } REQ_HEAD;
+
+enum {
+  REQ_HEAD_FLAG_HAS_FORMAT=1,
+};
+
+typedef struct {
+  int flag;
+  int key_sz;
+  char os_str[32];
+} REQ_FORMAT;
 
 typedef int ts_time_t;
 
@@ -35,3 +47,5 @@ typedef struct {
 typedef struct {
   ts_time_t this_dl_time;
 } REQ_DOWNLOAD_REPLY_S;
+
+

@@ -6,6 +6,7 @@ GCIN_MODULE=intcode-module.so
 
 ifeq ($(USE_ANTHY),Y)
 GCIN_MODULE+=anthy-module.so
+CFLAGS+=-DGCIN_MODULE=1
 endif
 
 ifeq ($(USE_CHEWING),Y)

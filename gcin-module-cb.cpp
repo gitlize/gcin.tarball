@@ -20,6 +20,7 @@ GCIN_module_callback_functions *init_GCIN_module_callback_functions(char *sofile
   void *handle;
   char *error;
 
+  dbg("dlopen %s\n", sofile);
   if (!(handle = dlopen(sofile, RTLD_LAZY))) {
     if ((error = dlerror()) != NULL)
       box_warn(error);

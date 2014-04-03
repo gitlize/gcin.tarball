@@ -11,7 +11,12 @@ typedef struct {
 #if	UNIX
   int fd;
 #else
+#if SHARED_MEMORY
+  GCIN_SHM fd;
+  DWORD pid;
+#else
   HANDLE fd;
+#endif
 #endif
 } GCIN_ENT;
 

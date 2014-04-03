@@ -1,0 +1,2 @@
+sudo rm /usr/bin/gcin
+sudo cp gcin /usr/bin

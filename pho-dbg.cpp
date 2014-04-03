@@ -35,10 +35,19 @@ void prph2(FILE *fp, phokey_t kk)
   }
 }
 
+extern FILE *dbgfp;
 
 void prph(phokey_t kk)
 {
+#if UNIX
 	prph2(stdout, kk);
+#else
+#if DEBUG
+	prph2(dbgfp, kk);
+#else
+	prph2(stdout, kk);
+#endif
+#endif
 }
 
 

@@ -35,11 +35,11 @@ static int phraseN=0;
 
 void cp_ph_key(void *in, int idx, void *dest)
 {
-  if (ph_key_sz==2) {
+  if (tsin_hand.ph_key_sz==2) {
     phokey_t *pharr = (phokey_t *)in;
     in = &pharr[idx];
   } else
-  if (ph_key_sz==4) {
+  if (tsin_hand.ph_key_sz==4) {
     u_int32_t *pharr4 = (u_int32_t *)in;
     in = &pharr4[idx];
   } else {
@@ -47,16 +47,16 @@ void cp_ph_key(void *in, int idx, void *dest)
     in = &pharr8[idx];
   }
 
-  memcpy(dest, in, ph_key_sz);
+  memcpy(dest, in, tsin_hand.ph_key_sz);
 }
 
 void *get_ph_key_ptr(void *in, int idx)
 {
-  if (ph_key_sz==2) {
+  if (tsin_hand.ph_key_sz==2) {
     phokey_t *pharr = (phokey_t *)in;
     return &pharr[idx];
   } else
-  if (ph_key_sz==4) {
+  if (tsin_hand.ph_key_sz==4) {
     u_int32_t *pharr4 = (u_int32_t *)in;
     return &pharr4[idx];
   } else {
@@ -80,11 +80,11 @@ int lookup_gtab_key(char *ch, void *out)
       continue;
 
     u_int64_t key = CONVT2(tinmd, i);
-    if (ph_key_sz==4) {
+    if (tsin_hand.ph_key_sz==4) {
       u_int32_t key32 = (u_int32_t)key;
-      memcpy(get_ph_key_ptr(out, outN), &key32, ph_key_sz);
+      memcpy(get_ph_key_ptr(out, outN), &key32, tsin_hand.ph_key_sz);
     } else
-      memcpy(get_ph_key_ptr(out, outN), &key, ph_key_sz);
+      memcpy(get_ph_key_ptr(out, outN), &key, tsin_hand.ph_key_sz);
     outN++;
   }
 
@@ -111,7 +111,7 @@ void load_ts_phrase()
   free(phrase); phrase = NULL;
   phraseN = 0;
 
-  dbg("fname %s\n", current_tsin_fname);
+  dbg("fname %s\n", tsin_hand.tsin_fname);
 
   int ofs = is_gtab ? sizeof(TSIN_GTAB_HEAD):0;
   fseek(fp, ofs, SEEK_SET);
@@ -124,13 +124,14 @@ void load_ts_phrase()
 
     clen = 0;
 
-    fread(&clen,1,1,fp);
+	int rn;
+    rn = fread(&clen,1,1,fp);
 
     if (clen > MAX_PHRASE_LEN)
       p_err("bad tsin db clen %d > MAX_PHRASE_LEN %d\n", clen, MAX_PHRASE_LEN);
 
-    fread(&usecount,sizeof(usecount_t), 1, fp);
-    fread(phbuf, ph_key_sz, clen, fp);
+    rn = fread(&usecount,sizeof(usecount_t), 1, fp);
+    rn = fread(phbuf, tsin_hand.ph_key_sz, clen, fp);
     int tlen = 0;
 
     for(i=0; i < clen; i++) {
@@ -138,7 +139,7 @@ void load_ts_phrase()
       if (n<=0)
         goto stop;
       int len=utf8_sz(&chbuf[tlen]);
-      fread(&chbuf[tlen+1], 1, len-1, fp);
+      rn = fread(&chbuf[tlen+1], 1, len-1, fp);
       tlen+=len;
     }
 
@@ -275,7 +276,7 @@ static void cb_button_ok(GtkButton *button, gpointer user_data)
     cp_ph_key(bigpho[i].phokeys, idx, dest);
   }
 
-  save_phrase_to_db(pharr8, current_str, bigphoN, 0);
+  save_phrase_to_db(&tsin_hand, pharr8, current_str, bigphoN, 0);
 
   destroy_pho_sel_area();
 
@@ -313,7 +314,7 @@ GtkWidget *create_pho_sel_area()
       if (is_gtab) {
         int tlen;
         u_int64_t key64;
-        if (ph_key_sz == 4) {
+        if (tsin_hand.ph_key_sz == 4) {
           u_int32_t key32;
           cp_ph_key(bigpho[i].phokeys,j, &key32);
           key64 = key32;
@@ -379,7 +380,7 @@ static void cb_button_add(GtkButton *button, gpointer user_data)
   while (*p) {
     char_pho *pbigpho = &bigpho[bigphoN++];
 
-    if (ph_key_sz==2) {
+    if (tsin_hand.ph_key_sz==2) {
       pbigpho->phokeysN = utf8_pho_keys(p, (phokey_t*)pbigpho->phokeys);
     } else {
       pbigpho->phokeysN = lookup_gtab_key(p, pbigpho->phokeys);
@@ -444,7 +445,7 @@ int main(int argc, char **argv)
     dbg("is tsin\n");
     pho_load();
     load_tsin_db();
-    ph_key_sz = 2;
+    tsin_hand.ph_key_sz = 2;
   } else
   if (pinmd->filename) {
     dbg("gtab filename %s\n", pinmd->filename);
@@ -456,7 +457,7 @@ int main(int argc, char **argv)
     p_err("Your default input method %s doesn't use phrase database",
       pinmd->cname);
 
-  dbg("ph_key_sz: %d\n", ph_key_sz);
+  dbg("ph_key_sz: %d\n", tsin_hand.ph_key_sz);
 
 #if UNIX
   dpy = GDK_DISPLAY();

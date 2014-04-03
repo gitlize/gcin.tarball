@@ -12,7 +12,7 @@ DATA=pho.tab2 tsin32.idx NewCJ3.gtab \
      greek.gtab cj-punc.gtab latin-letters.gtab tsin-1.src pin-juyin.xlt \
      t2s.dat s2t.dat cj543.gtab s-tsin32 s-tsin32.idx s-pho.tab2 s-pho-huge.tab2 \
      pinyin-no-tone.kbm simplex-punc.gtab hangul.gtab ar33.gtab array-symbols.gtab \
-     vocabulary.gtab vims.gtab german.gtab array10a.gtab
+     vims.gtab german.gtab array10a.gtab en-american en-american.idx pho-char.gtab
 
 DATAKEEP=symbol-table gtab.list phrase.table phrase-ctrl.table hangul-phrase.txt
 
@@ -22,11 +22,13 @@ tsin32:	tsin.src ../tsa2d32
 	export LD_LIBRARY_PATH=../im-client;../tsa2d32 $<
 tsin32.idx:	tsin32
 
-
 s-tsin32:	s-tsin.src ../tsa2d32
 	export LD_LIBRARY_PATH=../im-client;../tsa2d32 $< $@
 s-tsin32.idx:	s-tsin32
 
+en-american:	en-american.src ../tsa2d32
+	export LD_LIBRARY_PATH=../im-client;../tsa2d32 $<
+en-american.idx:	en-american
 
 pho.tab2:	 pho.tab2.src ../phoa2d
 	export LD_LIBRARY_PATH=../im-client;../phoa2d $<

@@ -5,7 +5,11 @@ char *sys_err_strA();
 
 #if DEBUG
 void __gcin_dbg_(char *fmt,...);
+#if GCIN_MODULE
+#define dbg(...) gmf.mf___gcin_dbg_(__VA_ARGS__)
+#else
 #define dbg(...) __gcin_dbg_(__VA_ARGS__)
+#endif
 #else
 #define dbg(...) do {} while (0)
 #endif

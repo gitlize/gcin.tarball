@@ -15,15 +15,28 @@ void load_pin_juyin();
 phokey_t pinyin2phokey(char *s);
 
 static char *bf;
-static int bfN_a = 0;
+static int bfN_a = 0, ofs=0;
 static gboolean b_pinyin;
 
 int *phidx, *sidx, phcount;
 int bfsize, phidxsize;
 u_char *sf;
-gboolean is_gtab, gtabkey64;
+gboolean is_gtab, is_en_word, gtabkey64;
 int phsz, hash_shift;
 int (*key_cmp)(char *a, char *b, char len);
+
+
+int key_cmp8(char *a, char *b, char len)
+{
+#if 0
+  dbg("len %d\n", len);
+  utf8_putcharn(a, len);  dbg(" ");
+  utf8_putcharn(b, len);
+  dbg("\n");
+#endif
+  return memcmp(a, b, len);
+}
+
 
 int key_cmp16(char *a, char *b, char len)
 {
@@ -75,13 +88,13 @@ static int qcmp(const void *a, const void *b)
 {
   int idxa=*((int *)a);  char *pa = (char *)&bf[idxa];
   int idxb=*((int *)b);  char *pb = (char *)&bf[idxb];
-  u_char lena,lenb, len;
+  char lena,lenb, len;
   usecount_t usecounta, usecountb;
 
-  lena=*(pa++); memcpy(&usecounta, pa, sizeof(usecount_t)); pa+= sizeof(usecount_t);
+  lena=*(pa++); if (lena < 0) lena = -lena; memcpy(&usecounta, pa, sizeof(usecount_t)); pa+= sizeof(usecount_t);
   char *ka = pa;
   pa += lena * phsz;
-  lenb=*(pb++); memcpy(&usecountb, pb, sizeof(usecount_t)); pb+= sizeof(usecount_t);
+  lenb=*(pb++); if (lenb < 0) lenb = -lenb; memcpy(&usecountb, pb, sizeof(usecount_t)); pb+= sizeof(usecount_t);
   char *kb = pb;
   pb += lenb * phsz;
   len=Min(lena,lenb);
@@ -95,6 +108,7 @@ static int qcmp(const void *a, const void *b)
   if (lena < lenb)
     return -1;
 
+  if (!is_en_word) {
   int tlena = utf8_tlen(pa, lena);
   int tlenb = utf8_tlen(pb, lenb);
 
@@ -105,6 +119,7 @@ static int qcmp(const void *a, const void *b)
 
   if ((d=memcmp(pa, pb, tlena)))
     return d;
+  }
 
   // large first, so large one will be kept after delete
   return usecountb - usecounta;
@@ -114,12 +129,12 @@ static int qcmp_eq(const void *a, const void *b)
 {
   int idxa=*((int *)a);  char *pa = (char *)&bf[idxa];
   int idxb=*((int *)b);  char *pb = (char *)&bf[idxb];
-  u_char lena,lenb, len;
+  char lena,lenb, len;
 
-  lena=*(pa++);  pa+= sizeof(usecount_t);
+  lena=*(pa++); if (lena < 0) lena = -lena; pa+= sizeof(usecount_t);
   char *ka = pa;
   pa += lena * phsz;
-  lenb=*(pb++);  pb+= sizeof(usecount_t);
+  lenb=*(pb++); if (lenb < 0) lenb = -lenb; pb+= sizeof(usecount_t);
   char *kb = pb;
   pb += lenb * phsz;
   len=Min(lena,lenb);
@@ -132,6 +147,9 @@ static int qcmp_eq(const void *a, const void *b)
     return 1;
   if (lena < lenb)
     return -1;
+
+  if (is_en_word)
+	return 0;
 
   int tlena = utf8_tlen(pa, lena);
   int tlenb = utf8_tlen(pb, lenb);
@@ -148,11 +166,11 @@ static int qcmp_usecount(const void *a, const void *b)
 {
   int idxa=*((int *)a);  char *pa = (char *)&sf[idxa];
   int idxb=*((int *)b);  char *pb = (char *)&sf[idxb];
-  u_char lena,lenb, len;
+  char lena,lenb, len;
   usecount_t usecounta, usecountb;
 
-  lena=*(pa++); memcpy(&usecounta, pa, sizeof(usecount_t)); pa+= sizeof(usecount_t);
-  lenb=*(pb++); memcpy(&usecountb, pb, sizeof(usecount_t)); pb+= sizeof(usecount_t);
+  lena=*(pa++); if (lena < 0) lena = -lena; memcpy(&usecounta, pa, sizeof(usecount_t)); pa+= sizeof(usecount_t);
+  lenb=*(pb++); if (lenb < 0) lenb = -lenb; memcpy(&usecountb, pb, sizeof(usecount_t)); pb+= sizeof(usecount_t);
   len=Min(lena,lenb);
 
   int d = (*key_cmp)(pa, pb, len);
@@ -166,6 +184,7 @@ static int qcmp_usecount(const void *a, const void *b)
   if (lena < lenb)
     return -1;
 
+  if (!is_en_word) {
   // now lena == lenb
   int tlena = utf8_tlen(pa, lena);
   int tlenb = utf8_tlen(pb, lenb);
@@ -174,6 +193,7 @@ static int qcmp_usecount(const void *a, const void *b)
     return 1;
   if (tlena < tlenb)
     return -1;
+  }
 
   return usecountb - usecounta;
 }
@@ -185,20 +205,80 @@ void send_gcin_message(Display *dpy, char *s);
 
 void init_TableDir();
 
+gboolean en_need_str(u_char *s)
+{
+  int len = strlen((char *)s);
+  // 0,1 will be varied
+  if (len < 3)
+    return FALSE;
+
+  gboolean has_l = FALSE, has_u = FALSE;
+  int i;
+  for(i=2;i<len;i++) {
+	if (s[i] >= 127)
+	  continue;
+
+    if (islower(s[i]))
+      has_l = TRUE;
+    else if (isupper(s[i]))
+      has_u = TRUE;
+  }
+
+  return has_l && has_u;
+}
+
+void add_one_line(char clen, usecount_t usecount, int chbufN, char *cphbuf, u_char *chbuf, gboolean b_en_need_str)
+{
+    if (phcount >= phidxsize) {
+      phidxsize+=1024;
+      if (!(phidx=(int *)realloc(phidx, phidxsize*sizeof(phidx[0])))) {
+        puts("realloc err");
+        exit(1);
+      }
+    }
+
+    phidx[phcount++]=ofs;
+
+//	dbg("phcount:%d  clen:%d\n", phcount, clen);
+
+    int new_bfN = ofs + 1 + sizeof(usecount_t)+ phsz * clen + chbufN;
+
+    if (bfsize < new_bfN) {
+      bfsize = new_bfN + 1024*1024;
+      bf = (char *)realloc(bf, bfsize);
+    }
+
+//    dbg("clen:%d\n", clen);
+
+	char oclen = b_en_need_str ? -clen:clen;
+    memcpy(&bf[ofs++], &oclen,1);
+
+    memcpy(&bf[ofs],&usecount, sizeof(usecount_t)); ofs+=sizeof(usecount_t);
+
+	memcpy(&bf[ofs], cphbuf, clen * phsz);
+	ofs+=clen * phsz;
+
+    memcpy(&bf[ofs], chbuf, chbufN);
+    ofs+=chbufN;
+}
+
+
 int main(int argc, char **argv)
 {
   FILE *fp,*fw;
   char s[1024];
   u_char chbuf[MAX_PHRASE_LEN * CH_SZ];
+  char phbuf8[128];
   u_short phbuf[80];
   u_int phbuf32[80];
   u_int64_t phbuf64[80];
-  int i,j,idx,len, ofs;
+  int i,j,idx,len;
   u_short kk;
   u_int64_t kk64;
   int hashidx[TSIN_HASH_N];
-  u_char clen;
+  char clen;
   int lineCnt=0;
+  int max_len = 0;
   gboolean reload = getenv("GCIN_NO_RELOAD")==NULL;
 
   if (reload) {
@@ -219,8 +299,7 @@ int main(int argc, char **argv)
   init_TableDir();
 
   if ((fp=fopen(argv[1], "rb"))==NULL) {
-     printf("Cannot open %s\n", argv[1]);
-     exit(-1);
+     p_err("Cannot open %s\n", argv[1]);
   }
 
   skip_utf8_sigature(fp);
@@ -261,7 +340,17 @@ int main(int argc, char **argv)
 
     if (maxkey * keybits > 32)
       gtabkey64 = TRUE;
-  } else {
+  } else
+  if (strstr(s, TSIN_EN_WORD_KEY)) {
+    if (argc==3)
+      outfile = argv[2];
+    else
+      outfile = "en-american";
+
+    is_en_word = TRUE;
+	dbg("is_en_word = TRUE\n");
+    lineCnt++;
+  } else  {
     if (argc==3)
       outfile = argv[2];
     else
@@ -269,8 +358,6 @@ int main(int argc, char **argv)
 
     fseek(fp, fofs, SEEK_SET);
   }
-
-
 
   INMD inmd, *cur_inmd = &inmd;
 
@@ -292,6 +379,10 @@ int main(int argc, char **argv)
     }
     cur_inmd->last_k_bitn = (((cur_inmd->key64 ? 64:32) / cur_inmd->keybits) - 1) * cur_inmd->keybits;
     dbg("cur_inmd->last_k_bitn %d\n", cur_inmd->last_k_bitn);
+  } else if (is_en_word) {
+	cphbuf = (char *)phbuf8;
+	phsz = 1;
+    key_cmp = key_cmp8;
   } else {
       cphbuf = (char *)phbuf;
       phsz = 2;
@@ -312,33 +403,43 @@ int main(int argc, char **argv)
     if (s[0]=='#')
       continue;
 
-    if (strstr(s, TSIN_GTAB_KEY))
+    if (strstr(s, TSIN_GTAB_KEY) || strstr(s, TSIN_EN_WORD_KEY))
       continue;
 
     if (s[len-1]=='\n')
       s[--len]=0;
 
-    if (len==0)
+    if (len==0) {
+      dbg("len==0\n");
       continue;
+    }
 
     i=0;
     int chbufN=0;
     int charN = 0;
-    while (s[i]!=' ' && i<len) {
-      int len = utf8_sz((char *)&s[i]);
 
-      memcpy(&chbuf[chbufN], &s[i], len);
+    if (!is_en_word) {
+      while (s[i]!=' ' && i<len) {
+        int len = utf8_sz((char *)&s[i]);
 
-      i+=len;
-      chbufN+=len;
-      charN++;
-    }
+        memcpy(&chbuf[chbufN], &s[i], len);
 
-    while (i < len && s[i]==' ' || s[i]=='\t')
+        i+=len;
+        chbufN+=len;
+        charN++;
+      }
+	}
+
+	gboolean b_en_need_str = FALSE;
+	if (is_en_word) {
+      b_en_need_str =  en_need_str((u_char *)s);
+	}
+
+    while (i < len && (s[i]==' ' || s[i]=='\t'))
       i++;
 
     int phbufN=0;
-    while (i<len && phbufN < charN && s[i]!=' ') {
+    while (i<len && (phbufN < charN || is_en_word) && (s[i]!=' ' || is_en_word) && s[i]!='\t') {
       if (is_gtab) {
         kk64=0;
         int idx=0;
@@ -353,7 +454,10 @@ int main(int argc, char **argv)
           phbuf64[phbufN++]=kk64;
         else
           phbuf32[phbufN++]=(u_int)kk64;
-      } else {
+      } else
+	  if (is_en_word) {
+		phbuf8[phbufN++]=s[i];
+	  } else {
         kk=0;
         if (b_pinyin) {
           kk = pinyin2phokey(s+i);
@@ -376,13 +480,13 @@ int main(int argc, char **argv)
       i++;
     }
 
-    if (phbufN!=charN) {
+    if (!is_en_word && phbufN!=charN) {
       p_err("%s   Line %d problem in phbufN!=chbufN %d != %d\n", s, lineCnt, phbufN, chbufN);
     }
 
     clen=phbufN;
 
-    while (i<len && s[i]==' ')
+    while (i<len && (s[i]==' ' || s[i]=='\t'))
       i++;
 
     if (i==len)
@@ -392,6 +496,7 @@ int main(int argc, char **argv)
 
     /*      printf("len:%d\n", clen); */
 
+#if 0
     if (phcount >= phidxsize) {
       phidxsize+=1024;
       if (!(phidx=(int *)realloc(phidx,phidxsize*4))) {
@@ -402,6 +507,8 @@ int main(int argc, char **argv)
 
     phidx[phcount++]=ofs;
 
+//	dbg("phcount:%d  clen:%d\n", phcount, clen);
+
     int new_bfN = ofs + 1 + sizeof(usecount_t)+ phsz * clen + chbufN;
 
     if (bfsize < new_bfN) {
@@ -409,14 +516,28 @@ int main(int argc, char **argv)
       bf = (char *)realloc(bf, bfsize);
     }
 
+//    dbg("clen:%d\n", clen);
+
     memcpy(&bf[ofs++],&clen,1);
     memcpy(&bf[ofs],&usecount, sizeof(usecount_t)); ofs+=sizeof(usecount_t);
 
-    memcpy(&bf[ofs], cphbuf, clen * phsz);
-    ofs+=clen * phsz;
+	memcpy(&bf[ofs], cphbuf, clen * phsz);
+	ofs+=clen * phsz;
 
     memcpy(&bf[ofs], chbuf, chbufN);
     ofs+=chbufN;
+#else
+	add_one_line(clen, usecount, chbufN, cphbuf, chbuf, FALSE);
+#if 1
+	if (b_en_need_str) {
+	  memcpy(chbuf, cphbuf, clen);
+	  int i;
+	  for(i=0;i<clen;i++)
+		cphbuf[i]=tolower(cphbuf[i]);
+	  add_one_line(clen, usecount, clen, cphbuf, chbuf, TRUE);
+	}
+#endif
+#endif
   }
   fclose(fp);
 
@@ -424,18 +545,20 @@ int main(int argc, char **argv)
 
   puts("Sorting ....");
 
-  qsort(phidx,phcount, sizeof(phidx[0]),qcmp);
+  qsort(phidx,phcount, sizeof(phidx[0]), qcmp);
 
   if (!(sf=(u_char *)malloc(bfsize))) {
     puts("malloc err");
     exit(1);
   }
 
-  if (!(sidx=(int *)malloc(phidxsize*sizeof(int)))) {
+  if (!(sidx=(int *)malloc(phcount*sizeof(sidx[0])))) {
     puts("malloc err");
     exit(1);
   }
 
+  dbg("phcount %d\n", phcount);
+  printf("before delete duplicate N:%d\n", phcount);
 
   // delete duplicate
   ofs=0;
@@ -444,11 +567,23 @@ int main(int argc, char **argv)
     idx = phidx[i];
     sidx[j]=ofs;
     len=bf[idx];
-    int tlen = utf8_tlen(&bf[idx + 1 + sizeof(usecount_t) + phsz*len], len);
-    clen= phsz*len + tlen + 1 + sizeof(usecount_t);
+    gboolean en_has_str = FALSE;
+    if (len < 0) {
+      len = -len;
+      en_has_str = TRUE;
+    }
+    int tlen = (is_en_word && !en_has_str)?0:utf8_tlen(&bf[idx + 1 + sizeof(usecount_t) + phsz*len], len);
+//    printf("tlen %d phsz:%d len:%d\n", tlen, phsz, len);
+    int clen= phsz*len + tlen + 1 + sizeof(usecount_t);
 
-    if (i && !qcmp_eq(&phidx[i-1], &phidx[i]))
+//    printf("clen %d\n", clen);
+
+    if (i && !qcmp_eq(&phidx[i-1], &phidx[i])) {
       continue;
+    }
+
+    if (max_len < len)
+      max_len = len;
 
     memcpy(&sf[ofs], &bf[idx], clen);
     j++;
@@ -456,12 +591,16 @@ int main(int argc, char **argv)
   }
 
   phcount=j;
+  dbg("after delete duplicate N:%d  max_len:%d\n", phcount, max_len);
+  printf("after delete duplicate N:%d  max_len:%d\n", phcount, max_len);
+
 #if 1
   puts("Sorting by usecount ....");
-  qsort(sidx, phcount, 4, qcmp_usecount);
+  qsort(sidx, phcount, sizeof(sidx[0]), qcmp_usecount);
+  dbg("after qcmp_usecount\n");
 #endif
 
-  for(i=0;i<256;i++)
+  for(i=0;i<TSIN_HASH_N;i++)
     hashidx[i]=-1;
 
   for(i=0;i<phcount;i++) {
@@ -469,7 +608,10 @@ int main(int argc, char **argv)
     idx+= 1 + sizeof(usecount_t);
     int v;
 
-    if (phsz==2) {
+	if (phsz==1) {
+	  v = 0;
+	  memcpy(&v, &sf[idx], phsz);
+	} else if (phsz==2) {
       phokey_t kk;
       memcpy(&kk, &sf[idx], phsz);
       v = kk >> TSIN_HASH_SHIFT;
@@ -491,6 +633,8 @@ int main(int argc, char **argv)
       hashidx[v]=i;
     }
   }
+  dbg("-------------------\n");
+
 
   if (hashidx[0]==-1)
     hashidx[0]=0;
@@ -511,13 +655,18 @@ int main(int argc, char **argv)
     p_err("create err %s", outfile);
   }
 
+
+  TSIN_GTAB_HEAD head;
+  bzero(&head, sizeof(head));
   if (is_gtab) {
-    TSIN_GTAB_HEAD head;
-    bzero(&head, sizeof(head));
     strcpy(head.signature, TSIN_GTAB_KEY);
     head.keybits = keybits;
     head.maxkey = maxkey;
     strcpy(head.keymap, keymap);
+    fwrite(&head, sizeof(head), 1, fw);
+  } else
+  if (is_en_word) {
+    strcpy(head.signature, TSIN_EN_WORD_KEY);
     fwrite(&head, sizeof(head), 1, fw);
   }
 

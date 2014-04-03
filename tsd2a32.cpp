@@ -18,7 +18,7 @@ gboolean is_pinyin_kbm();
 char *sys_err_strA();
 void init_TableDir();
 extern char *tsin32_f;
-gboolean load_tsin_db_ex(TSIN_HANDLE *ptsin_hand, char *infname, gboolean is_gtab_i, gboolean read_only, gboolean use_idx);
+gboolean load_tsin_db_ex(TSIN_HANDLE *ptsin_hand, char *infname, gboolean read_only, gboolean use_idx);
 
 void swap_ptr(char **a, char **b)
 {
@@ -49,7 +49,6 @@ int main(int argc, char **argv)
   char fname_tmp[128];
   char ts_user_fname[128];
   gboolean no_pho = FALSE;
-
 
   gtk_init(&argc, &argv);
 
@@ -92,7 +91,6 @@ int main(int argc, char **argv)
   for(i=0;i<fnames_minusN;i++)
     dbg(" %s\n", fnames_minus[i]);
 
-
   TSIN_HANDLE tsin_hands[MAX_MINUS_FILES];
 
   bzero(&tsin_hands, sizeof(tsin_hands));
@@ -107,10 +105,10 @@ int main(int argc, char **argv)
     int nfnames_minusN=0;
     for(i=0;i<fnames_minusN;i++) {
       dbg("fnames_minus %d] %s\n", i, fnames_minus[i]);
-      
+
       TSIN_HANDLE t;
       bzero(&t, sizeof(t));
-      if (load_tsin_db_ex(&t, fnames_minus[i], FALSE, TRUE, TRUE))
+      if (load_tsin_db_ex(&t, fnames_minus[i], TRUE, TRUE))
     	  tsin_hands[nfnames_minusN++] = t;
     }
     fnames_minusN = nfnames_minusN;
@@ -158,7 +156,9 @@ int main(int argc, char **argv)
   int phsz = 2;
 
   fread(&head, sizeof(head), 1, fp);
-  if (!strcmp(head.signature, TSIN_GTAB_KEY)) {
+  if (!strcmp(head.signature, TSIN_EN_WORD_KEY)) {
+    phsz = 1;
+  } else if (!strcmp(head.signature, TSIN_GTAB_KEY)) {
     if (head.maxkey * head.keybits > 32)
       phsz = 8;
     else
@@ -166,62 +166,93 @@ int main(int argc, char **argv)
   } else
     rewind(fp);
 
+  if (phsz==1) {
+	fprintf(fp_out, TSIN_EN_WORD_KEY"\n");
+  } else
   if (phsz > 2) {
     fprintf(stderr, "phsz %d keybits:%d\n", phsz, head.keybits);
     fprintf(stderr, "keymap '%s'\n", head.keymap);
     fprintf(fp_out,TSIN_GTAB_KEY" %d %d %s\n", head.keybits, head.maxkey, head.keymap+1);
   }
 
-  while (!feof(fp)) {
-    phokey_t phbuf[MAX_PHRASE_LEN];
-    u_int phbuf32[MAX_PHRASE_LEN];
-    u_int64_t phbuf64[MAX_PHRASE_LEN];
-    gboolean is_deleted = FALSE;
+  u_int64_t phbuf64[MAX_PHRASE_LEN];
+  char *phbuf8 = (char *)phbuf64;
+  phokey_t *phbuf = (phokey_t *)phbuf64;
+  u_int *phbuf32 = (u_int *)phbuf64;
 
-    fread(&clen,1,1,fp);
+  while (!feof(fp)) {
+    gboolean is_deleted = FALSE;
+	clen = 0;
+    if (fread(&clen,1,1,fp) <= 0)
+      break;
+
+    if (!clen) {
+//	  dbg("!clen\n");
+      break;
+	}
+    gboolean en_has_str = FALSE;
+
     if (clen < 0) {
+//	  dbg("clen < 0 %d\n", clen);
       clen = - clen;
-      is_deleted = TRUE;
+      en_has_str = TRUE;
     }
 
-    fread(&usecount, sizeof(usecount_t), 1,fp);
+    fread(&usecount, sizeof(usecount_t), 1, fp);
     if (!pr_usecount)
       usecount = 0;
 
-    if (phsz==2)
-      fread(phbuf, sizeof(phokey_t), clen, fp);
-    else
-    if (phsz==4)
-      fread(phbuf32, 4, clen, fp);
-    else
-    if (phsz==8)
-      fread(phbuf64, 8, clen, fp);
+    if (usecount < 0) {
+	  dbg("is deleted clen:%d usecount:%d\n", clen, usecount);
+      is_deleted = TRUE;
+    }
 
+    phbuf64[0]=0;
+    fread(phbuf64, phsz, clen, fp);
+
+    if (phsz==1) {
+	  phbuf8[clen]=0;
+//	  dbg("%s %d\n", phbuf8, usecount);
+	}
 
     char tt[MAX_PHRASE_STR_LEN];
-    int ttlen=0;
-    tt[0]=0;
-    for(i=0;i<clen;i++) {
-      char ch[CH_SZ];
 
-      int n = fread(ch, 1, 1, fp);
-      if (n<=0)
-        goto stop;
+	tt[0]=0;
+	if (phsz > 1 || en_has_str) {
+      int ttlen=0;
+      tt[0]=0;
 
-      int len=utf8_sz(ch);
+      for(i=0;i<clen;i++) {
+        char ch[CH_SZ];
 
-      fread(&ch[1], 1, len-1, fp);
+        int n = fread(ch, 1, 1, fp);
+        if (n<=0)
+          goto stop;
 
-      memcpy(tt+ttlen, ch, len);
-      ttlen+=len;
-    }
-    tt[ttlen]=0;
+        int len=utf8_sz(ch);
 
-    if (!tt[0])
+        fread(&ch[1], 1, len-1, fp);
+
+        memcpy(tt+ttlen, ch, len);
+        ttlen+=len;
+      }
+
+      tt[ttlen]=0;
+      if (!tt[0])
+        continue;
+	}
+
+    if (is_deleted) {
+	  if (phsz==1) {
+	    dbg("is_deleted skip %s\n", phbuf8);
+	  }
       continue;
+	}
 
-    if (is_deleted)
-      continue;
+	if (en_has_str) {
+//	  dbg("en_has_str '%s'\n", tt);
+	  continue;
+	}
 
     gboolean minus_found = FALSE;
     if (fnames_minusN) {
@@ -239,11 +270,9 @@ int main(int argc, char **argv)
             load_tsin_entry_ex(&tsin_hands[f], k, &klen, &kuse, ph_k, (unsigned char *)str_k);
             if (klen != clen)
               continue;
-            if (memcmp(phbuf, ph_k, sizeof(phokey_t) * clen))
+            if (memcmp(phbuf, ph_k, phsz * clen))
               continue;
-            if (memcmp(phbuf, ph_k, sizeof(phokey_t) * clen))
-              continue;
-            if (!utf8_str_eq(str_k, str_k, clen))
+            if (phsz > 1 && !utf8_str_eq(str_k, tt, clen))
               continue;
 
             minus_found = TRUE;
@@ -254,41 +283,46 @@ int main(int argc, char **argv)
     }
 
 fou:
-    if (minus_found)
+    if (minus_found) {
+//	  dbg("minus_found %s\n", tt);
       continue;
-
+    }
 
     if (no_pho) {
-      fprintf(fp_out, "%s\n", tt);
+      fprintf(fp_out, "%s\n", phbuf8);
       continue;
     }
 
-    fprintf(fp_out, "%s ", tt);
-    for(i=0;i<clen;i++) {
-      if (phsz==2) {
-        if (b_pinyin) {
-          char *t = phokey2pinyin(phbuf[i]);
+	if (phsz==1) {
+	  fprintf(fp_out, "%s", phbuf8);
+	} else {
+      fprintf(fp_out, "%s ", tt);
+      for(i=0;i<clen;i++) {
+        if (phsz==2) {
+          if (b_pinyin) {
+            char *t = phokey2pinyin(phbuf[i]);
 //          dbg("z %s\n", t);
-          fprintf(fp_out, "%s", t);
-        } else
-          prph2(fp_out, phbuf[i]);
-      } else {
-        u_int64_t k;
-        if (phsz==4)
-          k = phbuf32[i];
-        else
-          k = phbuf64[i];
+            fprintf(fp_out, "%s", t);
+          } else
+            prph2(fp_out, phbuf[i]);
+        } else {
+          u_int64_t k;
+          if (phsz==4)
+            k = phbuf32[i];
+          else
+            k = phbuf64[i];
 
-        char tkey[16];
-        get_keymap_str(k, head.keymap, head.keybits, tkey);
-        fprintf(fp_out, "%s", tkey);
+          char tkey[512];
+          get_keymap_str(k, head.keymap, head.keybits, tkey);
+          fprintf(fp_out, "%s", tkey);
+        }
+
+        if (i!=clen-1)
+          fprintf(fp_out, " ");
       }
+	}
 
-      if (i!=clen-1)
-        fprintf(fp_out, " ");
-    }
-
-    fprintf(fp_out, " %d\n", usecount);
+	fprintf(fp_out, phsz==1?"\t%d\n":" %d\n", usecount);
   }
 
 stop:

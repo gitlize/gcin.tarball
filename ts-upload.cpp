@@ -85,15 +85,65 @@ int connect_ts_share_svr()
 }
 
 extern char contributed_file_src[];
+extern gboolean b_en;
+char *get_tag();
+int get_key_sz();
 
 void write_tsin_src(FILE *fw, char len, phokey_t *pho, char *s)
 {
   fprintf(fw, "%s", s);
-  int j;
-  for(j=0;j<len; j++)
-    fprintf(fw, " %s", phokey_to_str2(pho[j], TRUE));
-  fprintf(fw, " 0\n");
+  if (pho) {
+    int j;
+    for(j=0;j<len; j++)
+      fprintf(fw, " %s", phokey_to_str2(pho[j], TRUE));
+  }
+
+  if (b_en)
+	fprintf(fw, "\t0\n");
+  else
+	fprintf(fw, " 0\n");
 }
+
+
+void send_format(SOCKET sock)
+{
+  REQ_FORMAT format;
+  bzero(&format, sizeof(format));
+  format.key_sz = get_key_sz();
+#if UNIX
+  sprintf(format.os_str, "Linux");
+#else
+  OSVERSIONINFO osvi;
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  GetVersionEx(&osvi);
+
+  sprintf(format.os_str, "Win32 %d.%d", osvi.dwMajorVersion, osvi.dwMinorVersion);
+#endif
+  write(sock, (char *)&format, sizeof(format));
+}
+
+
+FILE *en_file_head(char *fname)
+{
+  FILE *fp;
+  gboolean new_head = TRUE;
+
+  if ((fp=fopen(fname, "r")) != NULL) {
+    fclose(fp);
+    new_head = FALSE;
+  }
+
+  if ((fp=fopen(fname, "a"))==NULL) {
+    p_err("cannot write to to %s", fname);
+  }
+
+  if (new_head)
+   fprintf(fp, TSIN_EN_WORD_KEY"\n");
+
+  return fp;
+}
+
 
 void ts_upload()
 {
@@ -102,18 +152,29 @@ void ts_upload()
 
   REQ_HEAD head;
   bzero(&head, sizeof(head));
+#if 0
   head.cmd = REQ_CONTRIBUTE;
+#else
+  head.cmd = REQ_CONTRIBUTE2;
+#endif
   write(sock, (char *)&head, sizeof(head));
 
   REQ_CONTRIBUTE_S req;
   bzero(&req, sizeof(req));
-  strcpy(req.tag, tsin32_f);
+  strcpy(req.tag, get_tag());
   write(sock, (char *)&req, sizeof(req));
+
+  send_format(sock);
+
+  int key_sz = get_key_sz();
 
   dbg("tsN:%d\n", tsN);
 
   FILE *fw;
 
+  if (b_en)
+    fw = en_file_head(contributed_file_src);
+  else
   if ((fw=fopen(contributed_file_src, "a"))==NULL)
     p_err("cannot write %s", contributed_file_src);
 
@@ -126,11 +187,18 @@ void ts_upload()
     slen = strlen(s);
 
     write(sock, &len, sizeof(len));
-    write(sock, (char *)pho, len * sizeof(phokey_t));
-    write(sock, &slen, sizeof(slen));
-    write(sock, s, slen);
+	write(sock, (char *)pho, len * key_sz);
+	if (!b_en) {
+      write(sock, &slen, sizeof(slen));
+      write(sock, s, slen);
+	}
 
-    write_tsin_src(fw, len, pho, s);
+	if (b_en) {
+		char *p = (char *)pho;
+		p[len]=0;
+		write_tsin_src(fw, len, NULL, p);
+	} else
+		write_tsin_src(fw, len, pho, s);
   }
 
   fclose(fw);

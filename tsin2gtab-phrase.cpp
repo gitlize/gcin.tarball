@@ -295,7 +295,7 @@ int main(int argc, char **argv)
       kstr[0]=0;
 
       for(i=0;i<clen;i++) {
-         char tkey[16];
+         char tkey[512];
          u_int64_t k=0;
 
          if (key64) {

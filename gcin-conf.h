@@ -30,7 +30,7 @@
 #define GCIN_SINGLE_STATE "gcin-single-state"
 #define GCIN_PUNC_AUTO_SEND "gcin-punc-auto-send"
 #define GCIN_STATUS_WIN "gcin-status-win"
-#define GCIN_BUFFER_SELECT_CHAR_AUTO_LEFT "gcin-buffer-select-char-auto-left"
+#define GCIN_BUFFER_SELECT_CHAR_AUTO_RIGHT "gcin-buffer-select-char-auto-right"
 #define GCIN_CTRL_PUNC "gcin-ctrl-punc"
 
 #define GCIN_IM_TOGGLE_KEYS "gcin-im-toggle-keys"
@@ -71,6 +71,7 @@
 #define GTAB_IN_AREA_BUTTON "gtab-in-area-button"
 #define GTAB_AUTO_SPACE "gtab-auto-space"
 
+#define EN_PRE_SELECT "en-pre-select"
 
 #define TSIN_PHRASE_PRE_SELECT "tsin-phrase-pre-select"
 #define TSIN_CHINESE_ENGLISH_TOGGLE_KEY "tsin-chinese-english-toggle_key"
@@ -114,8 +115,8 @@ extern int gcin_font_size, gcin_font_size_tsin_presel, gcin_font_size_symbol,
            gcin_capslock_lower, pho_hide_row2, pho_in_row1,
            gcin_eng_phrase_enabled, gtab_que_wild_card, gcin_win_sym_click_close,
            gcin_bell_volume, gcin_sound_play_overlap, gcin_enable_ctrl_alt_switch, gcin_on_the_spot_key,
-           gcin_status_win, gcin_escape_clear_edit_buffer, gcin_buffer_select_char_auto_left,
-           tsin_shift_punc,gcin_ctrl_punc;
+           gcin_status_win, gcin_escape_clear_edit_buffer, gcin_buffer_select_char_auto_right,
+           tsin_shift_punc,gcin_ctrl_punc, en_pre_select;
 
 extern int default_input_method;
 extern int left_right_button_tips;

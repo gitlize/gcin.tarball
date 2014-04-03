@@ -231,32 +231,19 @@ static void cb_ts_import()
 
 static void cb_ts_edit()
 {
-#if 0
-#if UNIX
-  if (inmd[default_input_method].method_type==method_type_TSIN) {
-    char tt[512];
-    sprintf(tt, "( cd ~/.gcin && "GCIN_BIN_DIR"/tsd2a32 %s > tmpfile && %s tmpfile && "GCIN_BIN_DIR"/tsa2d32 tmpfile %s) &",
-      tsin32_f, utf8_edit, tsin32_f);
-    dbg("exec %s\n", tt);
-    system(tt);
-  } else {
-    char tt[512];
-    sprintf(tt, GCIN_SCRIPT_DIR"/tsin-gtab-edit %s", inmd[default_input_method].filename);
-    system(tt);
-  }
-#else
-  if (inmd[default_input_method].method_type==method_type_TSIN)
-    win32exec_script("ts-edit.bat", tsin32_f);
-  else {
-    win32exec_script("ts-gtab-edit.bat", inmd[default_input_method].filename);
-  }
-#endif
-#else
 #if UNIX
   system(GCIN_BIN_DIR"/ts-edit");
 #else
   win32exec("ts-edit.exe");
 #endif
+}
+
+static void cb_ts_edit_en()
+{
+#if UNIX
+  system(GCIN_BIN_DIR"/ts-edit-en");
+#else
+  win32exec("ts-edit-en.exe");
 #endif
 }
 
@@ -283,6 +270,14 @@ static void cb_ts_contribute()
 #endif
 }
 
+static void cb_ts_contribute_en()
+{
+#if UNIX
+  system(GCIN_BIN_DIR"/ts-contribute-en &");
+#else
+  win32exec("ts-contribute-en.exe");
+#endif
+}
 
 static void cb_alt_shift()
 {
@@ -544,6 +539,13 @@ static void create_main_win()
   g_signal_connect (G_OBJECT (button_ts_edit), "clicked",
                     G_CALLBACK (cb_ts_edit), NULL);
 
+  GtkWidget *button_ts_edit_en = gtk_button_new_with_label(_(_L("英數詞庫編輯")));
+  gtk_widget_set_hexpand (button_ts_edit_en, TRUE);
+  gtk_box_pack_start (GTK_BOX (vbox_ts), button_ts_edit_en, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (button_ts_edit_en), "clicked",
+                    G_CALLBACK (cb_ts_edit_en), NULL);
+
+
   if (inmd[default_input_method].method_type == method_type_TSIN) {
   GtkWidget *button_tslearn = gtk_button_new_with_label(_(_L("讓詞音從文章學習詞")));
   gtk_box_pack_start (GTK_BOX (vbox_ts), button_tslearn, TRUE, TRUE, 0);
@@ -555,12 +557,17 @@ static void create_main_win()
   g_signal_connect (G_OBJECT (button_ts_import_sys), "clicked",
                     G_CALLBACK (cb_ts_import_sys), NULL);
 
-  GtkWidget *button_ts_contribute = gtk_button_new_with_label(_(_L("貢獻選擇的詞庫")));
+  GtkWidget *button_ts_contribute = gtk_button_new_with_label(_(_L("貢獻自選的詞音詞庫")));
   gtk_box_pack_start (GTK_BOX (vbox_ts), button_ts_contribute, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (button_ts_contribute), "clicked",
                     G_CALLBACK (cb_ts_contribute), NULL);
   }
 
+
+  GtkWidget *button_ts_contribute_en = gtk_button_new_with_label(_(_L("貢獻自選的英數詞庫")));
+  gtk_box_pack_start (GTK_BOX (vbox_ts), button_ts_contribute_en, TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (button_ts_contribute_en), "clicked",
+                    G_CALLBACK (cb_ts_contribute_en), NULL);
 
   GtkWidget *button_about = gtk_button_new_with_label(_(_L("關於 gcin")));
   gtk_box_pack_start (GTK_BOX (vbox), button_about, TRUE, TRUE, 0);

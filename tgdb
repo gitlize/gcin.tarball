@@ -8,6 +8,7 @@ export XMODIFIERS=@im=gcin_test
 export LD_PRELOAD=./im-client/libgcin-im-client.so
 sleep 1; leafpad &
 export GCIN_OUTPUT_FILTER=./gcin_filter
+export LD_LIBRARY_PATH="$PWD/im-client:$PWD/modules:$PWD"
 #export GCIN_PHO_KBM=pinyin-asdf
 gdb ./gcin.test
 pkill gedit

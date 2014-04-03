@@ -26,6 +26,7 @@ char *files[]={
 "pho.tab2", "pho-huge.tab2",
 "s-pho.tab2", "s-pho-huge.tab2",
 "tsin32", "tsin32.idx",
+"en-american", "en-american.idx",
 "s-tsin32", "s-tsin32.idx",
 "symbol-table", "phrase.table"};
 for(int i=0; i < sizeof(files)/sizeof(files[0]); i++) {

@@ -149,7 +149,7 @@ void fast_phonetic_kbd_switch()
   save_gcin_conf_str(PHONETIC_KEYBOARD_BAK, cur);
   load_setttings();
   load_tab_pho_file();
-  update_win_kbm_inited();	
+  update_win_kbm_inited();
 }
 
 void cb_fast_phonetic_kbd_switch(GtkCheckMenuItem *checkmenuitem, gpointer dat)
@@ -351,12 +351,14 @@ static void cb_popup_state(GtkStatusIcon *status_icon, guint button, guint activ
 #define GCIN_TRAY_PNG "gcin-tray.png"
 
 void disp_win_screen_status(char *in_method, char *half_status);
+extern gboolean capslock_on;
 
 void load_tray_icon_win32()
 {
+  dbg("load_tray_icon_win32\n");
 #if WIN32
   // when login, creating icon too early may cause block in gtk_status_icon_new_from_file
-  if (win32_tray_disabled || !gcin_status_tray)
+  if (win32_tray_disabled  /* || !gcin_status_tray */)
     return;
 #endif
 
@@ -369,25 +371,32 @@ void load_tray_icon_win32()
   tip=L"";
 #endif
 
-  char *iconame;
+  char *iconame="en-tsin.png";
+  char tt[32];
+  strcpy(tt, iconame);
+
   if (!current_CS || current_CS->im_state == GCIN_STATE_DISABLED||current_CS->im_state == GCIN_STATE_ENG_FULL) {
-    iconame=GCIN_TRAY_PNG;
+    iconame=capslock_on?"en-gcin-A.png":GCIN_TRAY_PNG;
   } else {
     iconame=inmd[current_CS->in_method].icon;
   }
 
+//  dbg("caps %d %s\n", capslock_on, iconame);
+
 //  dbg("tsin_pho_mode() %d\n", tsin_pho_mode());
 
-  char tt[32];
+  gboolean is_tsin = current_method_type()==method_type_TSIN;
+
   if (current_CS && current_CS->im_state == GCIN_STATE_CHINESE && !tsin_pho_mode()) {
-    if ((current_method_type()==method_type_TSIN || current_method_type()==method_type_MODULE)) {
+    if ((is_tsin || current_method_type()==method_type_MODULE)) {
       strcpy(tt, "en-");
       strcat(tt, iconame);
+      if (capslock_on && is_tsin)
+        strcpy(tt, "en-tsin-A.png");
     } else {
-      if (current_method_type()==method_type_GTAB)
-        strcpy(tt, "en-gtab.png");
-      else
-        strcpy(tt, "en-tsin.png");
+      if (current_method_type()==method_type_GTAB) {
+        strcpy(tt, capslock_on?"en-gtab-A.png":"en-gtab.png");
+       }
     }
 
     iconame = tt;
@@ -432,8 +441,11 @@ void load_tray_icon_win32()
   if (gcin_status_win)
     disp_win_screen_status(fname, fname_state);
 
+  if (!gcin_status_tray)
+    return;
+
 #if UNIX
-  if (gcin_win32_icon==GCIN_TRAY_UNIX|| !gcin_status_tray)
+  if (gcin_win32_icon==GCIN_TRAY_UNIX)
     return;
 #endif
 
@@ -463,8 +475,10 @@ void load_tray_icon_win32()
 
   if (icon_main) {
     char tt[64];
-    if (current_CS && inmd[current_CS->in_method].cname && inmd[current_CS->in_method].cname[0])
+    if (current_CS && inmd[current_CS->in_method].cname && inmd[current_CS->in_method].cname[0]) {
+      dbg("cname %s\n", inmd[current_CS->in_method].cname);
       strcpy(tt, inmd[current_CS->in_method].cname);
+    }
 
     if (!iconame || !strcmp(iconame, GCIN_TRAY_PNG) || !tsin_pho_mode())
       strcpy(tt, "English");

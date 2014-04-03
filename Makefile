@@ -14,7 +14,7 @@ OBJS=gcin.o eve.o util.o gcin-conf.o gcin-settings.o locale.o gcin-icon.o about.
      $(gcin_pho_o) $(gcin_gtab_o) gcin-common.o phrase.o t2s-lookup.o gtab-use-count.o \
      win-save-phrase.o unix-exec.o pho-kbm-name.o statistic.o tsin-scan.o gcin-module.o lang.o \
      gcin-module-cb.o gtab-init.o fullchar.o gtab-tsin-fname.o win-screen-status.o
-     
+
 
 OBJS_TSLEARN=tslearn.o util.o gcin-conf.o pho-util.o tsin-util.o gcin-send.o pho-sym.o \
              table-update.o locale.o gcin-settings.o gcin-common.o gcin-icon.o pho-dbg.o  \
@@ -83,8 +83,9 @@ OBJS += gcb.o
 endif
 
 ifeq ($(USE_INDICATOR),Y)
-CFLAGS += -DUSE_INDICATOR=1 -I/usr/include/libappindicator-0.1
+CFLAGS += -DUSE_INDICATOR=1 $(INDICATOR_INC)
 OBJS += tray-indicator.o
+LDFLAGS += $(INDICATOR_LIB)
 endif
 
 OBJ_IMSRV=im-addr.o im-dispatch.o im-srv.o gcin-crypt.o
@@ -211,7 +212,7 @@ ibin:	gcin-nocur
 	rm -f $(bindir)/ts-contribute; ln -sf ts-edit $(bindir)/ts-contribute
 	install $(GCIN_SO) $(gcinlibdir)
 
-icons_apps=$(datadir)/icons/hicolor/64x64/apps 
+icons_apps=$(datadir)/icons/hicolor/64x64/apps
 install:
 	install -d $(icons_apps)
 	install -m 644 gcin.png $(icons_apps)
@@ -233,12 +234,16 @@ install:
 	   install $(PROGS) $(bindir); \
 	   rm -f $(bindir)/trad2sim; ln -sf sim2trad $(bindir)/trad2sim; \
 	   rm -f $(bindir)/ts-contribute; ln -sf ts-edit $(bindir)/ts-contribute; \
+	   rm -f $(bindir)/ts-contribute-en; ln -sf ts-edit $(bindir)/ts-contribute-en; \
+	   rm -f $(bindir)/ts-edit-en; ln -sf ts-edit $(bindir)/ts-edit-en; \
 	else \
 	   install -d $(DOC_DIR_i); \
 	   install -m 644 README.html Changelog.html $(DOC_DIR_i); \
 	   install -s $(PROGS) $(bindir); \
 	   rm -f $(bindir)/trad2sim; ln -sf sim2trad $(bindir)/trad2sim; \
 	   rm -f $(bindir)/ts-contribute; ln -sf ts-edit $(bindir)/ts-contribute; \
+	   rm -f $(bindir)/ts-contribute-en; ln -sf ts-edit $(bindir)/ts-contribute-en; \
+	   rm -f $(bindir)/ts-edit-en; ln -sf ts-edit $(bindir)/ts-edit-en; \
 	fi
 	$(MAKE) -C scripts install
 	$(MAKE) -C menu install

@@ -19,9 +19,10 @@ enum {
   FLAG_CHPHO_PINYIN_TONE=64,
   FLAG_CHPHO_GTAB_BUF_EN_NO_SPC=128,
   FLAG_CHPHO_PHRASE_TAIL=0x100,
+  FLAG_CHPHO_EN_PHRASE=0x200,
 };
 
-void extract_pho(int chpho_idx, int plen, phokey_t *pho);
+void extract_pho(gboolean is_en, int chpho_idx, int plen, phokey_t *pho);
 gboolean tsin_seek(void *pho, int plen, int *r_sti, int *r_edi, char *tone_off);
 void load_tsin_entry(int idx, char *len, usecount_t *usecount, void *pho, u_char *ch);
 gboolean check_fixed_mismatch(int chpho_idx, char *mtch, int plen);
@@ -29,6 +30,7 @@ gboolean tsin_pho_mode();
 char *get_chpho_pinyin_set(char *set_arr);
 
 #define TSIN_GTAB_KEY "!!!!gtab-keys"
+#define TSIN_EN_WORD_KEY "!!!!tsin-en-word"
 
 typedef struct {
   char signature[32];
@@ -46,7 +48,7 @@ typedef struct PRE_SEL {
 } PRE_SEL;
 
 extern gboolean tsin_is_gtab;
-extern int ph_key_sz;
+//extern int ph_key_sz;
 
 
 typedef struct {
@@ -55,6 +57,13 @@ int phcount;
 int a_phcount;
 int hashidx[TSIN_HASH_N];
 time_t modify_time;
+char *tsin_fname;
+int ph_key_sz; // bytes
+gboolean tsin_is_gtab;
 } TSIN_HANDLE;
 
-extern TSIN_HANDLE tsin_hand;
+extern TSIN_HANDLE tsin_hand, en_hand;
+
+gboolean save_phrase_to_db(TSIN_HANDLE *th, void *phkeys, char *utf8str, int len, usecount_t usecount);
+
+#define TSIN_EN_FILE "en-american"

@@ -263,14 +263,14 @@ void update_item_active_all();
 void destroy_inmd_menu();
 void load_gtab_list(gboolean);
 void change_win1_font();
-void set_wselkey(char *s);
+void set_wselkey();
 
 static void reload_data()
 {
   dbg("reload_data\n");
   load_setttings();
   if (current_method_type()==method_type_TSIN)
-    set_wselkey(pho_selkey);
+    set_wselkey();
 
 //  load_tsin_db();
   change_win0_style();
@@ -419,14 +419,16 @@ void hide_win0();
 void destroy_win0();
 void destroy_win1();
 void destroy_win_gtab();
-void free_pho_mem(),free_tsin(),free_all_IC(), free_gtab(), free_phrase(), destroy_tray_win32();
+void free_pho_mem(),free_tsin(), free_en(), free_all_IC(), free_gtab(), free_phrase(), destroy_tray_win32();
+void close_pho_fw();
 
 void do_exit()
 {
   dbg("----------------- do_ exit ----------------\n");
-
+  close_pho_fw();
   free_pho_mem();
   free_tsin();
+  free_en();
 #if USE_XIM
   free_all_IC();
 #endif
@@ -483,10 +485,10 @@ gboolean delayed_start_cb(gpointer data)
     else
     if (gcin_win32_icon==GCIN_TRAY_UNIX)
       init_tray();
-#if USE_INDICATOR      
+#if USE_INDICATOR
     else
       init_tray_indicator();
-#endif      
+#endif
 #endif
   }
 #endif
@@ -561,7 +563,6 @@ static char button_rc[]="style \"button\"\n"
 #if UNIX
   signal(SIGCHLD, SIG_IGN);
   signal(SIGPIPE, SIG_IGN);
-
   if (getenv("GCIN_DAEMON")) {
     daemon(1,1);
 #if FREEBSD

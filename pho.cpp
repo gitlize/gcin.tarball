@@ -28,7 +28,7 @@ void ClrSelArea();
 #define MAX_HASH_PHO 27
 u_short hash_pho[MAX_HASH_PHO+1];
 
-static char typ_pho_len[]={5, 2, 4, 3};
+char typ_pho_len[]={5, 2, 4, 3};
 
 gboolean same_query_show_pho_win();
 
@@ -354,6 +354,40 @@ int ch_key_to_ch_pho_idx(phokey_t phkey, char *utf8)
   return -1;
 }
 
+// need this because android's qsort is not stable
+ static void my_sort(void *base, size_t nmemb, size_t size,
+                  int(*compar)(const void *, const void *))
+{
+  char t[128];
+  int i;
+  for(i=0;i<nmemb-1;i++) {
+    void *pi = (char *)base + i * size;
+    int j;
+    for(j=i+1;j<nmemb;j++)  {
+      void *pj = (char *)base + j * size;
+      if (compar(pi, pj) <= 0)
+        continue;
+
+      memcpy(t, pi, size);
+      memcpy(pi, pj, size);
+      memcpy(pj, t, size);
+    }
+  }
+}
+
+#if WIN32
+#include <share.h>
+#endif
+
+static FILE *fw;
+
+void close_pho_fw()
+{
+	if (!fw)
+		return;
+	fclose(fw);
+	fw = NULL;
+}
 
 void inc_pho_count(phokey_t key, int ch_idx)
 {
@@ -369,7 +403,13 @@ void inc_pho_count(phokey_t key, int ch_idx)
   ch_pho[ch_idx].count++;
 //  dbg("count %d\n", ch_pho[ch_idx].count);
 
-  qsort(&ch_pho[start_i], stop_i - start_i, sizeof(PHO_ITEM), qcmp_count);
+#if 0
+  qsort
+#else
+  my_sort
+#endif
+  (&ch_pho[start_i], stop_i - start_i, sizeof(PHO_ITEM), qcmp_count);
+
 #if 0
   int i;
   for(i=start_i; i < stop_i; i++) {
@@ -378,10 +418,13 @@ void inc_pho_count(phokey_t key, int ch_idx)
   }
 #endif
 
-  FILE *fw;
-
 //  dbg("phofname %s\n", phofname);
-  if ((fw=fopen(phofname,"rb+"))==NULL) {
+#if UNIX
+  if (!fw && (fw=fopen(phofname,"rb+"))==NULL)
+#else
+if (!fw && (fw=_fsopen(phofname,"rb+", _SH_DENYWR))==NULL)
+#endif
+  {
     p_err("err %s\n", phofname);
   }
 
@@ -391,7 +434,10 @@ void inc_pho_count(phokey_t key, int ch_idx)
   if (fwrite(&ch_pho[start_i], sizeof(PHO_ITEM), stop_i - start_i, fw) <= 0)
     p_err("fwrite err");
 #endif
+
+#if 0
   fclose(fw);
+#endif
 }
 
 
@@ -428,6 +474,7 @@ void recreate_win1_if_nessary();
 
 void load_tab_pho_file()
 {
+  close_pho_fw();
   pho_load();
 
   bzero(poo.typ_pho,sizeof(poo.typ_pho));

@@ -2,11 +2,12 @@
 #include "pho.h"
 #include "gst.h"
 #include "win1.h"
+#include "tsin.h"
 
 GtkWidget *gwin1;
 static GtkWidget *frame;
-static char *wselkey;
-static int wselkeyN;
+char *wselkey;
+int wselkeyN;
 //Window xwin1;
 
 #define SELEN (15)
@@ -144,6 +145,7 @@ void create_win1_gui()
   {
 	int y = idx_to_y(i);
 	int x = idx_to_x(i);
+	dbg("i:%d y:%d x:%d\n", i, y, x);
 
     if (!tsin_tail_select_key)
       x*=2;
@@ -333,9 +335,13 @@ void disp_selections(int x, int y)
   if (x + win1_xl > dpy_xl)
     x = dpy_xl - win1_xl;
 
-  if (y + win1_yl > dpy_yl)
+  if (y + win1_yl > dpy_yl) {
     y = win_y - win1_yl;
-    
+	// so that it will not cover AP's text. dirty fix, need the height of text
+	if (gcin_edit_display==GCIN_EDIT_DISPLAY_ON_THE_SPOT)
+	  y -= 24;
+  }
+
   if (y < 0)
     y = 0;
 
@@ -456,7 +462,7 @@ void recreate_win1_if_nessary()
 }
 
 
-void set_wselkey(char *s)
+static void set_wselkey_str(char *s)
 {
   if (!wselkey || strcmp(wselkey, s)) {
     if (wselkey)
@@ -466,4 +472,37 @@ void set_wselkey(char *s)
     recreate_win1_if_nessary();
 //    dbg("set_wselkey %s\n", s);
   }
+}
+
+#include "gtab.h"
+
+char *ch_mode_selkey(gboolean is_gtab)
+{
+  char *s;
+  if (is_gtab && cur_inmd)
+    s = cur_inmd->selkey;
+  else
+    s = pho_selkey;
+
+  return s;
+}
+
+char *en_sel_keys(gboolean is_gtab);
+void gtab_set_win1_cb(), tsin_set_win1_cb();
+
+void set_wselkey()
+{
+  gboolean is_gtab = current_method_type()==method_type_GTAB;
+  char *s;
+  if (tsin_pho_mode()) {
+	s = ch_mode_selkey(is_gtab);
+  } else
+    s =  en_sel_keys(is_gtab);
+
+  set_wselkey_str(s);
+
+  if (is_gtab)
+    gtab_set_win1_cb();
+  else
+	tsin_set_win1_cb();
 }

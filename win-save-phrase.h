@@ -1,6 +1,6 @@
 typedef struct {
 	u_int64_t key;
-	char ch[CH_SZ];
+	char ch[CH_SZ+1];
 	GtkWidget *opt;
 } WSP_S;
 

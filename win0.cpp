@@ -110,8 +110,12 @@ static void create_char(int index)
 {
   int i;
 
-  if (!hbox_edit)
+//  dbg("create_char %d\n", index);
+
+  if (!hbox_edit) {
+	dbg("create_char: !hbox_edit\n");
     return;
+  }
 
   GdkColor fg;
   gdk_color_parse(gcin_win_color_fg, &fg);
@@ -157,13 +161,19 @@ extern gboolean b_use_full_space;
 
 void set_label_space();
 void set_label_space(GtkWidget *label);
+void create_win0();
 
 void disp_char(int index, char *ch)
 {
   if (gcin_edit_display_ap_only())
     return;
-  if (!top_bin)
-    return;
+
+  if (!top_bin) {
+//	dbg("not top_bin");
+	create_win0();
+	create_win0_gui();
+//    return;
+  }
 
 //  dbg("disp_char %d %s\n", index, ch);
   create_char(index);
@@ -265,8 +275,16 @@ void disp_tsin_pho(int index, char *pho)
 }
 
 void disp_tsin_pho(int index, char *pho);
+gboolean tsin_pho_mode();
+void show_button_pho(gboolean bshow);
+
 void clr_in_area_pho_tsin()
 {
+  if (!tsin_pho_mode()) {
+    show_button_pho(FALSE);
+    return;
+  }
+
   int i;
 #if WIN32
   if (test_mode)

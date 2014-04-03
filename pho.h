@@ -33,8 +33,6 @@ typedef struct {
 
 #define Min(a,b) ((a) < (b) ? (a):(b))
 
-#define TSIN_HASH_N (256)
-
 extern char phofname[128];
 extern u_short idxnum_pho;
 extern PHO_IDX *idx_pho;
@@ -51,7 +49,6 @@ int utf8_pho_keys(char *big5, phokey_t *phkeys);
 void prph(phokey_t kk);
 void prphs(phokey_t *ks, int ksN);
 phokey_t pho2key(char typ_pho[]);
-gboolean save_phrase_to_db(void *phkeys, char *utf8str, int len, usecount_t usecount);
 int lookup(u_char *s);
 int find_match(char *str, int *eq_N, usecount_t *usecount);
 char *phokey_to_str2(phokey_t kk, int last_number);
@@ -63,7 +60,8 @@ char *pho_idx_str2(int idx, int *is_phrase);
 
 #define MAX_PH_BF_EXT (MAX_PH_BF + MAX_PHRASE_LEN + 1)
 
-
+#define TSIN_HASH_N (256)
+#define TSIN_HASH_SHIFT8 0  // doesn't need shift
 #define TSIN_HASH_SHIFT 6
 #define TSIN_HASH_SHIFT_32 24
 #define TSIN_HASH_SHIFT_64 56

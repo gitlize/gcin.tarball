@@ -657,7 +657,7 @@ void create_win_gtab_gui_simple()
   minimize_win_gtab();
 }
 
-
+void disp_gbuf();
 static void create_win_gtab_gui()
 {
   create_win_gtab_gui_simple();
@@ -665,6 +665,7 @@ static void create_win_gtab_gui()
   current_gtab_vertical_select = gtab_vertical_select_on();
   current_gcin_inner_frame = gcin_inner_frame;
   gdk_color_parse("red", &better_color);
+  disp_gbuf();
 }
 
 

@@ -8,6 +8,7 @@
 #include "gcin-conf.h"
 
 gboolean is_chs;
+extern char *pho_phrase_area;
 
 int main(int argc, char **argv)
 {
@@ -31,8 +32,15 @@ int main(int argc, char **argv)
     int j;
     for(j=frm; j < to; j++) {
       prph(key);
-      char *str = pho_idx_str(j);
-      dbg(" %s %d\n", str, ch_pho[j].count);
+      char *str = pho_idx_str(j), tt[512];
+      if (str[0]==PHO_PHRASE_ESCAPE) {
+		  int ofs = str[1] | (str[1]<<8) | (tt[1] << 16);
+		  int len = pho_phrase_area[ofs];
+		  memcpy(tt, pho_phrase_area+ofs+1, len);
+		  tt[len]=0;
+      }
+      
+      printf(" %s %d\n", str, ch_pho[j].count);
     }
   }
 

@@ -17,6 +17,7 @@ extern gboolean test_mode;
 gboolean gtab_phrase_on();
 gboolean gtab_disp_partial_match_on(), gtab_vertical_select_on(), gtab_pre_select_on(), gtab_unique_auto_send_on(), gtab_press_full_auto_send_on();
 void init_seltab(char ***p);
+void disp_gbuf();
 
 extern gint64 key_press_time, key_press_time_ctrl;
 
@@ -64,7 +65,11 @@ gboolean gtab_has_input()
   if (ggg.gtab_buf_select)
     return TRUE;
 
+#if 1
   if (ggg.gbufN && !gcin_edit_display_ap_only())
+#else
+  if (ggg.gbufN)
+#endif
     return TRUE;
 
   return FALSE;
@@ -118,6 +123,9 @@ int gtab_key2name(INMD *tinmd, u_int64_t key, char *t, int *rtlen);
 
 int ch_to_gtab_keys(INMD *tinmd, char *ch, u_int64_t keys[])
 {
+  if (tinmd->DefChars < 1000)
+    return 0;
+
   int n = utf8_str_N(ch);
   gboolean phrase = n > 1 || !(ch[0] & 0x80);
   int i, keysN=0;
@@ -842,6 +850,8 @@ void reset_gtab_all()
 
   ClrIn();
   ClrSelArea();
+  if (gcin_pop_up_win)
+    hide_win_gtab();
 }
 
 
@@ -941,6 +951,10 @@ static void add_timeout_auto_space()
 	handle_timeout_auto_space = g_timeout_add(gtab_auto_space, cb_timeout_auto_space, NULL);
 }
 
+void gtab_en_scan_pre_select();
+extern char *wselkey;
+extern gboolean capslock_on;
+void clear_gbuf_sel();
 
 gboolean feedkey_gtab(KeySym key, int kbstate)
 {
@@ -953,12 +967,11 @@ gboolean feedkey_gtab(KeySym key, int kbstate)
   gboolean shift_m = (kbstate & ShiftMask) > 0;
   gboolean ctrl_m = (kbstate & ControlMask) > 0;
   int caps_eng_tog = tsin_chinese_english_toggle_key == TSIN_CHINESE_ENGLISH_TOGGLE_KEY_CapsLock;
-  gboolean capslock_on = (kbstate&LockMask);
   gboolean is_dayi = !strncmp(cur_inmd->filename, "dayi", 4);
 
   bzero(seltab_phrase, sizeof(seltab_phrase));
 
-//  dbg("uuuuu %x %x   shift,ctrl:%d,%d\n", key, kbstate, shift_m, ctrl_m);
+  dbg("feedkey_gtab key:%x %x   shift,ctrl:%d,%d\n", key, kbstate, shift_m, ctrl_m);
 
   if (!cur_inmd)
     return 0;
@@ -968,10 +981,6 @@ gboolean feedkey_gtab(KeySym key, int kbstate)
     return 0;
   }
 
-#if UNIX
-  if (key == XK_Caps_Lock)
-    capslock_on = !capslock_on; // X11 caplock is not on/off immediately
-#endif
   if (caps_eng_tog) {
     gboolean new_tsin_pho_mode =!capslock_on;
     if (current_CS->tsin_pho_mode != new_tsin_pho_mode) {
@@ -980,8 +989,6 @@ gboolean feedkey_gtab(KeySym key, int kbstate)
       disp_tray_icon();
     }
   }
-
-
 
   if (cur_inmd && (cur_inmd->flag & FLAG_GTAB_SYM_KBM))
     current_CS->tsin_pho_mode = TRUE;
@@ -1025,14 +1032,35 @@ gboolean feedkey_gtab(KeySym key, int kbstate)
     if (capslock_on && gcin_capslock_lower)
       case_inverse((KeySym *)&key, shift_m);
 
+    dbg("aa\n");
+
     if (current_CS->b_half_full_char)
       return full_char_proc(key);
+en_char:
+    if (AUTO_SELECT_BY_PHRASE && (ggg.gbufN || en_pre_select)) {
+	  char *p;
+	  if (tss.pre_selN && (p=strchr(wselkey, key))) {
+		int vv = p - wselkey;
+		dbg("wselkey '%s'", wselkey);
+		gtab_pre_select_idx(vv);
+        return TRUE;
+      } else {
+		dbg("bb\n");
+		if (!ggg.gbufN && strchr(" <>,./;-=?':[]_0123456789+$^&(){}|\\!@*#%\"`~",  key) != NULL) {
+          send_ascii(key);
+          return 1;
+	    }
 
-    if (ggg.gbufN)
-      insert_gbuf_cursor_char(key);
-    else
+        insert_gbuf_cursor_char(key);
+        show_win_gtab();
+        disp_gbuf();
+        if (en_pre_select)
+          gtab_en_scan_pre_select();
+      }
+    } else
       send_ascii(key);
 
+    dbg("ret\n");
     return 1;
   }
 
@@ -1048,7 +1076,6 @@ gboolean feedkey_gtab(KeySym key, int kbstate)
        goto next;
 
   }
-
 
 shift_proc:
   if (shift_m && !strchr(cur_inmd->selkey, key) && !ggg.more_pg && key>=' ' && key < 0x7e &&
@@ -1147,9 +1174,14 @@ shift_proc:
     case XK_Escape:
       hide_gtab_pre_sel();
       if (ggg.gtab_buf_select) {
+		dbg("gtab_buf_select\n");
         ggg.gtab_buf_select = 0;
+#if 0
         reset_gtab_all();
-        ClrSelArea();
+#else
+		ClrIn();
+		ClrSelArea();
+#endif
         if (gcin_pop_up_win && !gtab_has_input())
           hide_win_gtab();
         return 1;
@@ -1157,10 +1189,18 @@ shift_proc:
 
       close_gtab_pho_win();
       if (ggg.ci) {
+#if 0
         reset_gtab_all();
+#else
+		ClrIn();
+#endif
         return 1;
       } else {
         if (ggg.gbufN) {
+		  if (ggg.gtab_buf_select) {
+			  clear_gbuf_sel();
+			  return TRUE;
+		  }
           if (gcin_escape_clear_edit_buffer) {
 			gtab_reset();
 			return 1;
@@ -1269,16 +1309,16 @@ next_page:
 			if (tsin_space_opt == TSIN_SPACE_OPT_INPUT) {
               if (current_CS->b_half_full_char)
 			    return full_char_proc(key);
-			  send_ascii(' ');			
+			  send_ascii(' ');
 		    }
-		    
+
 		    return TRUE;
 		  } else
 		    return show_buf_select();
         }
-        
+
         if (current_CS->b_half_full_char)
-          return full_char_proc(key);			
+          return full_char_proc(key);
         return 0;
       } else
       if (!has_wild) {
@@ -1466,14 +1506,13 @@ keypad_proc:
         return 0;
       }
 
-
-
 //        dbg("ggg.spc_pressed %d %d %d is_keypad:%d\n", ggg.spc_pressed, ggg.last_full, cur_inmd->MaxPress, is_keypad);
 
 #if 1 // for dayi, testcase :  6 space keypad6
       int vv = pselkey - cur_inmd->selkey;
-      if (pselkey && tss.pre_selN && !ggg.gtab_buf_select && (tss.ctrl_pre_sel||
+      if (pselkey && tss.pre_selN && !ggg.gtab_buf_select && (tss.ctrl_pre_sel|| en_pre_select ||
           ((!inkey||ggg.spc_pressed||is_keypad)&&! gtab_disp_partial_match_on() && !gtab_pre_select_on()))) {
+	    dbg("jjjjj\n");
         if (gtab_pre_select_idx(vv))
           return TRUE;
       } else
@@ -1647,6 +1686,7 @@ keypad_proc:
   else
     vmaskci = cur_inmd->key64 ? vmask64_7[ggg.ci]:vmask_7[ggg.ci];
 
+  if (AUTO_SELECT_BY_PHRASE)
   gtab_scan_pre_select(TRUE);
 
   while ((CONVT2(cur_inmd, ggg.S1) & vmaskci) != ggg.kval &&

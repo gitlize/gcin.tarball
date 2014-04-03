@@ -1,6 +1,7 @@
 #include "gcin.h"
 #include "pho.h"
 #include "win-save-phrase.h"
+#include  "tsin.h"
 #include "gtab.h"
 
 extern int c_len;
@@ -14,17 +15,21 @@ typedef struct {
   int countdown, countdown_handle;
 } SAVE_SESS;
 
-static void wsp_str(WSP_S *wsp, int wspN, char *out)
+gboolean is_legal_en_char(char *ch);
+static gboolean wsp_str(WSP_S *wsp, int wspN, char *out)
 {
   int i;
   int ofs=0;
-
+  gboolean is_en = TRUE;
   for(i=0;i<wspN;i++) {
+	if (!is_legal_en_char(wsp[i].ch))
+	  is_en = FALSE;	  
 //    utf8_putchar(wsp[i].ch);
 	int n = utf8cpy(out+ofs, wsp[i].ch);
 	ofs+=n;
   }
 
+  return is_en;
 //  out[ofs]=0;
 //  dbg(" c_len:%d wsp %s\n", c_len, out);
 }
@@ -70,28 +75,32 @@ static gboolean cb_ok(GtkWidget *widget, gpointer data)
   u_int64_t pho64[MAX_PHRASE_LEN];
   char tt[512];
   void *dat;
-  wsp_str(sess->mywsp, sess->mywspN, tt);
+  gboolean is_en = wsp_str(sess->mywsp, sess->mywspN, tt);
 
-  if (ph_key_sz==2) {
-    for(i=0;i<sess->mywspN;i++)
-      pho[i] = sess->mywsp[i].key;
-    dat = pho;
-  }
-  else
-  if (ph_key_sz==4) {
-    for(i=0;i< sess->mywspN;i++) {
-      pho32[i] = sess->mywsp[i].key;
-    }
-    dat = pho32;
-  }
-  else
-  if (ph_key_sz==8) {
-    for(i=0;i< sess->mywspN;i++)
-      pho64[i] = sess->mywsp[i].key;
-    dat = pho64;
-  }
+  dbg("wsp_str %s is_en:%d\n", tt, is_en);
 
-  save_phrase_to_db(dat, tt, sess->mywspN, 1);
+  if (is_en) {
+	save_phrase_to_db(&en_hand, tt, NULL, sess->mywspN, 1);
+  } else {
+    if (tsin_hand.ph_key_sz==2) {
+	  for(i=0;i<sess->mywspN;i++)
+		pho[i] = sess->mywsp[i].key;
+	  dat = pho;
+	} else
+	if (tsin_hand.ph_key_sz==4) {
+      for(i=0;i< sess->mywspN;i++) {
+		  pho32[i] = sess->mywsp[i].key;
+	  }
+	  dat = pho32;
+    } else
+    if (tsin_hand.ph_key_sz==8) {
+	  for(i=0;i< sess->mywspN;i++)
+		pho64[i] = sess->mywsp[i].key;
+	  dat = pho64;
+	}
+	
+	save_phrase_to_db(&tsin_hand, dat, tt, sess->mywspN, 1);
+  }
 
   gtk_widget_destroy(sess->win);
 
@@ -160,7 +169,7 @@ void create_win_save_phrase(WSP_S *wsp, int wspN)
 
   int i;
   for(i=0; i<wspN; i++) {
-    if (ph_key_sz==2)
+    if (tsin_hand.ph_key_sz==2)
       strcat(tt, phokey_to_str(wsp[i].key));
     strcat(tt, " ");
   }

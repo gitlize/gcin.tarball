@@ -323,6 +323,8 @@ gboolean hist_focus_out_callback(GtkWidget *widget, GdkEventFocus *event,
 static void cb_owner_change(GtkClipboard *clipboard, GdkEvent *event, gpointer ser_data)
 {
 //  dbg("cb_owner_change\n");
+  if (!gcb_enabled)
+    return;
   get_selection(clipboard);
 }
 

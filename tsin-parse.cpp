@@ -12,7 +12,7 @@
 extern gboolean tsin_is_gtab;
 extern int ph_key_sz;
 void add_cache(int start, int usecount, TSIN_PARSE *out, short match_phr_N, short no_match_ch_N, int tc_len);
-void extract_gtab_key(int start, int len, void *out);
+void extract_gtab_key(gboolean is_en, int start, int len, void *out);
 gboolean check_gtab_fixed_mismatch(int idx, char *mtch, int plen);
 void mask_tone(phokey_t *pho, int plen, char *tone_mask);
 
@@ -41,7 +41,7 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
     dbg("---- aa st:%d hh plen:%d ", start, plen);utf8_putchar(tss.chpho[start].ch); dbg("\n");
 #endif
     if (plen > 1) {
-      if (tsin_is_gtab) {
+      if (tsin_hand.tsin_is_gtab) {
         if (gbuf[start+plen-1].flag & FLAG_CHPHO_PHRASE_USER_HEAD)
           break;
       } else
@@ -60,9 +60,9 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
     short match_phr_N=0, no_match_ch_N = plen;
     void *ppp;
 
-    if (ph_key_sz==2)
+    if (tsin_hand.ph_key_sz==2)
       ppp=pp;
-    else if (ph_key_sz==4)
+    else if (tsin_hand.ph_key_sz==4)
       ppp=pp32;
     else
       ppp=pp64;
@@ -73,7 +73,7 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
     pbest[0].start = start;
     int i, ofs;
 
-    if (tsin_is_gtab)
+    if (tsin_hand.tsin_is_gtab)
       for(ofs=i=0; i < plen; i++)
         ofs += utf8cpy((char *)pbest[0].str + ofs, gbuf[start + i].ch);
     else
@@ -84,10 +84,10 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
     dbg("st:%d hh plen:%d ", start, plen);utf8_putchar(tss.chpho[start].ch); dbg("\n");
 #endif
 
-    if (tsin_is_gtab)
-      extract_gtab_key(start, plen, ppp);
+    if (tsin_hand.tsin_is_gtab)
+      extract_gtab_key(FALSE, start, plen, ppp);
     else {
-      extract_pho(start, plen, (phokey_t *)ppp);
+      extract_pho(FALSE, start, plen, (phokey_t *)ppp);
       if (c_pinyin_set)
         mask_tone(pp, plen, c_pinyin_set + start);
     }
@@ -112,9 +112,9 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
     u_int64_t mtk64[MAX_PHRASE_LEN];
     void *pho;
 
-    if (ph_key_sz==2)
+    if (tsin_hand.ph_key_sz==2)
       pho=mtk;
-    else if (ph_key_sz==4)
+    else if (tsin_hand.ph_key_sz==4)
       pho=mtk32;
     else
       pho=mtk64;
@@ -129,7 +129,7 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
       if (match_len < plen)
         continue;
 
-      if (tsin_is_gtab) {
+      if (tsin_hand.tsin_is_gtab) {
         if (check_gtab_fixed_mismatch(start, mtch, plen))
           continue;
       } else
@@ -140,7 +140,7 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
         usecount = 0;
 
       int i;
-      if (ph_key_sz==2) {
+      if (tsin_hand.ph_key_sz==2) {
         if (c_pinyin_set) {
 //          mask_tone(pp, plen, c_pinyin_set + start);
           mask_tone(mtk, plen, c_pinyin_set + start);
@@ -148,7 +148,7 @@ int tsin_parse_recur(int start, TSIN_PARSE *out,
         for(i=0;i < plen;i++)
           if (mtk[i]!=pp[i])
             break;
-      } else if (ph_key_sz==4) {
+      } else if (tsin_hand.ph_key_sz==4) {
         for(i=0;i < plen;i++)
           if (mtk32[i]!=pp32[i])
             break;

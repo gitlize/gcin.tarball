@@ -84,9 +84,32 @@ typedef struct {
 void __gcin_enc_mem(u_char *p, int n, GCIN_PASSWD *passwd, u_int *seed);
 #endif
 
+#define SHARED_MEMORY 0
+
 #if WIN32
 #define GCIN_WIN_NAME "gcin0"
 #define GCIN_PORT_MESSAGE WM_USER+10
 #define GCIN_CLIENT_MESSAGE_REQ WM_USER+11
+#define GCIN_CLIENT_MESSAGE_CLOSE WM_USER+12
+#if SHARED_MEMORY
+#define SHARED_MEM_NAME "Global\\gcin_IME_IPC%x_%x"
+typedef struct GCIN_SHM_S {
+	HANDLE handle;
+	void *buf;
+	int read_index;
+	int port;
+} *GCIN_SHM;
+
+GCIN_SHM gcin_create_shm(HWND hwnd, int port);
+GCIN_SHM gcin_open_shm(HWND hwnd, int port);
+void gcin_start_shm_read(GCIN_SHM sh);
+int gcin_shm_read(GCIN_SHM sh, void *buf, int readN);
+void gcin_start_shm_write(GCIN_SHM sh);
+int gcin_shm_write(GCIN_SHM sh, void *buf, int writeN);
+void gcin_shm_close(GCIN_SHM sh);
+
+
+#else
 #define GCIN_PIPE_PATH "\\\\.\\pipe\\gcin-svr%d"
+#endif
 #endif

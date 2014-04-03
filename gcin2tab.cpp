@@ -247,6 +247,7 @@ int main(int argc, char **argv)
   if (!(sequ(cmd,"%prompt") || sequ(cmd,"%cname")) || !(*arg) )
     p_err("%d:  %%prompt prompt_name  expected", lineno);
   strncpy(th.cname, arg, MAX_CNAME);
+  th.cname[MAX_CNAME]=0;
   dbg("cname %s\n", th.cname);
 
   cmd_arg(&cmd, &arg);
@@ -516,21 +517,21 @@ int main(int argc, char **argv)
 
       bzero(out, sizeof(out));
       memcpy(out, arg, len);
-      
+
 
 //    for android gcin
       if (for_android) {
 		  GError *error;
 		  gsize wn = 0;
-		  int *CH=(int *)g_convert(arg, -1, "UCS-4", "UTF-8", NULL, &wn, &error);
+		  char *CH=(char *)g_convert(arg, -1, "UCS-4", "UTF-8", NULL, &wn, &error);
 		  char *p = CH;
 		  byte_swap(p, p+3);
 		  byte_swap(p+1, p+2);
 		  unsigned int ucs4 = *CH;
 		  g_free(CH);
-		  
+
 		  if (ucs4>0x20000) {
-			printf("ucs4 %s wn:%d %x\n", arg, wn, ucs4); 
+			printf("ucs4 %s wn:%d %x\n", arg, wn, ucs4);
 			continue;
 		  }
       }

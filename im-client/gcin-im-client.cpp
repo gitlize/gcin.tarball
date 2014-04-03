@@ -62,11 +62,14 @@ HWND find_gcin_window()
 
 
 #if WIN32
+#include <share.h>
+#include <io.h>
+#include <strsafe.h>
+
 bool sys_end_session;
-HWND serverWnd;
+static HWND serverWnd;
 
-
-HANDLE open_pipe_client()
+static bool start_gcin()
 {
   int retried=0;
 restart:
@@ -76,19 +79,65 @@ restart:
 	  if (!retried)
         win32exec("gcin.exe");
 
-      Sleep(1000);
+      Sleep(2000);
 	  retried++;
       goto restart;
 	} else {
       dbg("exec not found ?\n");
 	}
 
-	  MessageBoxA(NULL, "cannot find window", NULL, MB_OK);
-	  return NULL;
+	  MessageBoxA(NULL, "cannnot start gcin.exe", NULL, MB_OK);
+	  return false;
   }
 
   dbg("serverwnd %x\n", serverWnd);
+  return true;
+}
 
+
+#if SHARED_MEMORY
+
+GCIN_SHM open_shm_client()
+{
+  if (!start_gcin())
+	 return NULL;
+  int port = SendMessageA(serverWnd, GCIN_PORT_MESSAGE, GetCurrentProcessId(), 0);
+
+  return gcin_open_shm(serverWnd, port);
+}
+
+#else
+static WCHAR *err_strw(DWORD dw)
+{
+	static WCHAR msgstr[128];
+    LPVOID lpMsgBuf;
+
+    FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPWSTR) &lpMsgBuf,
+        0, NULL );
+
+    // Display the error message and exit the process
+
+    StringCchPrintfW(msgstr, ARRAYSIZE(msgstr), L"%d: %s", dw, lpMsgBuf);
+	return msgstr;
+}
+
+
+static WCHAR *sys_err_strw()
+{
+	return err_strw(GetLastError());
+}
+
+HANDLE open_pipe_client()
+{
+  if (!start_gcin())
+	 return NULL;
   int port = SendMessageA(serverWnd, GCIN_PORT_MESSAGE, 0, 0);
 
   dbg("port %d\n", port);
@@ -120,9 +169,12 @@ restart:
 	  }
 
       // Exit if an error other than ERROR_PIPE_BUSY occurs.
-
+	  static bool opened = false;
       if (GetLastError() != ERROR_PIPE_BUSY) {
-         dbg("Could not open pipe. GLE=%d\n", GetLastError() );
+		 if (!opened) {
+			opened = true;
+			MessageBoxW(NULL, sys_err_strw(), L"Could not open gcin pipe", MB_OK|MB_ICONERROR);
+		 }
          return NULL;
       }
 
@@ -138,9 +190,17 @@ restart:
 
   return NULL;
 }
+
+
+#endif
+
 #endif
 #if UNIX
 int is_special_user;
+#endif
+
+#if SHARED_MEMORY
+GCIN_SHM gcin_open_shared_mem(int port);
 #endif
 
 static GCIN_client_handle *gcin_im_client_reopen(GCIN_client_handle *gcin_ch, Display *dpy)
@@ -168,7 +228,11 @@ static GCIN_client_handle *gcin_im_client_reopen(GCIN_client_handle *gcin_ch, Di
     is_special_user = TRUE;
   }
 #else
+#if SHARED_MEMORY
+  GCIN_SHM sockfd;
+#else
   HANDLE sockfd;
+#endif
 #endif
 
   int tcp = FALSE;
@@ -330,7 +394,11 @@ tcp:
     dbg("gcin client connected to server %d.%d.%d.%d:%d\n",
         pp[0], pp[1], pp[2], pp[3], ntohs(srv_ip_port.port));
 #else
+#if SHARED_MEMORY
+	sockfd = open_shm_client();
+#else
 	sockfd = open_pipe_client();
+#endif
 #endif // UNIX
 
   tcp = TRUE;
@@ -358,11 +426,11 @@ next:
       }
     }
 #else
-	dbg("zzzzz %x\n", sockfd);
+#if !SHARED_MEMORY
 	DWORD rn;
 	ReadFile(sockfd, &handle->server_idx, sizeof(int), &rn, NULL);
-	dbg("hhhhh\n");
-	dbg("server_idx %d\n", handle->server_idx);
+//	dbg("server_idx %d\n", handle->server_idx);
+#endif
 #endif
   }
 
@@ -405,7 +473,12 @@ void gcin_im_client_close(GCIN_client_handle *handle)
 
   if (handle->fd > 0)
 #if WIN32
-    CloseHandle((HANDLE)handle->fd);
+#if SHARED_MEMORY
+	SendMessageA(serverWnd, GCIN_CLIENT_MESSAGE_CLOSE, handle->fd->port, NULL);
+    gcin_shm_close(handle->fd);
+#else
+	CloseHandle((HANDLE)handle->fd);
+#endif
 #else
     close(handle->fd);
 #endif
@@ -419,7 +492,15 @@ void gcin_im_client_close(GCIN_client_handle *handle)
 static void send_req_msg(GCIN_client_handle *handle)
 {
 #if WIN32
+#if SHARED_MEMORY
+	SendMessageA(serverWnd, GCIN_CLIENT_MESSAGE_REQ, handle->fd->port, NULL);
+#else
+#if 1
 	PostMessageA(serverWnd, GCIN_CLIENT_MESSAGE_REQ, handle->server_idx, NULL);
+#else
+	SendMessageA(serverWnd, GCIN_CLIENT_MESSAGE_REQ, handle->server_idx, NULL);
+#endif
+#endif
 #endif
 }
 
@@ -455,6 +536,9 @@ static int gen_req(GCIN_client_handle *handle, u_int req_no, GCIN_req *req)
   to_gcin_endian_2(&req->spot_location.x);
   to_gcin_endian_2(&req->spot_location.y);
 
+#if SHARED_MEMORY
+  gcin_start_shm_write(handle->fd);
+#endif
   return 1;
 }
 
@@ -465,7 +549,11 @@ static void error_proc(GCIN_client_handle *handle, char *msg)
 
   perror(msg);
 #if WIN32
+#if SHARED_MEMROY
+  gcin_shm_close(handle->fd);
+#else
   CloseHandle(handle->fd);
+#endif
 #else
   close(handle->fd);
 #endif
@@ -481,6 +569,10 @@ static void error_proc(GCIN_client_handle *handle, char *msg)
 #if WIN32
 static int handle_read(GCIN_client_handle *handle, void *ptr, int N)
 {
+#if SHARED_MEMORY
+  gcin_shm_read(handle->fd, ptr, N);
+  return N;
+#else
   BOOL r;
   HANDLE fd = handle->fd;
 
@@ -491,7 +583,7 @@ static int handle_read(GCIN_client_handle *handle, void *ptr, int N)
 
   while (n > 0 && loop < 10) {
     DWORD bytes = 0;
-    for(int loop=0;loop < 1000; loop++) {
+    for(int l=0;l < 1000; l++) {
        bytes = 0;
        if (PeekNamedPipe(fd, NULL, 0, NULL, &bytes, NULL)) {
 //         dbg("bytes %d\n", bytes);
@@ -530,8 +622,8 @@ static int handle_read(GCIN_client_handle *handle, void *ptr, int N)
 	dbg("trN != N %d,%d\n", trN, N);
 	return -1;
   }
-
   return trN;
+#endif
 }
 #else
 typedef struct {
@@ -575,6 +667,10 @@ static int handle_read(GCIN_client_handle *handle, void *ptr, int n)
 #if WIN32
 static int handle_write(GCIN_client_handle *handle, void *ptr, int n)
 {
+#if SHARED_MEMORY
+  gcin_shm_write(handle->fd, ptr, n);
+  return n;
+#else
   BOOL r;
   char *tmp;
   HANDLE fd = (HANDLE)handle->fd;
@@ -591,6 +687,7 @@ static int handle_write(GCIN_client_handle *handle, void *ptr, int n)
   if (!r)
 	  return -1;
   return wn;
+#endif
 }
 #else
 static int handle_write(GCIN_client_handle *handle, void *ptr, int n)
@@ -752,6 +849,10 @@ static int gcin_im_client_forward_key_event(GCIN_client_handle *handle,
   }
   send_req_msg(handle);
 
+
+#if SHARED_MEMORY
+  gcin_start_shm_read(handle->fd);
+#endif
   bzero(&reply, sizeof(reply));
   if (handle_read(handle, &reply, sizeof(reply)) <=0) {
     error_proc(handle, "cannot read reply from gcin server");
@@ -898,6 +999,10 @@ void gcin_im_client_set_flags(GCIN_client_handle *handle, int flags, int *ret_fl
   dbg("gcin_im_client_set_flags c\n");
 #endif
 
+#if SHARED_MEMORY
+  gcin_start_shm_read(handle->fd);
+#endif
+
   if (handle_read(handle, ret_flag, sizeof(int)) <= 0) {
     error_proc(handle, "cannot read reply str from gcin server");
   }
@@ -927,6 +1032,10 @@ void gcin_im_client_clear_flags(GCIN_client_handle *handle, int flags, int *ret_
     error_proc(handle,"gcin_im_client_set_flags error");
   }
   send_req_msg(handle);
+
+#if SHARED_MEMORY
+  gcin_start_shm_read(handle->fd);
+#endif
 
   if (handle_read(handle, ret_flag, sizeof(int)) <= 0) {
     error_proc(handle, "cannot read reply str from gcin server");
@@ -970,6 +1079,10 @@ err_ret:
     goto err_ret;
   }
   send_req_msg(handle);
+
+#if SHARED_MEMORY
+  gcin_start_shm_read(handle->fd);
+#endif
 
   str_len=-1; // str_len includes \0
   if (handle_read(handle, &str_len, sizeof(str_len))<=0)

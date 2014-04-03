@@ -128,7 +128,7 @@ char *sys_err_strA()
 
 
 #if _DBG
-static FILE *dbgfp;
+FILE *dbgfp;
 #endif
 #if GCIN_SVR
 void dbg_time(char *fmt,...)
@@ -136,6 +136,7 @@ void dbg_time(char *fmt,...)
 }
 #endif
 
+char utf8_sigature[];
 static void init_dbgfp()
 {
 #if _DBG
@@ -155,12 +156,17 @@ static void init_dbgfp()
 #if GCIN_IME
 		sprintf(tt, "C:\\dbg\\ime%x", GetCurrentProcessId());
 #elif GCIN_SVR
+#if 0
 		sprintf(tt, "C:\\dbg\\svr%x", GetCurrentProcessId());
 #else
-		sprintf(tt, "C:\\dbg\\other%x", GetCurrentProcessId());
+		sprintf(tt, "C:\\dbg\\gcin");
+#endif
+#else
+		sprintf(tt, "C:\\dbg\\other", GetCurrentProcessId());
 #endif
 		dbgfp=_fsopen(tt, "wt",  _SH_DENYWR);
 		setbuf(dbgfp, NULL);
+		fprintf(dbgfp, "%s", utf8_sigature);
 
 		char exe[MAX_PATH];
 		GetModuleFileNameA(NULL, exe, sizeof(exe));

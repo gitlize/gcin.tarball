@@ -20,8 +20,7 @@ Description: GTK+ based input method for Chinese users
  Chinese. However, it is also very useful for Simplified Chinese, Japanese,
  and many other languages.
  .
- This package contains only GTK2 immodule. For GTK3 and Qt4 immodule, 
- please install correspondence packages.
+ This package depends on  gcin-data, gcin-tables, gcin-im-client, gcin-gtk2-immodule, gcin-gtk3-immodule, gcin-qt4-immodule, vorbis-tools 
 
 Package: gcin-data
 Architecture: all

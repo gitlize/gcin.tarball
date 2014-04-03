@@ -80,7 +80,7 @@ void load_gtab_list(gboolean skip_disabled)
       continue;
 
 
-    sscanf(line, "%s %s %s %s %s %s", name, key, file, icon, phrase_txt);
+    sscanf(line, "%s %s %s %s %s", name, key, file, icon, phrase_txt);
 //    dbg("%s %c\n", line, key[0]);
 
     if (strlen(name) < 1)
