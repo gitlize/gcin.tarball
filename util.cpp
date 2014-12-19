@@ -98,7 +98,7 @@ void dbg_time(char *fmt,...)
 #endif
 
 #if DEBUG
-void __gcin_dbg_(char *fmt,...)
+void __gcin_dbg_(const char *fmt,...)
 {
   va_list args;
 

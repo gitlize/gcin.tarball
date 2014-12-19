@@ -348,7 +348,7 @@ void tsin_scan_pre_select(gboolean b_incr)
 
 //  dbg("selN %d %d\n",selN, tss.pre_selN);
   tss.ph_sta = tss.c_len - max_len;
-  
+
   if (selN==1 && tss.pre_sel[0].len==max_len) {
     char out[MAX_PHRASE_LEN * CH_SZ + 1];
     chpho_get_str(tss.c_len - max_len, max_len, out);
@@ -357,7 +357,7 @@ void tsin_scan_pre_select(gboolean b_incr)
       return;
     }
   }
-    
+
   disp_pre_sel_page();
 }
 
@@ -540,7 +540,7 @@ u_char scanphr_en(TSIN_HANDLE *th, gboolean is_gtab, int chpho_idx, int plen,  i
 	  continue;
 
     bzero(sel[selN].phkey, sizeof(sel[selN].phkey));
-
+    
 #if 0
 	for(i=0;i<match_len;) {
 	  char t[CH_SZ + 1];
@@ -642,18 +642,18 @@ void tsin_en_scan_pre_select()
 
   dbg("selN %d %d\n",selN, tss.pre_selN);
   tss.ph_sta = tss.c_len - max_len;
-  
+
   if (selN==1 && tss.pre_sel[0].len==max_len) {
     char out[MAX_PHRASE_LEN * CH_SZ + 1];
     chpho_get_str(tss.c_len - max_len, max_len, out);
-        
+
     dbg("rrr %s %s\n", out, tss.pre_sel[0].str);
     if (!strcmp(out, tss.pre_sel[0].str)) {
 	  dbg("ssss\n");
 	  tsin_sele_by_idx(0);
       return;
     }
-  }  
-    
+  }
+
   disp_pre_sel_page();
 }

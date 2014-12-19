@@ -18,6 +18,49 @@ GTAB_LIST_S method_codes[] = {
 
 extern char *default_input_method_str;
 
+#if 0
+void free_gtab_list_sub() {
+  int i;
+  for (i=0; i < inmdN; i++) {
+    INMD *pinmd = &inmd[i];
+    free(pinmd->filename); pinmd->filename=NULL;
+    free(pinmd->cname); pinmd->cname=NULL;
+    free(pinmd->icon); pinmd->icon=NULL;
+    free(pinmd->phrase_txt); pinmd->phrase_txt=NULL;
+  }	
+}
+#endif
+
+
+void free_gtab()
+{
+  int i;
+
+  for(i=0; i < inmdN; i++) {
+    INMD *inp = &inmd[i];
+    free(inp->tbl); inp->tbl = NULL;
+    free(inp->tbl64); inp->tbl64 = NULL;
+    free(inp->phridx); inp->phridx = NULL;
+    free(inp->phrbuf); inp->phrbuf = NULL;
+    free(inp->keyname_lookup); inp->keyname_lookup = NULL;
+    free(inp->qkeys); inp->qkeys = NULL;
+    free(inp->keycol); inp->keycol = NULL;
+    free(inp->keyname); inp->keyname = NULL;
+    free(inp->idx1); inp->idx1 = NULL;
+
+    
+    free(inp->filename); inp->filename=NULL;
+    free(inp->cname); inp->cname=NULL;
+    free(inp->icon); inp->icon=NULL;
+    free(inp->phrase_txt); inp->phrase_txt=NULL;
+    free(inp->endkey); inp->endkey=NULL;        
+    free(inp->selkey); inp->selkey=NULL;            
+  }
+  free(inmd); inmd=NULL;    
+}
+
+
+
 void load_gtab_list(gboolean skip_disabled)
 {
   char ttt[128];
@@ -35,14 +78,8 @@ void load_gtab_list(gboolean skip_disabled)
 
   skip_utf8_sigature(fp);
 
-  int i;
-  for (i=0; i < inmdN; i++) {
-    INMD *pinmd = &inmd[i];
-    free(pinmd->filename); pinmd->filename=NULL;
-    free(pinmd->cname); pinmd->cname=NULL;
-    free(pinmd->icon); pinmd->icon=NULL;
-    free(pinmd->phrase_txt); pinmd->phrase_txt=NULL;
-  }
+  
+  free_gtab();
 
   inmdN = 0;
 

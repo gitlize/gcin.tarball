@@ -795,6 +795,7 @@ void toggle_im_enabled()
 	  ClrIn();
 
       init_state_chinese(current_CS, TRUE);
+//      init_state_chinese(current_CS, tsin_pho_mode());
       reset_current_in_win_xy();
 #if 1
       show_in_win(current_CS);
@@ -956,7 +957,6 @@ gboolean init_in_method2(ClientState *cs, int in_no)
   if (cs==current_CS && cs->in_method != in_no) {
     if (!(inmd[in_no].flag & FLAG_GTAB_SYM_KBM)) {
       flush_edit_buffer();
-
       hide_in_win(cs);
     }
 
@@ -980,7 +980,7 @@ gboolean init_in_method2(ClientState *cs, int in_no)
 	  free_tsin();
       set_wselkey();
       cs->in_method = in_no;
-      if (cs==current_CS || !current_CS)
+//      if (cs==current_CS || !current_CS)
 		init_tab_pp(init_im);
       break;
     case method_type_SYMBOL_TABLE:
@@ -1071,6 +1071,7 @@ gboolean init_in_method(int in_no)
 static void cycle_next_in_method()
 {
   int i;
+  dbg("cycle_next_in_method\n");
 #if WIN32
   if (test_mode)
     return;
@@ -1337,7 +1338,7 @@ gboolean ProcessKeyPress(KeySym keysym, u_int kev_state)
 #endif
 
     int kidx = gcin_switch_keys_lookup(keysym);
-    last_keysym = 0;
+    last_keysym = keysym;
     if (kidx < 0) {
       return FALSE;
     }
@@ -1432,7 +1433,7 @@ gboolean ProcessKeyRelease(KeySym keysym, u_int kev_state)
 
 
 #if 1
-//  dbg("last_keysym %x\n", last_keysym);
+  dbg("last_keysym %x\n", last_keysym);
 
   if (current_CS->b_gcin_protocol && (last_keysym == XK_Shift_L ||
   last_keysym == XK_Shift_R || last_keysym == XK_Control_L || last_keysym == XK_Control_R)) {
@@ -1637,7 +1638,7 @@ int gcin_FocusOut(ClientState *cs)
   if (!cs->client_win)
     return FALSE;
 
-#if UNIX && 0
+#if UNIX
   if (is_tip_window(cs->client_win)) {
 	return FALSE;
   }

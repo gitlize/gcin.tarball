@@ -106,6 +106,7 @@ all:	$(PROGS) trad2sim $(GCIN_SO) $(DATA) $(PROGS_CV) gcin.spec gcin-fedora.spec
 	if [ $(GTK3_IM) = 'Y' ]; then $(MAKE) -C gtk3-im; fi
 	if [ $(QT_IM) = 'Y' ]; then $(MAKE) -C qt-im; fi
 	if [ $(QT4_IM) = 'Y' ]; then $(MAKE) -C qt4-im; fi
+	if [ $(QT5_IM) = 'Y' ]; then $(MAKE) -C qt5-im; fi
 
 #gcc_ld_run_path=-Wl,-rpath,$(gcin_ld_run_path)
 
@@ -227,6 +228,7 @@ install:
 	if [ $(GTK3_IM) = 'Y' ]; then $(MAKE) -C gtk3-im install; fi
 	if [ $(QT_IM) = 'Y' ]; then $(MAKE) -C qt-im install; fi
 	if [ $(QT4_IM) = 'Y' ]; then $(MAKE) -C qt4-im install; fi
+	if [ $(QT5_IM) = 'Y' ]; then $(MAKE) -C qt5-im install; fi
 	if [ $(prefix) = /usr/local ]; then \
 	   install -m 644 gcin.png /usr/share/icons/hicolor/64x64/apps; \
 	   install -d $(DOC_DIR); \
@@ -259,6 +261,7 @@ clean:
 	if [ $(GTK3_IM) = 'Y' ]; then $(MAKE) -C gtk3-im clean; fi
 	$(MAKE) -C qt-im clean
 	$(MAKE) -C qt4-im clean
+	$(MAKE) -C qt5-im clean
 	$(MAKE) -C menu clean
 	$(MAKE) -C po clean
 	rm -fr *.o *.E *.db *.pico *.so config.mak tags $(PROGS) gcin-nocur $(PROGS_CV) \

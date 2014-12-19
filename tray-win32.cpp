@@ -497,6 +497,17 @@ void init_tray_win32()
 
 void destroy_tray_win32()
 {
+	
+  if (tray_menu!=NULL) {
+    gtk_widget_destroy(tray_menu);
+    tray_menu = NULL;
+  }
+    
+  if (tray_menu_state!=NULL) {
+    gtk_widget_destroy(tray_menu_state);
+    tray_menu_state = NULL;
+  }
+	
   g_object_unref(icon_main); icon_main = NULL;
   g_object_unref(icon_state); icon_state = NULL;
 }

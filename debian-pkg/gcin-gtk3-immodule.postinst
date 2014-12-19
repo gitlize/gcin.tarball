@@ -2,5 +2,10 @@
 # postinst script for gcin-gtk3-immodule
 set -e
 
-[ -x /usr/bin/gtk-query-immodules-3.0 ] && /usr/bin/gtk-query-immodules-3.0 --update-cache
+for i in x86_64 i386 
+do
+f=/usr/lib/$i-linux-gnu/gtk-query-immodules-3.0
+[ -x $f ] && $f
+done
+
 exit 0

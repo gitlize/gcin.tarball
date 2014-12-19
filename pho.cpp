@@ -433,6 +433,7 @@ if (!fw && (fw=_fsopen(phofname,"rb+", _SH_DENYWR))==NULL)
 #if 1
   if (fwrite(&ch_pho[start_i], sizeof(PHO_ITEM), stop_i - start_i, fw) <= 0)
     p_err("fwrite err");
+  fflush(fw);
 #endif
 
 #if 0

@@ -9,6 +9,7 @@ typedef struct {
   u_int seed;
   Connection_type type;
 #if	UNIX
+  GIOChannel *channel;
   int fd;
 #else
 #if SHARED_MEMORY

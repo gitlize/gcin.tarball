@@ -514,7 +514,11 @@ phokey_t utf8_pho_key(char *s)
 gboolean is_legal_en_char(char *ch)
 {
   char c = ch[0];
-  return c>='A' && c<='Z' || c>='a' && c<='z' || strchr(" '-_+.,0123456789", c) != NULL;
+#if 0
+  return c>='A' && c<='Z' || c>='a' && c<='z' || strchr(" '-_+.,0123456789@()&$!#", c) != NULL;
+#else
+  return !(c&0x80);
+#endif
 }
 
 
@@ -668,8 +672,6 @@ static void put_u8_char(int pho_idx, phokey_t key, gboolean b_tone)
 static u_char selstr[MAX_PHRASE_SEL_N][MAX_PHRASE_LEN * CH_SZ];
 static u_char sellen[MAX_PHRASE_SEL_N];
 
-static u_short phrase_count;
-static u_short pho_count;
 
 static gboolean chpho_eq_pho(int idx, phokey_t *phos, int len)
 {
@@ -725,7 +727,7 @@ static void get_sel_phrase0(int selidx, gboolean eqlen)
   if (!tsin_seek(pp, 2, &sti, &edi, pinyin_s))
     return;
 
-  while (sti < edi && phrase_count < phkbm.selkeyN) {
+  while (sti < edi && tss.phrase_count < phkbm.selkeyN) {
     phokey_t stk[MAX_PHRASE_LEN];
     usecount_t usecount;
     u_char stch[MAX_PHRASE_LEN * CH_SZ + 1];
@@ -739,8 +741,8 @@ static void get_sel_phrase0(int selidx, gboolean eqlen)
     }
 
     if (chpho_eq_pho(selidx, stk, len)) {
-      sellen[phrase_count]=len;
-      utf8cpyN((char *)selstr[phrase_count++], (char *)stch, len);
+      sellen[tss.phrase_count]=len;
+      utf8cpyN((char *)selstr[tss.phrase_count++], (char *)stch, len);
     }
 
     sti++;
@@ -753,7 +755,7 @@ static void get_sel_phrase_end()
   if (stidx < 0)
     stidx = 0;
 
-  phrase_count = 0;
+  tss.phrase_count = 0;
   int i;
   for(i=stidx; i < tss.c_len - 1; i++) {
     get_sel_phrase0(i, TRUE);
@@ -762,7 +764,7 @@ static void get_sel_phrase_end()
 
 static void get_sel_phrase()
 {
-  phrase_count = 0;
+  tss.phrase_count = 0;
   get_sel_phrase0(tss.c_idx, FALSE);
 }
 
@@ -813,8 +815,8 @@ static void get_sel_pho()
   } else
     end = idx_pho[i+1].start;
 
-  pho_count = end - tss.startf;
-//  dbg("pho_count %d\n", pho_count);
+  tss.pho_count = end - tss.startf;
+//  dbg("tss.pho_count %d\n", tss.pho_count);
 }
 
 
@@ -832,19 +834,19 @@ static void disp_current_sel_page()
   for(i=0; i < phkbm.selkeyN; i++) {
     int idx = tss.current_page + i;
 
-    if (idx < phrase_count) {
+    if (idx < tss.phrase_count) {
       int tlen = utf8_tlen((char *)selstr[i], sellen[i]);
       set_sele_text(i, (char *)selstr[i], tlen);
     } else
-    if (idx < phrase_count + pho_count) {
-      int v = idx - phrase_count + tss.startf;
+    if (idx < tss.phrase_count + tss.pho_count) {
+      int v = idx - tss.phrase_count + tss.startf;
       char *tstr = pho_idx_str(v);
       set_sele_text(i, tstr, -1);
     } else
       break;
   }
 
-  if (tss.current_page + phkbm.selkeyN < phrase_count + pho_count) {
+  if (tss.current_page + phkbm.selkeyN < tss.phrase_count + tss.pho_count) {
     disp_arrow_down();
   }
 
@@ -860,12 +862,12 @@ static int fetch_user_selection(int val, char **seltext, int *is_pho_phrase)
   int len = 0;
 
   *is_pho_phrase = FALSE;
-  if (idx < phrase_count) {
+  if (idx < tss.phrase_count) {
     len = sellen[idx];
     *seltext = (char *)selstr[idx];
   } else
-  if (idx < phrase_count + pho_count) {
-    int v = idx - phrase_count + tss.startf;
+  if (idx < tss.phrase_count + tss.pho_count) {
+    int v = idx - tss.phrase_count + tss.startf;
     *seltext = pho_idx_str2(v, is_pho_phrase);
     len = utf8_str_N(*seltext);
   }
@@ -1149,6 +1151,12 @@ void dump_flag()
 gboolean add_to_tsin_buf_phsta(char *str, phokey_t *pho, int len)
 {
     int idx = tss.ph_sta;
+
+    if (!tsin_pho_mode()) { // len of En preselect is strlen, not Uni char len
+	   len = utf8_str_N(str);
+	   dbg("len:%d\n", len);
+	}
+
 #if 1
     dbg("add_to_tsin_buf_phsta idx:%d tss.c_idx:%d  tss.c_len:%d pho_mode:%d\n",
        idx, tss.c_idx, tss.c_len, tsin_pho_mode());
@@ -1204,6 +1212,7 @@ void add_to_tsin_buf_str(char *str)
   char *endp = pp+strlen(pp);
   int N = 0;
 
+  dbg("add_to_tsin_buf_str %s\n", str);
 
   while (*pp) {
     int u8sz = utf8_sz(pp);
@@ -1217,7 +1226,13 @@ void add_to_tsin_buf_str(char *str)
 //  dbg("add_to_tsin_buf_str %s %d\n",str, N);
 
   phokey_t pho[MAX_PHRASE_LEN];
+#if 0
   bzero(pho, sizeof(pho));
+#else
+  int i;
+  for(i=0;i<N;i++)
+	  pho[i]=0x1; //˙
+#endif
   add_to_tsin_buf(str, pho, N);
 }
 
@@ -1578,7 +1593,7 @@ gboolean tsin_page_down()
 
   tss.pho_menu_idx = 0;
   tss.current_page = tss.current_page + phkbm.selkeyN;
-  if (tss.current_page >= phrase_count + pho_count)
+  if (tss.current_page >= tss.phrase_count + tss.pho_count)
     tss.current_page = 0;
 
   disp_current_sel_page();
@@ -1599,8 +1614,8 @@ void open_select_pho()
 
   int idx = tss.c_idx==tss.c_len?tss.c_len-1:tss.c_idx;
 
-  tss.pho_menu_idx = phrase_count;
-  if (phrase_count < phkbm.selkeyN-1) {
+  tss.pho_menu_idx = tss.phrase_count;
+  if (tss.phrase_count < phkbm.selkeyN-1) {
 	char *p = pho_idx_str(tss.startf);
 	if (utf8_eq(p, tss.chpho[idx].ch))
       tss.pho_menu_idx++;
@@ -1630,7 +1645,7 @@ static void tsin_create_win_save_phrase(int idx0, int len)
 int tsin_sel_max_N()
 {
   int N;
-  N = phrase_count + pho_count - tss.current_page;
+  N = tss.phrase_count + tss.pho_count - tss.current_page;
   if (N > phkbm.selkeyN)
     N = phkbm.selkeyN;
   return N;
@@ -2198,7 +2213,11 @@ asc_char:
 //        utf8_pho_keys(tss.chpho[tss.c_idx].ch, tphokeys);
 
         disp_char_chbuf(tss.c_idx);
-        tss.chpho[tss.c_idx].pho=utf8_pho_key(tstr);
+		phokey_t pk = utf8_pho_key(tstr);
+		if (!pk)
+			pk = 1; //.
+        tss.chpho[tss.c_idx].pho= pk;
+
         tss.c_idx++;
         if (tss.c_idx < tss.c_len)
           prbuf();

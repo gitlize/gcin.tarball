@@ -13,6 +13,7 @@ if [ "$1" = "-h" -o "$1" = "--help" -o "$1" = "-help" ]; then
     echo "  --use_gcb=N    : disable gcb (gtk copy-paste buffer)"
     echo "  --use_qt3=N    : disable Qt3 immodule"
     echo "  --use_qt4=N    : disable Qt4 immodule"
+    echo "  --use_qt5=N    : disable Qt5 immodule"
     echo "  --use_gtk3=N   : disable GTK+ 3.x immodule"
     echo "  --gcinlibdir=dir   : runtime path of gcin's *.so"
     echo "  --doc_version_dir=N  : doc path use /usr/share/doc/gcin instead of  /doc/gcin-x.x.x"
@@ -56,6 +57,7 @@ use_anthy='Y'
 #use_chewing='Y'
 use_qt3='N'
 use_qt4='Y'
+use_qt5='Y'
 use_gtk3='Y'
 
 if [ "$GCIN_USE_XIM" ]; then
@@ -83,6 +85,8 @@ for opt do
   --use_qt3*) use_qt3=`echo $opt | cut -d '=' -f 2`
   ;;
   --use_qt4*) use_qt4=`echo $opt | cut -d '=' -f 2`
+  ;;
+  --use_qt5*) use_qt5=`echo $opt | cut -d '=' -f 2`
   ;;
   --use_gtk3*) use_gtk3=`echo $opt | cut -d '=' -f 2`
   ;;
@@ -238,6 +242,27 @@ else
     echo "-> No, you don't have. It's ok if you don't want Qt4 immodule."
 fi
 
+
+QT5_IM='N'
+QT5_IM_DIR=/usr/$LIB/qt5/plugins/platforminputcontexts
+echo "testing if you have qt5 support"
+pkg-config --libs Qt5Core Qt5Gui > /dev/null 2> /dev/null
+if [ $? = 0 ]; then
+  QT5_IM='Y'
+fi
+
+if [ $QT5_IM = "Y" ]; then
+    if [ $use_qt5 = "N" ]; then
+        QT5_IM='N'
+        echo "-> Yes, but disabled."
+    else
+        echo "-> Yes, you have Qt5 support."
+    fi
+else
+    echo "-> No, you don't have. It's ok if you don't want Qt5 immodule."
+fi
+
+
 GTK3_IM='N'
 echo "testing if you have GTK+ 3.x support"
 pkg-config --libs gtk+-3.0 > /dev/null 2> /dev/null
@@ -291,9 +316,27 @@ if [ $QT4_IM = 'N' ]; then
 else
   for i in /usr/share/qt4/bin/moc /usr/lib/qt4/bin/moc /usr/lib64/qt4/bin/moc /usr/bin/moc
   do
-    [ -x $i ] && QT4_MOC=$i && echo "QT4_MOC=$QT4_MOC"
+    [ ! -x $i ] && continue
+    QT4_MOC=$i
+    echo "QT4_MOC=$QT4_MOC"
+    break
   done
 fi
+
+
+if [ $QT5_IM = 'N' ]; then
+  mv gcin.spec gcin.spec.tmp
+  grep -v qt5/plugins/inputmethods gcin.spec.tmp > gcin.spec
+else
+  for i in /usr/share/qt5/bin/moc /usr/lib/qt5/bin/moc /usr/lib/x86_64-linux-gnu/qt5/bin/moc /usr/lib64/qt5/bin/moc /usr/bin/moc
+  do
+    [ ! -x $i ] && continue
+    QT5_MOC=$i
+    echo "QT5_MOC=$QT5_MOC"
+    break
+  done
+fi
+
 
 BUILD_MODULE='N'
 if [ $USE_ANTHY = 'Y' ] || [ $USE_CHEWING = 'Y' ]; then
@@ -353,6 +396,8 @@ echo "QT_IM=$QT_IM" >> config.mak
 echo "QT_IM_DIR=$QT_IM_DIR" >> config.mak
 echo "QT4_IM=$QT4_IM" >> config.mak
 echo "QT4_IM_DIR=$QT4_IM_DIR" >> config.mak
+echo "QT5_IM=$QT5_IM" >> config.mak
+echo "QT5_IM_DIR=$QT5_IM_DIR" >> config.mak
 echo "GTK3_IM=$GTK3_IM" >> config.mak
 echo "USE_XIM=$use_xim" >> config.mak
 echo "LIB=$LIB" >> config.mak
@@ -367,12 +412,13 @@ echo "USE_INDICATOR=$USE_INDICATOR" >> config.mak
 echo "USE_GCB=$use_gcb" >> config.mak
 echo "BUILD_MODULE=$BUILD_MODULE" >> config.mak
 echo "GTK_QUERY_IM_64=$GTK_QUERY_IM_64" >> config.mak
+[ $QT5_IM = 'Y' ] && echo "QT5_MOC=$QT5_MOC" >> config.mak
 [ $QT4_IM = 'Y' ] && echo "QT4_MOC=$QT4_MOC" >> config.mak
 [ $QT_IM = 'Y' ] && echo "QT_MOC=$QT_MOC" >> config.mak
 
 echo "GCIN_DEBUG=0" >> config.mak
 if [ $prefix = /usr/local ]; then
-  echo "gcin_ld_run_path=$PWD:\$(gcinlibdir)" >> config.mak
+  echo "gcin_ld_run_path=$PWD:$PWD/im-client:\$(gcinlibdir)" >> config.mak
 else
   echo "gcin_ld_run_path=\$(gcinlibdir)" >> config.mak
 fi

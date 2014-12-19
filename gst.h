@@ -4,7 +4,7 @@ typedef struct {
   int ph_sta;  // phrase start
   int sel_pho;
   int current_page;
-  int startf;
+  int startf, pho_count, phrase_count;
   gboolean full_match;
   gboolean tsin_half_full;
   gboolean tsin_buffer_editing;

@@ -108,7 +108,7 @@ static void create_indicator_menu(char *icon, char *icon_state)
   char *ld_error;
 
   if (!handle) {
-    if (!(handle = dlopen("libappindicator.so", RTLD_LAZY)) && !(handle = dlopen("libappindicator.so.1", RTLD_LAZY))) {
+    if (!(handle = dlopen("libappindicator.so", RTLD_LAZY)) && !(handle = dlopen("libappindicator.so.1", RTLD_LAZY)) && !(handle = dlopen("libappindicator3.so.1", RTLD_LAZY))) {
       if ((ld_error = dlerror()) != NULL)
         box_warn(ld_error);
       return;

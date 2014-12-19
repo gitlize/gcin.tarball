@@ -234,22 +234,6 @@ void lookup_gtab_out(char *ch, char *out)
   lookup_gtabn(tt, out);
 }
 
-void free_gtab()
-{
-  int i;
-
-  for(i=0; i < inmdN; i++) {
-    INMD *inp = &inmd[i];
-    free(inp->tbl); inp->tbl = NULL;
-    free(inp->tbl64); inp->tbl64 = NULL;
-    free(inp->phridx); inp->phridx = NULL;
-    free(inp->phrbuf); inp->phrbuf = NULL;
-    free(inp->keyname_lookup); inp->keyname_lookup = NULL;
-  }
-
-  free(inmd);
-}
-
 
 char *b1_cat(char *s, char c)
 {
@@ -410,7 +394,7 @@ int get_DispInArea_str(char *out)
 void set_gtab_input_method_name(char *s);
 void case_inverse(KeySym *xkey, int shift_m);
 
-extern unich_t *fullchar[];
+//extern unich_t *fullchar[];
 
 void start_gtab_pho_query(char *utf8);
 

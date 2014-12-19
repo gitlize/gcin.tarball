@@ -103,7 +103,8 @@ static gboolean cb_new_gcin_client(GIOChannel *source, GIOCondition condition, g
 
   bzero(&gcin_clients[newsockfd], sizeof(gcin_clients[0]));
 
-  gcin_clients[newsockfd].tag = g_io_add_watch(g_io_channel_unix_new(newsockfd), G_IO_IN, cb_read_gcin_client_data,
+
+  gcin_clients[newsockfd].tag = g_io_add_watch(gcin_clients[newsockfd].channel=g_io_channel_unix_new(newsockfd), G_IO_IN, cb_read_gcin_client_data,
               GINT_TO_POINTER(newsockfd));
 
   if (type==Connection_type_tcp) {

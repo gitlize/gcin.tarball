@@ -102,6 +102,17 @@ Description: Qt4 input method module with gcin as backend
  .
  This package is the Qt4 input method module (immodule) for gcin.
 
+Package: gcin-qt5-immodule
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}, gcin-im-client (>= ${source:Version})
+Description: Qt5 input method module with gcin as backend
+ gcin is a GTK+ based input method which focused mainly on Traditional
+ Chinese. However, it is also very useful for Simplified Chinese, Japanese,
+ and many other languages.
+ .
+ This package is the Qt5 input method module (immodule) for gcin.
+
 Package: gcin-anthy
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, gcin (>= ${source:Version}), 

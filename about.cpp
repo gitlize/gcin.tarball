@@ -19,7 +19,7 @@ int html_browser(char *fname);
 #define FURL_LINUX "http://hyperrate.com/dir.php?eid=67"
 #define FURL_ANDROID "http://hyperrate.com/dir.php?eid=255"
 
-#define LOG_URL "http://www.csie.nctu.edu.tw/~cp76/gcin/download/Changelog.html"
+#define LOG_URL "http://hyperrate.com/gcin-source/Changelog.html"
 #define ET26_URL "http://hyperrate.com/thread.php?tid=22661"
 #define PUNC_URL "http://hyperrate.com/thread.php?tid=19444#19444"
 #define ADD_PHRASE_URL "http://hyperrate.com/thread.php?tid=23991#23991"
@@ -109,10 +109,10 @@ static struct {
 #if UNIX
 		{_L("討論區"), FURL_LINUX },
         {_L("gcin也有 Windows版"), FURL_WIN32},
-#else	
-		{_L("討論區"), FURL_WIN32 },	
+#else
+		{_L("討論區"), FURL_WIN32 },
 		{_L("gcin也有 Linux版"), FURL_LINUX},
-#endif		
+#endif
 		{_L("gcin也有 Android版"), FURL_ANDROID},
 		{_L("gcin改變記錄"), LOG_URL},
 		{_L("推薦使用26鍵的注音鍵盤"), ET26_URL},
@@ -124,14 +124,14 @@ static struct {
 #endif
 		{NULL}
 	};
-	
+
 	int i;
 	for(i=0; lab_url[i].url; i++) {
        GtkWidget *button = gtk_button_new_with_label(_(lab_url[i].label_str));
        gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
        g_signal_connect (G_OBJECT (button), "clicked",
 		      G_CALLBACK (callback_url), lab_url[i].url);
-	}	
+	}
 #endif
 
 

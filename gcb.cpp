@@ -499,3 +499,28 @@ void gcb_main()
   gtk_window_parse_geometry(GTK_WINDOW(mainwin),geomstr);
 #endif
 }
+
+void free_gcb() {
+  if (mainwin != NULL) {
+	  gtk_widget_destroy(mainwin);
+  }
+
+  if (hist_window != NULL) 
+	gtk_widget_destroy(hist_window);
+ 
+  if (snoop_button != NULL)
+	gtk_widget_destroy(snoop_button);
+	
+  int i;
+   for(i=0;i< gcb_history_n; i++)
+     g_free(hist_strArr[i]);
+
+   g_free(hist_strArr);
+
+
+  for(i=0;i<gcb_button_n;i++)
+    g_free(buttonStr[i]);
+    
+  g_free(buttonStr);	
+}
+

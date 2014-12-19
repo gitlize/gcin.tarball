@@ -3,7 +3,6 @@
 %selkey 12
 %endkey 0123456789abcdefghijklmnopqrstuvwxyz`-=[]\;',./
 %space_style 2
-%keep_key_case
 %symbol_kbm
 %keyname begin
 `	€

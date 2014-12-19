@@ -479,7 +479,7 @@ static void set_wselkey_str(char *s)
 char *ch_mode_selkey(gboolean is_gtab)
 {
   char *s;
-  if (is_gtab && cur_inmd)
+  if (is_gtab && cur_inmd && cur_inmd->selkey)
     s = cur_inmd->selkey;
   else
     s = pho_selkey;
@@ -495,14 +495,17 @@ void set_wselkey()
   gboolean is_gtab = current_method_type()==method_type_GTAB;
   char *s;
   if (tsin_pho_mode()) {
-	s = ch_mode_selkey(is_gtab);
+    s = ch_mode_selkey(is_gtab);
   } else
-    s =  en_sel_keys(is_gtab);
+    s = en_sel_keys(is_gtab);
+
+  if (s==NULL)
+    return;
 
   set_wselkey_str(s);
 
   if (is_gtab)
     gtab_set_win1_cb();
   else
-	tsin_set_win1_cb();
+    tsin_set_win1_cb();
 }

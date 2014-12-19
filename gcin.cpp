@@ -4,6 +4,7 @@
 #include "gtab.h"
 #if UNIX
 #include <signal.h>
+#include <pwd.h>
 #endif
 #if GCIN_i18n_message
 #include <libintl.h>
@@ -419,8 +420,8 @@ void hide_win0();
 void destroy_win0();
 void destroy_win1();
 void destroy_win_gtab();
-void free_pho_mem(),free_tsin(), free_en(), free_all_IC(), free_gtab(), free_phrase(), destroy_tray_win32();
-void close_pho_fw();
+void free_pho_mem(),free_tsin(), free_en(), free_all_IC(), free_gtab(), free_phrase(), destroy_tray_win32(), free_gcb();
+void close_pho_fw(), free_gtab_list();
 
 void do_exit()
 {
@@ -433,7 +434,9 @@ void do_exit()
   free_all_IC();
 #endif
   free_gtab();
+  
   free_phrase();
+  free_gcb();
 
 #if 1
   destroy_win0();
@@ -441,7 +444,7 @@ void do_exit()
   destroy_win_gtab();
 #endif
 
-#if WIN32
+#if 1
   destroy_tray_win32();
 #endif
   gtk_main_quit();
@@ -521,13 +524,20 @@ void screen_size_changed(GdkScreen *screen, gpointer user_data)
 
 #include "lang.h"
 
+
 extern int destroy_window;
 
 int main(int argc, char **argv)
 {
 #if WIN32
    putenv("PANGO_WIN32_NO_UNISCRIBE=1");
+#else
+   // restarting gcin may invoke gcin at USB disk, cannot umount
+   struct passwd *pw = getpwuid(getuid());
+   char *homedir = pw->pw_dir;
+   chdir(homedir);
 #endif
+
 
   char *destroy = getenv("GCIN_DESTROY_WINDOW");
   if (destroy)

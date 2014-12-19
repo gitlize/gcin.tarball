@@ -161,16 +161,17 @@ void create_win_save_phrase(WSP_S *wsp, int wspN)
   GtkWidget *vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
-  char tt[512];
+  char tt[512];  
+  gboolean is_en = wsp_str(wsp, wspN, tt);
+  
   tt[0] = 0;
   wsp_str(wsp, wspN, tt);
-
   gtk_box_pack_start (GTK_BOX (vbox), gtk_label_new(tt), FALSE, FALSE, 0);
 
   int i;
+  if (tsin_hand.ph_key_sz==2  && !is_en)
   for(i=0; i<wspN; i++) {
-    if (tsin_hand.ph_key_sz==2)
-      strcat(tt, phokey_to_str(wsp[i].key));
+    strcat(tt, phokey_to_str(wsp[i].key));
     strcat(tt, " ");
   }
 

@@ -126,7 +126,7 @@ add_items (void)
     foo.key = g_strdup(key);
     foo.file = g_strdup(file);
 //    dbg("%d] %d\n",i,pinmd->in_cycle);
-    foo.default_inmd =  default_input_method == i ;
+    foo.default_inmd =  default_input_method == i && strcmp(file, "!EN");
     foo.use = !pinmd->disabled;
     foo.cycle = pinmd->in_cycle && foo.use;
     foo.editable = FALSE;
@@ -405,13 +405,15 @@ static gboolean toggled_default_inmd(GtkCellRendererToggle *cell, gchar *path_st
   gtk_tree_model_get (model, &iter, COLUMN_FILE, &file, -1);
   char tt[128];
   sprintf(tt, "%s %s", key, file);
-  free(default_input_method_str);
-  default_input_method_str = strdup(tt);
+  if (strcmp(file, "!EN")) {
+	free(default_input_method_str);
+	default_input_method_str = strdup(tt);
   dbg("default_input_method_str %s\n", default_input_method_str);
 //  default_input_method = gcin_switch_keys_lookup(key[0]);
 
-  gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_DEFAULT_INMD, TRUE, -1);
-  gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_USE, TRUE, -1);
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_DEFAULT_INMD, TRUE, -1);
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_USE, TRUE, -1);
+  }
 
   gtk_tree_path_free (path);
 

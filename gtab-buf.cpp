@@ -359,6 +359,7 @@ void strtolower(char *u8, int len);
 gboolean output_gbuf()
 {
   hide_gtab_pre_sel();
+  ClrIn();
 
   if (!ggg.gbufN)
     return FALSE;
@@ -408,7 +409,6 @@ gboolean output_gbuf()
 
 
   clear_gtab_buf_all();
-  ClrIn();
   return TRUE;
 }
 
@@ -1169,6 +1169,11 @@ gboolean gtab_pre_select_idx(int c)
 
   gtab_buf_backspaceN(gtab_pre_select_phrase_len);
   int len = tss.pre_sel[c].len;
+
+  if (!tsin_pho_mode()) {
+    len = utf8_str_N(tss.pre_sel[c].str);
+  }
+
   insert_gbuf_cursor_phrase(tss.pre_sel[c].str, tss.pre_sel[c].phkey, len);
   gbuf[ggg.gbufN-1].flag |= FLAG_CHPHO_PHRASE_TAIL;
 
@@ -1226,7 +1231,7 @@ int feedkey_gtab_release(KeySym xkey, int kbstate)
             tsin_toggle_eng_ch();
             if (!tsin_pho_mode())
               set_key_codes_label(NULL, FALSE);
-            ClrIn();
+			ClrIn();
             disp_gbuf();
           }
           return 1;

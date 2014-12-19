@@ -481,7 +481,8 @@ int main(int argc, char **argv)
     }
 
     if (!is_en_word && phbufN!=charN) {
-      p_err("%s   Line %d problem in phbufN!=chbufN %d != %d\n", s, lineCnt, phbufN, chbufN);
+      dbg("%s   Line %d problem in phbufN!=chbufN %d != %d\n", s, lineCnt, phbufN, chbufN);
+      continue;
     }
 
     clen=phbufN;

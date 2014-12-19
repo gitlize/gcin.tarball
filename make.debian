@@ -14,4 +14,9 @@ ifeq ($(GTK3_IM),N)
 	mv control.tmp control; \
 	rm -f gcin-gtk3-immodule.install
 endif
-
+ifeq ($(QT5_IM),N)
+	cd ./debian; \
+	sed -e '/^Package: gcin-qt5-immodule/,/ for gcin.$$/d' control > control.tmp; \
+	mv control.tmp control; \
+	rm -f gcin-qt5-immodule.install
+endif

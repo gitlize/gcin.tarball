@@ -89,6 +89,8 @@ int main(int argc, char **argv)
 
     items[itemsN].key = kk;
 
+//    dbg("%s %x\n", s, kk);
+
     p++;
 
     char *str = p;

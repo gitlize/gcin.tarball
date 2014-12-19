@@ -238,7 +238,7 @@ static void shutdown_client(HANDLE fd)
 #endif
 #endif
 {
-//  dbg("client shutdown rn %d\n", rn);
+  dbg("client shutdown fd %d\n", fd);
 #if UNIX
   g_source_remove(gcin_clients[fd].tag);
   int idx = fd;
@@ -251,9 +251,13 @@ static void shutdown_client(HANDLE fd)
     current_CS = NULL;
   }
 
+dbg("llllll\n");
+
   free(gcin_clients[idx].cs);
   gcin_clients[idx].cs = NULL;
 #if UNIX
+  g_io_channel_unref(gcin_clients[idx].channel);
+  dbg("after g_object_unref\n");
   gcin_clients[idx].fd = 0;
 #else
   gcin_clients[idx].fd = NULL;

@@ -758,22 +758,25 @@ int main(int argc, char **argv)
   ts = &tsin_hand;
 
   if (b_contrib_en) {
-	 dbg("b_contrib_en\n");
-	b_en = TRUE;
+    dbg("b_contrib_en\n");
+    b_en = TRUE;
     load_tsin_contrib_en();
     ts = &en_hand;
   } else
   if (b_en) {
-	 dbg("b_en\n");
-    load_en_db();
-	ts = &en_hand;
+    dbg("b_en\n");
+    if (argc > 1)
+      load_tsin_db_ex(&en_hand, argv[1], FALSE, FALSE);
+    else
+      load_en_db();
+    ts = &en_hand;
   } else if (pinmd->method_type == method_type_TSIN) {
     dbg("is tsin\n");
     pho_load();
     if (b_contrib) {
       load_tsin_contrib_tsin();
     } else {
-	   dbg("edit\n");
+      dbg("edit\n");
       if (argc > 1)
         load_tsin_db_ex(&tsin_hand, argv[1], FALSE, FALSE);
       else
