@@ -16,7 +16,7 @@
 GTAB_space_pressed_E _gtab_space_auto_first;
 char **seltab;
 extern gboolean test_mode;
-extern unich_t *fullchar[];
+extern char *fullchar[];
 INMD *cur_inmd;
 #if UNIX
 GTAB_ST ggg = {.sel1st_i=MAX_SELKEY - 1};
@@ -30,14 +30,24 @@ static char keyrow[]=
 	      "asdfghjkl;"
 	      "zxcvbnm,./";
 
-gboolean gtab_phrase_on()
+gboolean gtab_phrase_on_()
 {
-  int val = cur_inmd && cur_inmd->DefChars >500 &&
+  gboolean val = cur_inmd && cur_inmd->DefChars >500 &&
 (gtab_auto_select_by_phrase==GTAB_OPTION_YES||
 (gtab_auto_select_by_phrase==GTAB_OPTION_AUTO&&(cur_inmd->flag&FLAG_AUTO_SELECT_BY_PHRASE)));
-
 return val;
 }
+
+gboolean gtab_phrase_on()
+{
+  gboolean val = gtab_phrase_on_();
+#if UNIX && 1
+  if (en_pre_select)
+	val = TRUE;
+#endif
+return val;
+}
+
 
 
 gboolean gtab_pre_select_on()
@@ -204,7 +214,7 @@ void init_gtab(int inmdno)
     else
       _gtab_space_auto_first = (GTAB_space_pressed_E)gtab_space_auto_first;
 
-    if (gtab_phrase_on() && _gtab_space_auto_first == GTAB_space_auto_first_any)
+    if (gtab_phrase_on_() && _gtab_space_auto_first == GTAB_space_auto_first_any)
       _gtab_space_auto_first = GTAB_space_auto_first_nofull;
 
     return;    /* table is already loaded */
@@ -284,7 +294,7 @@ void init_gtab(int inmdno)
 #define FULLN (127 - ' ')
 
     for(j=0; j < FULLN; j++)
-      if (!memcmp(_(fullchar[j]), keyname, len)) {
+      if (!memcmp(fullchar[j], keyname, len)) {
         break;
       }
 
@@ -337,7 +347,7 @@ void init_gtab(int inmdno)
   maxv++;
 
   free(inp->keymap);
-          
+
   inp->keymap = tzmalloc(char, 128);
 
   if (!(th.flag & FLAG_GTAB_SYM_KBM)) {
@@ -455,7 +465,7 @@ void init_gtab(int inmdno)
   else
     _gtab_space_auto_first = (GTAB_space_pressed_E) gtab_space_auto_first;
 
-  if (gtab_phrase_on() && _gtab_space_auto_first == GTAB_space_auto_first_any)
+  if (gtab_phrase_on_() && _gtab_space_auto_first == GTAB_space_auto_first_any)
     _gtab_space_auto_first = GTAB_space_auto_first_nofull;
 
   inp->last_k_bitn = (((cur_inmd->key64 ? 64:32) / inp->keybits) - 1) * inp->keybits;

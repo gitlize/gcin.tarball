@@ -447,12 +447,12 @@ void move_win0(int x, int y)
 
 void disp_tsin_eng_pho(int eng_pho)
 {
-  static unich_t *eng_pho_strs[]={_L("英"),_L("注")};
+  static char *eng_pho_strs[]={"英","注"};
 
   if (!button_eng_ph)
     return;
 
-  gtk_button_set_label(GTK_BUTTON(button_eng_ph), _(eng_pho_strs[eng_pho]));
+  gtk_button_set_label(GTK_BUTTON(button_eng_ph), eng_pho_strs[eng_pho]);
 }
 
 void exec_gcin_setup();

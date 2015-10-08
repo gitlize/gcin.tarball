@@ -57,7 +57,6 @@ QGcinPlatformInputContext::QGcinPlatformInputContext()
     if(!native)
         return;
     Display *display = static_cast<Display *>(native->nativeResourceForWindow("display", NULL));	
-    printf("display %p\n", display);
     
   if (!(gcin_ch = gcin_im_client_open(display))) {
     perror("cannot open gcin_ch");

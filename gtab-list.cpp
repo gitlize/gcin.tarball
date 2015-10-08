@@ -57,6 +57,7 @@ void free_gtab()
     free(inp->selkey); inp->selkey=NULL;            
   }
   free(inmd); inmd=NULL;    
+  inmdN = 0;
 }
 
 

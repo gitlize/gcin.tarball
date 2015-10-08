@@ -28,7 +28,7 @@ typedef struct {
   phokey_t key;
 } PIN_JUYIN;
 
-#define MAX_PHRASE_LEN (32)
+#define MAX_PHRASE_LEN (64)
 #define MAX_PHRASE_STR_LEN (MAX_PHRASE_LEN * CH_SZ + 1)
 
 #define Min(a,b) ((a) < (b) ? (a):(b))

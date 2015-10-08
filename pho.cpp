@@ -87,10 +87,28 @@ void mask_key_typ_pho(phokey_t *key)
 #define TKBM 0
 #define MIN_M_PHO 5
 
-static void find_match_phos(u_char mtyp_pho[4], int *mcount, int newkey)
+// skip table for hsu
+phokey_t skip[]={
+	0x1002, //ㄌ2
+	0x4604,  //
+	0x30, // ㄟ
+	0x604, // ㄇ4
+	0x600, // ㄇ
+	0x400, // ㄆ
+	0xc00, // ㄊ
+	0x1600,  // ㄏ
+	0xe00,  // ㄋ
+	0 // stop
+};
+
+static void find_match_phos(u_char mtyp_pho[4],  int *mcount, int newkey)
 {
       int vv;
       phokey_t key = pho2key(poo.typ_pho);
+      phokey_t mkey;
+	
+	  *mcount = 0;
+	  bzero(mtyp_pho, sizeof(poo.typ_pho));
 
       mask_key_typ_pho(&key);
 #if TKBM
@@ -101,11 +119,26 @@ static void find_match_phos(u_char mtyp_pho[4], int *mcount, int newkey)
       for (vv = hash_pho[poo.typ_pho[0]]; vv < hash_pho[poo.typ_pho[0]+1]; vv++) {
         phokey_t ttt=idx_pho[vv].key;
 
+//		prph(ttt);  dbg(" 0x%x\n", ttt);
+
+		int j;
+		for(j=0; skip[j]; j++)
+			if (skip[j]==ttt)
+				break;
+		if (skip[j])
+			continue;
+		
+		
         if (newkey!=' ' && !poo.typ_pho[3])
           mask_key_typ_pho(&ttt);
 
+        if (ttt < key)
+          continue;
+
         if (ttt > key)
           break;
+
+//		dbg(" ");  prph(ttt); dbg(" 0x%x\n", ttt);
 
         int count = 0;
 
@@ -126,10 +159,15 @@ static void find_match_phos(u_char mtyp_pho[4], int *mcount, int newkey)
 #if TKBM
           dbg("count %d\n", count);
 #endif
+			
+#if 0
           if (*mcount > MIN_M_PHO)
             break;
+#endif            
         }
       }
+      
+//      dbg("ret %d\n", *mcount);
 }
 
 gboolean inph_typ_pho_pinyin(int newkey);
@@ -193,26 +231,37 @@ int inph_typ_pho(KeySym newkey)
 
   int mcount = 0;
   u_char mtyp_pho[4];
+  char mtyp0=0;
 
+  find_match_phos(mtyp_pho, &mcount, newkey);
+  
+//  dbg("mcount %d\n", mcount);
+  
   int a;
-
   for(a=0; a < 3; a++) {
+	int mc;
+	u_char ttyp[4];
     char num = phkbm.phokbm[(int)poo.inph[0]][a].num;
     char typ = phkbm.phokbm[(int)poo.inph[0]][a].typ;
-
+#if 0
     if (typ == 3)
       continue;
+#endif
+	if (!num)
+		continue;
 
-    if (num) {
+
+    if (num && mcount==0) {
       if (typ==2 && poo.typ_pho[0] && !poo.typ_pho[2])
         poo.typ_pho[0] = 0;
       poo.typ_pho[(int)typ] = num;
 #if TKBM
       dbg("%d num %d\n",a, num);
 #endif
-      find_match_phos(mtyp_pho, &mcount, newkey);
+      find_match_phos(mtyp_pho, &mcount, newkey);      
     }
 
+	if (mcount==0)
     for(i=0; i < 3; i++) {
       char num = phkbm.phokbm[(int)poo.inph[2]][i].num;
       char typ = phkbm.phokbm[(int)poo.inph[2]][i].typ;
@@ -226,18 +275,27 @@ int inph_typ_pho(KeySym newkey)
       poo.typ_pho[(int)typ] = num;
 
       find_match_phos(mtyp_pho, &mcount, newkey);
-
+#if 0
       if (mcount > MIN_M_PHO) {
+		 memcpy(poo.typ_pho, mtyp_pho, sizeof(poo.typ_pho));
         return typ_pho_status();
       }
+#endif      
     }
 
+	if (mcount > 0 && typ != mtyp0)
+		continue;
+	
+	poo.typ_pho[mtyp0] = 0;
 
-    find_match_phos(mtyp_pho, &mcount, newkey);
-
-    if (mcount > MIN_M_PHO) {
-      return typ_pho_status();
-    }
+	poo.typ_pho[typ]=num;
+	find_match_phos(ttyp, &mc, newkey);
+	
+	if (mc > mcount) {
+		memcpy(mtyp_pho, ttyp, sizeof(ttyp));
+		mcount = mc;
+		mtyp0 = typ;
+	}
   }
 
   if (mcount) {
@@ -525,7 +583,7 @@ void load_tab_pho_file()
 
   dbg("kbmfname %s\n", kbmfname);
 
-  fread(&phkbm,sizeof(phkbm),1,fr);
+  int n = fread(&phkbm,sizeof(phkbm),1,fr);
   fclose (fr);
   phkbm.selkeyN = strlen(pho_selkey);
 

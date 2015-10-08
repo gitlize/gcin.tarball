@@ -795,7 +795,6 @@ void toggle_im_enabled()
 	  ClrIn();
 
       init_state_chinese(current_CS, TRUE);
-//      init_state_chinese(current_CS, tsin_pho_mode());
       reset_current_in_win_xy();
 #if 1
       show_in_win(current_CS);
@@ -957,6 +956,7 @@ gboolean init_in_method2(ClientState *cs, int in_no)
   if (cs==current_CS && cs->in_method != in_no) {
     if (!(inmd[in_no].flag & FLAG_GTAB_SYM_KBM)) {
       flush_edit_buffer();
+
       hide_in_win(cs);
     }
 
@@ -1209,7 +1209,7 @@ void set_tsin_pho_mode();
 // return TRUE if the key press is processed
 gboolean ProcessKeyPress(KeySym keysym, u_int kev_state)
 {
-#if 0
+#if 1
   dbg("key press %x %x\n", keysym, kev_state);
 #endif
 
@@ -1270,7 +1270,13 @@ gboolean ProcessKeyPress(KeySym keysym, u_int kev_state)
       ((kev_state & ShiftMask) && gcin_im_toggle_keys==Shift_Space) ||
       ((kev_state & Mod4Mask) && gcin_im_toggle_keys==Windows_Space)
     ) {
-      if (current_method_type() == method_type_TSIN && tsin_chinese_english_toggle_key != TSIN_CHINESE_ENGLISH_TOGGLE_KEY_CapsLock) {
+	  dbg("ctrl-space\n");
+
+      if (
+#if 0
+		  current_method_type() == method_type_TSIN &&
+#endif
+		  tsin_chinese_english_toggle_key != TSIN_CHINESE_ENGLISH_TOGGLE_KEY_CapsLock) {
         tsin_set_eng_ch(1);
       }
 

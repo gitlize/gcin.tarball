@@ -1,4 +1,4 @@
-EN e !EN gcin-tray.png
+EN e !EN gcin_tray.png
 
 #####符號輸出類#########
 # ↓↓↓ ~/.gcin/symbol-table
@@ -47,5 +47,5 @@ latin-letters [ latin-letters.gtab latin-letters.png
 german / german.gtab german.png
 russian / russian.gtab russian.png
 vietnamese / vims.gtab vietnam.png 
-注音符號 / pho-char.gtab pho-char.png
+ㄅ符號 / pho-char.gtab pho-char.png
 ### russian by yuriy

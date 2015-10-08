@@ -44,6 +44,9 @@
 
 typedef struct _GtkGCINInfo GtkGCINInfo;
 
+#define FLAG_CHROME 1
+#define FLAG_FIREFOX 2
+
 struct _GtkIMContextGCIN
 {
   GtkIMContext object;
@@ -60,6 +63,7 @@ struct _GtkIMContextGCIN
   GCIN_PREEDIT_ATTR *pe_att;
   int pe_attN;
   int pe_cursor;
+  int flags;
 };
 
 
@@ -148,6 +152,10 @@ get_im (GtkIMContextGCIN *context_xim)
   GdkDisplay *display = gdk_screen_get_display (screen);
   if (!display)
     return;
+    
+#if DBG
+	setbuf(stdout, NULL);
+#endif    
 
   if (!context_xim->gcin_ch) {
     if (!(context_xim->gcin_ch = gcin_im_client_open(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()))))
@@ -161,6 +169,16 @@ get_im (GtkIMContextGCIN *context_xim)
     context_xim->pe_started = FALSE;
 #endif
 
+	char tt[128];
+	int len = readlink("/proc/self/exe", tt, sizeof(tt));
+	if (len>0) {
+		tt[len]=0;
+		if (strstr(tt, "chrome")) 
+			context_xim->flags = FLAG_CHROME;
+		else if (strstr(tt, "firefox")) 
+			context_xim->flags = FLAG_FIREFOX;
+	}
+	
 #if 0
     // coredump
     g_signal_connect (display, "closed",
@@ -201,7 +219,7 @@ gtk_im_context_gcin_init (GtkIMContextGCIN *im_context_gcin)
 //  test_gdm();
 
 #if DBG
-  printf("gtk_im_context_gcin_init %x\n", im_context_gcin);
+  printf("gtk_im_context_gcin_init %p\n", im_context_gcin);
 #endif
 // dirty hack for mozilla...
 }
@@ -231,7 +249,7 @@ static void
 gtk_im_context_gcin_finalize (GObject *obj)
 {
 #if DBG
-  printf("gtk_im_context_gcin_finalize %x\n", obj);
+  printf("gtk_im_context_gcin_finalize %p\n", obj);
 #endif
   GtkIMContextGCIN *context_xim = GTK_IM_CONTEXT_GCIN (obj);
   clear_preedit(context_xim);
@@ -247,7 +265,7 @@ static void set_ic_client_window (GtkIMContextGCIN *context_xim,
                       GdkWindow       *client_window)
 {
 #if DBG
-  printf("set_ic_client_window %x %x\n", context_xim, client_window);
+  printf("set_ic_client_window %p %p\n", context_xim, client_window);
 #endif
   if (!client_window)
     return;
@@ -346,8 +364,10 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
   char *rstr = NULL;
 
 #if (!FREEBSD || MAC_OS)
-//  if (event->type == GDK_KEY_PRESS)
-//    printf("kval %x %x\n",event->keyval, keysym);
+#if DBG
+  if (event->type == GDK_KEY_PRESS)
+    printf("kval %x %x\n",event->keyval, keysym);
+#endif
 
   int uni = gdk_keyval_to_unicode(event->keyval);
   if (uni) {
@@ -388,7 +408,7 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
 
 
 #if DBG
-    printf("result keysym:%x %d sub_comp_len:%x tstr:%x\n", keysym, result, sub_comp_len, tstr);
+    printf("result keysym:%x %d sub_comp_len:%x tstr:%p\n", keysym, result, sub_comp_len, tstr);
 #endif
 
     if (sub_comp_len) {
@@ -402,15 +422,18 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
 #if DBG
       printf("emit preedit-start\n");
 #endif
+#if 1
       g_signal_emit_by_name (context, "preedit-start");
+#endif          
       context_pe_started = context_xim->pe_started = TRUE;
+      preedit_changed = TRUE;
     }
 
     if (context_has_str != has_str || (tstr && context_xim->pe_str && strcmp(tstr, context_xim->pe_str))) {
       if (context_xim->pe_str)
         free(context_xim->pe_str);
       context_xim->pe_str = tstr;
-//      preedit_changed = TRUE;
+      preedit_changed = TRUE;
     }
 
 
@@ -427,7 +450,7 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
         context_xim->pe_att = malloc(attsz);
       memcpy(context_xim->pe_att, att, attsz);
 //      printf("context_xim->pe_att %x\n", context_xim->pe_att);
-//      preedit_changed = TRUE;
+      preedit_changed = TRUE;
     }
 
     if (context_xim->pe_cursor != cursor_pos) {
@@ -435,11 +458,11 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
       printf("cursor changed %d %d\n", context_xim->pe_cursor, cursor_pos);
 #endif
       context_xim->pe_cursor = cursor_pos;
-//      preedit_changed = TRUE;
+      preedit_changed = TRUE;
     }
 
 #if DBG
-    printf("seq:%d rstr:%s result:%x num_bytes:%d %x\n", context_xim->gcin_ch->seq, rstr, result, num_bytes, (unsigned int)buffer[0]);
+    printf("seq:%d rstr:%s result:%d num_bytes:%d %x\n", context_xim->gcin_ch->seq, rstr, result, num_bytes, (unsigned int)buffer[0]);
 #endif
     if (event->type == GDK_KEY_PRESS && !rstr && !result && num_bytes &&
 #if 1
@@ -455,7 +478,7 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
     }
 
 #if 1
-  if (preedit_changed) {
+  if (preedit_changed && (context_xim->flags & FLAG_FIREFOX)) {
 #if DBG
     printf("preedit-change\n");
 #endif
@@ -463,29 +486,43 @@ gtk_im_context_gcin_filter_keypress (GtkIMContext *context,
   }
 #endif
 
-
-
-
 #if DBG
-  printf("seq:%d event->type:%d iiiii %d  %x %d rstr:%x\n",context_xim->gcin_ch->seq, event->type, result, keysym,
+  printf("seq:%d event->type:%d iiiii %d  %x %d rstr:%p\n",context_xim->gcin_ch->seq, event->type, result, keysym,
     num_bytes, rstr);
 #endif
   if (rstr) {
 #if DBG
     printf("emit %s\n", rstr);
 #endif
-    g_signal_emit_by_name (context, "commit", rstr);
+    g_signal_emit_by_name (context_xim, "commit", rstr);
     free(rstr);
   }
 
+
   if (!has_str && context_pe_started) {
     clear_preedit(context_xim);
+    preedit_changed = FALSE;
     context_xim->pe_started = FALSE;
 #if DBG
     printf("preedit-end %x\n", has_str);
 #endif
-    g_signal_emit_by_name (context, "preedit-end");
+#if 1
+	if (!(context_xim->flags & FLAG_CHROME))
+		g_signal_emit_by_name(context_xim, "preedit_changed");
+#endif
+#if 1
+    g_signal_emit_by_name (context_xim, "preedit-end");
+#endif    
   }
+
+#if 1
+  if (preedit_changed && !(context_xim->flags & FLAG_FIREFOX)) {
+#if DBG
+    printf("preedit-change\n");
+#endif
+    g_signal_emit_by_name(context_xim, "preedit_changed");
+  }
+#endif
 
 
   return result;
@@ -566,7 +603,7 @@ gtk_im_context_gcin_set_use_preedit (GtkIMContext *context,
 {
   GtkIMContextGCIN *context_gcin = GTK_IM_CONTEXT_GCIN (context);
 #if DBG
-  printf("gtk_im_context_gcin_set_use_preedit %x %d\n", context_gcin->gcin_ch, use_preedit);
+  printf("gtk_im_context_gcin_set_use_preedit %p %d\n", context_gcin->gcin_ch, use_preedit);
 #endif
   if (!context_gcin->gcin_ch)
     return;
@@ -584,7 +621,7 @@ gtk_im_context_gcin_reset (GtkIMContext *context)
 {
   GtkIMContextGCIN *context_gcin = GTK_IM_CONTEXT_GCIN (context);
 #if DBG
-  printf("gtk_im_context_gcin_reset %x\n", context_gcin);
+  printf("gtk_im_context_gcin_reset %p\n", context_gcin);
 #endif
 
   context_gcin->pe_started = FALSE;
@@ -593,7 +630,7 @@ gtk_im_context_gcin_reset (GtkIMContext *context)
     gcin_im_client_reset(context_gcin->gcin_ch);
     if (context_gcin->pe_str && context_gcin->pe_str[0]) {
 #if DBG
-      printf("clear %x\n", context_gcin);
+      printf("clear %p\n", context_gcin);
 #endif
       clear_preedit(context_gcin);
       g_signal_emit_by_name(context, "preedit_changed");
@@ -645,7 +682,7 @@ gtk_im_context_gcin_get_preedit_string (GtkIMContext   *context,
   GtkIMContextGCIN *context_gcin = GTK_IM_CONTEXT_GCIN (context);
 
 #if DBG
-  printf("gtk_im_context_gcin_get_preedit_string %x %x %x\n", str, attrs, cursor_pos);
+  printf("gtk_im_context_gcin_get_preedit_string %p %p %p\n", str, attrs, cursor_pos);
 #endif
 
   if (context_gcin->gcin_ch && cursor_pos) {
@@ -680,7 +717,7 @@ empty:
   }
 
 #if DBG
-  printf("gtk_im_context_gcin_get_preedit_string %x attN:%d '%s'\n", context_gcin->pe_att,
+  printf("gtk_im_context_gcin_get_preedit_string %p attN:%d '%s'\n", context_gcin->pe_att,
     context_gcin->pe_attN, *str);
 #endif
   int i;

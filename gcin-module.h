@@ -31,7 +31,7 @@ typedef struct {
   gint64 (*mf_current_time)();
   void (*mf_box_warn)(char *fmt,...);
 #if DEBUG
-  void (*mf___gcin_dbg_)(char *fmt,...);
+  void (*mf___gcin_dbg_)(const char *fmt,...);
 #endif  
 
   void (*mf_exec_gcin_setup)();

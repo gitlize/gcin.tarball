@@ -28,6 +28,9 @@ void set_is_chs()
 //  is_chs = TRUE;
 #endif
 
+  if (tsin_pho_tw)
+    is_chs = FALSE;
+
   if (is_chs) {
     tsin32_f = "s-tsin32";
     dbg("is simplified chinese\n");

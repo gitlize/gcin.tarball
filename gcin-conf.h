@@ -86,6 +86,9 @@
 #define TSIN_USE_PHO_NEAR "tsin-use-pho-near"
 #define TSIN_PHO_MODE "tsin-pho-mode"
 #define TSIN_SHIFT_PUNC "tsin-shift-punc"
+#define TSIN_PHO_TW "tsin-pho-tw"
+#define TSIN_PARENTHESIS_FULL "tsin-parenthesis-full"
+
 
 #define PHO_HIDE_ROW2 "pho-hide-row2"
 #define PHO_IN_ROW1 "pho-in-row1"
@@ -138,7 +141,7 @@ extern int tsin_phrase_pre_select;
 extern int tsin_chinese_english_toggle_key;
 extern int tsin_tab_phrase_end, tsin_tail_select_key;
 extern int tsin_buffer_editing_mode;
-extern int tsin_use_pho_near;
+extern int tsin_use_pho_near, tsin_pho_tw, tsin_parenthesis_full;
 
 extern int phonetic_char_dynamic_sequence;
 extern int phonetic_huge_tab, phonetic_speak;
@@ -146,7 +149,7 @@ extern char *phonetic_speak_sel;
 extern int tsin_space_opt, tsin_tone_char_input;
 
 extern char *tsin_phrase_line_color, *tsin_cursor_color, *gcin_font_name, *gcin_sel_key_color;
-extern unich_t eng_full_str[], cht_full_str[];
+extern char eng_full_str[], cht_full_str[];
 extern char *eng_color_full_str, *cht_color_full_str;
 extern char *gcin_win_color_fg, *gcin_win_color_bg;
 extern int gcin_win_color_use, gcin_bell_off;

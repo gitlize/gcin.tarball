@@ -13,6 +13,7 @@
 #include "gtab.h"
 #include "pho-status.h"
 
+
 extern int ph_key_sz;
 extern GtkWidget *gwin1;
 gint64 key_press_time, key_press_time_ctrl;
@@ -1334,7 +1335,7 @@ static gboolean pre_sel_handler(KeySym xkey, int kbstate)
   return tsin_sele_by_idx(c);
 }
 
-static gboolean pre_punctuation_sub(KeySym xkey, char shift_punc[], unich_t *chars[])
+static gboolean pre_punctuation_sub(KeySym xkey, char shift_punc[], char *chars[])
 {
   char *p;
   if (xkey > 0x7e)
@@ -1342,7 +1343,7 @@ static gboolean pre_punctuation_sub(KeySym xkey, char shift_punc[], unich_t *cha
 
   if ((p=strchr(shift_punc, xkey))) {
     int c = p - shift_punc;
-    char *pchar = _(chars[c]);
+    char *pchar = chars[c];
 
     if (current_method_type() == method_type_PHO) {
       char tt[CH_SZ+1];
@@ -1365,15 +1366,17 @@ static gboolean pre_punctuation_sub(KeySym xkey, char shift_punc[], unich_t *cha
 
 gboolean pre_punctuation(KeySym xkey)
 {
-  static char shift_punc[]="<>?:\"{}!_";
-  static unich_t *chars[]={_L("，"),_L("。"),_L("？"),_L("："),_L("；"),_L("「"),_L("」"),_L("！"),_L("——")};
-  return pre_punctuation_sub(xkey, shift_punc, chars);
+  static char shift_punc[]="<>?:\"{}!_()";
+  static char shift_punc_old[]="<>?:\"{}!_";
+//  static char *chars[]={"，","。","？","：","；","「","」","！","—"};
+  static char *chars[]={"，","。","？","：","；","『","』","！","—","（","）"};
+  return pre_punctuation_sub(xkey, tsin_parenthesis_full?shift_punc:shift_punc_old, chars);
 }
 
 static char hsu_punc[]=",./;'";
 gboolean pre_punctuation_hsu(KeySym xkey)
 {
-  static unich_t *chars[]={_L("，"),_L("。"),_L("？"),_L("；"),_L("、")};
+  static char *chars[]={"，","。","？","；","、"};
   return pre_punctuation_sub(xkey, hsu_punc, chars);
 }
 
@@ -1631,6 +1634,8 @@ gboolean win_sym_page_up(), win_sym_page_down();
 
 static void tsin_create_win_save_phrase(int idx0, int len)
 {
+  if (len > MAX_PHRASE_LEN)
+    return;
   WSP_S wsp[MAX_PHRASE_LEN];
   int i;
   for(i=0;i<len;i++) {
@@ -1646,8 +1651,10 @@ int tsin_sel_max_N()
 {
   int N;
   N = tss.phrase_count + tss.pho_count - tss.current_page;
+#if 1
   if (N > phkbm.selkeyN)
     N = phkbm.selkeyN;
+#endif
   return N;
 }
 
@@ -1673,10 +1680,12 @@ int is_pho_key(KeySym xkey)
 
 extern int win1_rowN;
 
+#if 0
 static void pho_menu_idx_left()
 {
   int N = tsin_sel_max_N();
   tss.pho_menu_idx = (tss.pho_menu_idx - win1_rowN + N) % N;
+  dbg("pho_menu_idx_left() %d %d\n", N, tss.pho_menu_idx);
   disp_current_sel_page();
 }
 
@@ -1684,8 +1693,10 @@ static void pho_menu_idx_right()
 {
   int N = tsin_sel_max_N();
   tss.pho_menu_idx = (tss.pho_menu_idx + win1_rowN) % N;
+  dbg("pho_menu_idx_right() %d %d\n", N, tss.pho_menu_idx);
   disp_current_sel_page();
 }
+#endif
 
 void tsin_en_scan_pre_select();
 extern int capslock_on;
@@ -1844,7 +1855,11 @@ int feedkey_tsin(KeySym xkey, int kbstate)
      case XK_KP_Left:
 #endif
         if (tss.sel_pho) {
+#if 0			
 		  pho_menu_idx_left();
+#else
+		  tsin_page_up();
+#endif		  
           return TRUE;
         } else
           return cursor_left();
@@ -1853,7 +1868,11 @@ int feedkey_tsin(KeySym xkey, int kbstate)
      case XK_KP_Right:
 #endif
         if (tss.sel_pho) {
+#if 0			
 		  pho_menu_idx_right();
+#else		  
+		  tsin_page_down();
+#endif
           return TRUE;
         } else
           return cursor_right();

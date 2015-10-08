@@ -50,10 +50,10 @@ OBJS_gcin_message = gcin-message.o gcin-conf.o util.o gcin-send.o
 OBJS_pin_juyin = pin-juyin.o util.o pho-lookup.o locale.o pho-sym.o
 
 OBJS_tsin2gtab_phrase = tsin2gtab-phrase.o gcin-conf.o util.o locale.o \
-	pho-dbg.o pho-sym.o gtab-dbg.o lang.o
+	pho-dbg.o pho-sym.o gtab-dbg.o lang.o gcin-settings.o
 
 OBJS_txt2gtab_phrase = txt2gtab-phrase.o gcin-conf.o util.o locale.o \
-	pho-dbg.o pho-sym.o gtab-dbg.o lang.o
+	pho-dbg.o pho-sym.o gtab-dbg.o lang.o gcin-settings.o
 
 #WALL=-Wall
 

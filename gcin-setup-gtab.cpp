@@ -21,24 +21,24 @@ extern GtkWidget *check_button_gcin_capslock_lower, *opt_tsin_space;
 extern gboolean button_order;
 
 struct {
-  unich_t *str;
+  char *str;
   int num;
 } spc_opts[] = {
-  {N_(_L("由 .gtab 指定")), GTAB_space_auto_first_none},
-  {N_(_L("按空白立即送出第一字(嘸蝦米、大易)")), GTAB_space_auto_first_any},
-  {N_(_L("按滿按空白送出第一字")), GTAB_space_auto_first_full},
-  {N_(_L("按滿按空白不送出第一字(倉頡, 行列)")), GTAB_space_auto_first_nofull},
+  {"由 .gtab 指定", GTAB_space_auto_first_none},
+  {"按空白立即送出第一字(嘸蝦米、大易)", GTAB_space_auto_first_any},
+  {"按滿按空白送出第一字", GTAB_space_auto_first_full},
+  {"按滿按空白不送出第一字(倉頡, 行列)", GTAB_space_auto_first_nofull},
   { NULL, 0},
 };
 
 
 struct {
-  unich_t *str;
+  char *str;
   int num;
 } auto_select_by_phrase_opts[] = {
-  {N_(_L("由.gtab指定")), GTAB_OPTION_AUTO},
-  {N_(_L("全部開啟")), GTAB_OPTION_YES},
-  {N_(_L("全部關閉")), GTAB_OPTION_NO},
+  {"由.gtab指定", GTAB_OPTION_AUTO},
+  {"全部開啟", GTAB_OPTION_YES},
+  {"全部關閉", GTAB_OPTION_NO},
   { NULL, 0},
 };
 
@@ -57,7 +57,7 @@ void save_tsin_space_opt();
 static gboolean cb_gtab_conf_ok( GtkWidget *widget,
                                    GdkEvent  *event,
                                    gpointer   data )
-{	
+{
   save_tsin_eng_pho_key();
   save_tsin_space_opt();
   save_gcin_conf_int(GTAB_DUP_SELECT_BELL,
@@ -183,7 +183,7 @@ static GtkWidget *create_spc_opts()
       current_idx = i;
 
 #if GTK_CHECK_VERSION(2,4,0)
-    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (opt_spc_opts), _(spc_opts[i].str));
+    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (opt_spc_opts), spc_opts[i].str);
 #else
     gtk_menu_shell_append (GTK_MENU_SHELL (menu_spc_opts), item);
 #endif
@@ -208,14 +208,14 @@ static GtkWidget *create_auto_select_by_phrase_opts(GtkWidget **out, int val)
 
   for(i=0; auto_select_by_phrase_opts[i].str; i++) {
 #if !GTK_CHECK_VERSION(2,4,0)
-    GtkWidget *item = gtk_menu_item_new_with_label (_(auto_select_by_phrase_opts[i].str));
+    GtkWidget *item = gtk_menu_item_new_with_label (auto_select_by_phrase_opts[i].str);
 #endif
 
     if (auto_select_by_phrase_opts[i].num == val)
       current_idx = i;
 
 #if GTK_CHECK_VERSION(2,4,0)
-    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (*out), _(auto_select_by_phrase_opts[i].str));
+    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (*out), auto_select_by_phrase_opts[i].str);
 #else
     gtk_menu_shell_append (GTK_MENU_SHELL (menu_auto_select_by_phrase), item);
 #endif

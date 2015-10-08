@@ -54,7 +54,7 @@ void create_about_window()
 
     gtk_window_set_has_resize_grip(GTK_WINDOW(about_window), FALSE);
 
-    gtk_window_set_title (GTK_WINDOW (about_window), _(_L("關於 gcin")));
+    gtk_window_set_title (GTK_WINDOW (about_window), "關於 gcin");
 
 
     g_signal_connect (G_OBJECT (about_window), "destroy",
@@ -89,13 +89,13 @@ void create_about_window()
                 "<a href='"PUNC_URL"'>%s</a>\n"
                 "<a href='"ADD_PHRASE_URL"'>%s</a>\n"
                 "<a href='"SPLIT_PHRASE_URL"'>%s</a>\n",
-                _(_L("前往 gcin 討論區")),
-                _(_L("gcin也有 Windows版")),
-                _(_L("gcin改變記錄")),
-                _(_L("推薦使用26鍵的注音鍵盤")),
-                _(_L("使用詞音輸入標點符號")),
-                _(_L("如何新增詞")),
-                _(_L("如何手動斷詞"))
+                "前往 gcin 討論區",
+                "gcin也有 Windows版",
+                "gcin改變記錄",
+                "推薦使用26鍵的注音鍵盤",
+                "使用詞音輸入標點符號",
+                "如何新增詞",
+                "如何手動斷詞"
 
           );
    GtkWidget *label = gtk_label_new(tmp);
@@ -103,31 +103,31 @@ void create_about_window()
     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 #else
 static struct {
-		unich_t *label_str;
+		char *label_str;
 		char *url;
 	} lab_url[] = {
 #if UNIX
-		{_L("討論區"), FURL_LINUX },
-        {_L("gcin也有 Windows版"), FURL_WIN32},
+		{"討論區", FURL_LINUX },
+        {"gcin也有 Windows版", FURL_WIN32},
 #else
-		{_L("討論區"), FURL_WIN32 },
-		{_L("gcin也有 Linux版"), FURL_LINUX},
+		{"討論區", FURL_WIN32 },
+		{"gcin也有 Linux版", FURL_LINUX},
 #endif
-		{_L("gcin也有 Android版"), FURL_ANDROID},
-		{_L("gcin改變記錄"), LOG_URL},
-		{_L("推薦使用26鍵的注音鍵盤"), ET26_URL},
-		{_L("使用詞音輸入標點符號"), PUNC_URL},
-		{_L("如何新增詞"), ADD_PHRASE_URL},
-		{_L("如何手動斷詞"), SPLIT_PHRASE_URL},
+		{"gcin也有 Android版", FURL_ANDROID},
+		{"gcin改變記錄", LOG_URL},
+		{"推薦使用26鍵的注音鍵盤", ET26_URL},
+		{"使用詞音輸入標點符號", PUNC_URL},
+		{"如何新增詞", ADD_PHRASE_URL},
+		{"如何手動斷詞", SPLIT_PHRASE_URL},
 #if WIN32
-		{_L("IE內使用gcin"), IE_URL},
+		{"IE內使用gcin", IE_URL},
 #endif
 		{NULL}
 	};
 
 	int i;
 	for(i=0; lab_url[i].url; i++) {
-       GtkWidget *button = gtk_button_new_with_label(_(lab_url[i].label_str));
+       GtkWidget *button = gtk_button_new_with_label(lab_url[i].label_str);
        gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
        g_signal_connect (G_OBJECT (button), "clicked",
 		      G_CALLBACK (callback_url), lab_url[i].url);
@@ -151,7 +151,7 @@ static struct {
 
     gtk_container_add (GTK_CONTAINER (about_window), vbox);
 
-    GtkWidget *button = gtk_button_new_with_label (_(_L("關閉")));
+    GtkWidget *button = gtk_button_new_with_label ("關閉");
     gtk_box_pack_start (GTK_BOX (vbox), button, FALSE, FALSE, 3);
     g_signal_connect (G_OBJECT (button), "clicked",
 		      G_CALLBACK (callback_close), (gpointer) "cool button");

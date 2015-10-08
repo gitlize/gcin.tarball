@@ -23,14 +23,14 @@ int dpy_x_ofs, dpy_y_ofs;
 #endif
 DUAL_XIM_ENTRY xim_arr[1];
 
-extern unich_t *fullchar[];
+extern char *fullchar[];
 gboolean win_kbm_inited;
 
 char *half_char_to_full_char(KeySym xkey)
 {
   if (xkey < ' ' || xkey > 127)
     return NULL;
-  return _(fullchar[xkey-' ']);
+  return fullchar[xkey-' '];
 }
 
 
@@ -421,7 +421,7 @@ void destroy_win0();
 void destroy_win1();
 void destroy_win_gtab();
 void free_pho_mem(),free_tsin(), free_en(), free_all_IC(), free_gtab(), free_phrase(), destroy_tray_win32(), free_gcb();
-void close_pho_fw(), free_gtab_list();
+void close_pho_fw();
 
 void do_exit()
 {
@@ -434,10 +434,10 @@ void do_exit()
   free_all_IC();
 #endif
   free_gtab();
-  
   free_phrase();
+#if UNIX
   free_gcb();
-
+#endif
 #if 1
   destroy_win0();
   destroy_win1();
@@ -524,7 +524,6 @@ void screen_size_changed(GdkScreen *screen, gpointer user_data)
 
 #include "lang.h"
 
-
 extern int destroy_window;
 
 int main(int argc, char **argv)
@@ -537,7 +536,6 @@ int main(int argc, char **argv)
    char *homedir = pw->pw_dir;
    chdir(homedir);
 #endif
-
 
   char *destroy = getenv("GCIN_DESTROY_WINDOW");
   if (destroy)

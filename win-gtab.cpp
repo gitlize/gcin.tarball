@@ -542,7 +542,7 @@ void create_win_gtab_gui_simple()
   gtk_container_add (GTK_CONTAINER (vbox_top), hbox_row2);
 
   label_full = gtk_label_new(NULL);
-  gtk_label_set_markup(GTK_LABEL(label_full), _(cht_full_str));
+  gtk_label_set_markup(GTK_LABEL(label_full), cht_full_str);
 
   gtk_box_pack_start (GTK_BOX (hbox_row2), label_full, FALSE, FALSE, 0);
 
@@ -833,14 +833,14 @@ char *get_full_str()
         if (gcin_win_color_use)
           return cht_color_full_str;
         else
-          return _(cht_full_str);
+          return cht_full_str;
       }
       break;
     case GCIN_STATE_ENG_FULL:
       if (gcin_win_color_use)
         return eng_color_full_str;
       else
-        return _(eng_full_str);
+        return eng_full_str;
   }
   return ("");
 }

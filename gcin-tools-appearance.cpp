@@ -9,8 +9,6 @@
 #endif
 #include "lang.h"
 
-extern gboolean is_chs;
-
 static GtkWidget *check_button_root_style_use,
                  *check_button_gcin_pop_up_win,
                  *check_button_gcin_inner_frame,
@@ -48,21 +46,21 @@ typedef struct {
   GdkColor *color;
   char **color_str;
   GtkWidget *color_selector;
-  unich_t *title;
+  char *title;
 } COLORSEL;
 
 COLORSEL colorsel[2] =
-  { {&gcin_win_gcolor_fg, &gcin_win_color_fg, NULL, N_(_L("前景顏色"))},
-    {&gcin_win_gcolor_bg, &gcin_win_color_bg, NULL, N_(_L("背景顏色"))}
+  { {&gcin_win_gcolor_fg, &gcin_win_color_fg, NULL, "前景顏色"},
+    {&gcin_win_gcolor_bg, &gcin_win_color_bg, NULL, "背景顏色"}
   };
 
 struct {
-  unich_t *keystr;
+  char *keystr;
   int keynum;
 } edit_disp[] = {
-  {N_(_L("gcin視窗")), GCIN_EDIT_DISPLAY_OVER_THE_SPOT},
-  {N_(_L("應用程式編輯區")), GCIN_EDIT_DISPLAY_ON_THE_SPOT},
-  {N_(_L("同時顯示")),  GCIN_EDIT_DISPLAY_BOTH},
+  {"gcin視窗", GCIN_EDIT_DISPLAY_OVER_THE_SPOT},
+  {"應用程式編輯區", GCIN_EDIT_DISPLAY_ON_THE_SPOT},
+  {"同時顯示",  GCIN_EDIT_DISPLAY_BOTH},
   { NULL, 0},
 };
 
@@ -234,7 +232,7 @@ static gboolean cb_gcin_win_color_fg( GtkWidget *widget,
                                    gpointer   data)
 {
   COLORSEL *sel = (COLORSEL *)data;
-  GtkWidget *color_selector = gtk_color_selection_dialog_new (_(sel->title));
+  GtkWidget *color_selector = gtk_color_selection_dialog_new (sel->title);
 
   gdk_color_parse(*sel->color_str, sel->color);
 
@@ -280,23 +278,18 @@ void disp_fg_bg_color()
   }
 
   char *key_color = gtk_color_selection_palette_to_string(&gcin_sel_key_gcolor, 1);
-  unich_t tt[512];
+  char tt[512];
 #if UNIX
 #if PANGO_VERSION_CHECK(1,22,0)
-  sprintf
-(tt, _(_L("<span foreground=\"%s\" font=\"%d\">7</span><span font=\"%d\">測試</span>")), key_color,
-gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
+  sprintf(tt, "<span foreground=\"%s\" font=\"%d\">7</span><span font=\"%d\">測試</span>", key_color, gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
 #else
-  sprintf
-(tt, _(_L("<span foreground=\"%s\" font_desc=\"%d\">7</span><span font_desc=\"%d\">測試</span>")), key_color,
-gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
+  sprintf(tt, "<span foreground=\"%s\" font_desc=\"%d\">7</span><span font_desc=\"%d\">測試</span>", key_color, gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
 #endif
 #else
-  swprintf
-(tt, _L("<span foreground=\"%S\" font=\"%d\">7</span><span font=\"%d\">測試</span>"), key_color, gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
+  sprintf(tt, "<span foreground=\"%s\" font=\"%d\">7</span><span font=\"%d\">測試</span>", key_color, gcin_font_size_tsin_presel, gcin_font_size_tsin_presel);
 #endif
 
-  gtk_label_set_markup(GTK_LABEL(label_win_color_test), _(tt));
+  gtk_label_set_markup(GTK_LABEL(label_win_color_test), tt);
 }
 
 static void cb_save_gcin_sel_key_color(GtkWidget *widget, gpointer user_data)
@@ -305,8 +298,8 @@ static void cb_save_gcin_sel_key_color(GtkWidget *widget, gpointer user_data)
   gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(color_selector)), &gcin_sel_key_gcolor);
   gcin_sel_key_color = gtk_color_selection_palette_to_string(&gcin_sel_key_gcolor, 1);
 
-  g_snprintf(eng_color_full_str, 128, "<span foreground=\"%s\">%s</span>", gcin_sel_key_color, _(eng_full_str));
-  g_snprintf(cht_color_full_str, 128, "<span foreground=\"%s\">%s</span>", gcin_sel_key_color, _(cht_full_str));
+  g_snprintf(eng_color_full_str, 128, "<span foreground=\"%s\">%s</span>", gcin_sel_key_color, eng_full_str);
+  g_snprintf(cht_color_full_str, 128, "<span foreground=\"%s\">%s</span>", gcin_sel_key_color, cht_full_str);
 
   disp_fg_bg_color();
 }
@@ -371,7 +364,7 @@ static GtkWidget *create_gcin_edit_display()
       current_idx = i;
 
 #if GTK_CHECK_VERSION(2,4,0)
-    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (opt_gcin_edit_display), _(edit_disp[i].keystr));
+    gtk_combo_box_append_text (GTK_COMBO_BOX_TEXT (opt_gcin_edit_display), edit_disp[i].keystr);
 #else
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 #endif

@@ -18,7 +18,7 @@ extern char *default_input_method_str;
 
 #if USE_GCB
 unich_t *gcb_pos[] = {
-N_(_L("左下")), N_(_L("左上")), N_(_L("右下")), N_(_L("右上"))
+"左下", "左上", "右下", "右上"
 };
 #endif
 

@@ -85,10 +85,11 @@ void dump_gbuf()
   }
 }
 
-static unich_t latin_chars[]=
-_L("ÀÁÂÃÄÅÆÆÇÈÉÊËÌÍÎÏÐÐÑÒÓÔÕÖØÙÚÛÜÝÞÞßàáâãäåææçèéêëìíîïððñòóôõöøùúûüýþþÿ")
-_L("ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĲĳĳĴĵĶķĸĹĺĻļĽľĿŀŁł")
-_L("ŃńŅņŇňŉŊŋŌōŎŏŐőŒŒœœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž");
+#if 0
+static char latin_chars[]=
+"ÀÁÂÃÄÅÆÆÇÈÉÊËÌÍÎÏÐÐÑÒÓÔÕÖØÙÚÛÜÝÞÞßàáâãäåææçèéêëìíîïððñòóôõöøùúûüýþþÿ"
+"ĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĲĳĳĴĵĶķĸĹĺĻļĽľĿŀŁł"
+"ŃńŅņŇňŉŊŋŌōŎŏŐőŒŒœœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽž";
 
 int en_word_len(char *bf)
 {
@@ -102,12 +103,7 @@ int en_word_len(char *bf)
     } else
     if (sz==2) {
       char *p;
-#if WIN32
-      p = _(latin_chars);
-      for (; *p; p+=2)
-#else
       for (p=latin_chars; *p; p+=2)
-#endif
         if (!memcmp(p, s, 2))
           break;
       if (!(*p))
@@ -122,6 +118,7 @@ int en_word_len(char *bf)
     return 0;
   return strlen(bf);
 }
+#endif
 
 static char *gen_buf_str(int start, gboolean add_spc)
 {
@@ -354,12 +351,13 @@ void inc_gtab_use_count(char *s);
 gboolean inc_tsin_use_count(TSIN_HANDLE *th, void *pho, char *ch, int N);
 gboolean inc_tsin_use_count_en(char *s, int len);
 gboolean is_legal_en_char(char *ch);
-void strtolower(char *u8, int len);
+void strtolower(char *u8, int len), hide_win_gtab();
+gboolean gtab_has_input();
 
-gboolean output_gbuf()
+gboolean output_gbuf_()
 {
   hide_gtab_pre_sel();
-  ClrIn();
+//  ClrIn();
 
   if (!ggg.gbufN)
     return FALSE;
@@ -407,9 +405,17 @@ gboolean output_gbuf()
     }
   }
 
-
   clear_gtab_buf_all();
+
+  if (gcin_pop_up_win && !gtab_has_input()) {
+    hide_win_gtab();
+  }
   return TRUE;
+}
+
+gboolean output_gbuf() {
+  ClrIn();
+  return output_gbuf_();
 }
 
 
@@ -553,7 +559,7 @@ int qcmp_gitem(const void *aa, const void *bb)
 
 void hide_row2_if_necessary();
 
-unich_t auto_end_punch[]=_L(", . ? : ; ! [ ] 「 」 ， 。 ？ ； ： 、 ～ ！ （ ）");
+char auto_end_punch[]=", . ? : ; ! [ ] 「 」 ， 。 ？ ； ： 、 ～ ！ （ ）";
 GEDIT *insert_gbuf_cursor(char **sel, int selN, u_int64_t key, gboolean b_gtab_en_no_spc)
 {
   hide_row2_if_necessary();
@@ -605,7 +611,7 @@ GEDIT *insert_gbuf_cursor(char **sel, int selN, u_int64_t key, gboolean b_gtab_e
       disp_gbuf();
     }
   } else
-  if (gcin_punc_auto_send && ggg.gbufN==ggg.gbuf_cursor && selN==1 && strstr(_(auto_end_punch), sel[0])) {
+  if (gcin_punc_auto_send && ggg.gbufN==ggg.gbuf_cursor && selN==1 && strstr(auto_end_punch, sel[0])) {
     char_play(pbuf->ch);
     output_gbuf();
   } else {
@@ -926,11 +932,11 @@ int gtab_get_preedit(char *str, GCIN_PREEDIT_ATTR attr[], int *pcursor, int *sub
     if (ggg.gbufN)
       attrN=1;
 
-    gboolean last_is_en_word = FALSE;
+//    gboolean last_is_en_word = FALSE;
     for(i=0; i < ggg.gbufN; i++) {
       char *s = gbuf[i].ch;
       char tt[MAX_CIN_PHR+2];
-
+#if 0
       if (en_word_len(s) && !(gbuf[i].flag & FLAG_CHPHO_GTAB_BUF_EN_NO_SPC)) {
         if (last_is_en_word) {
           strcpy(tt, " ");
@@ -941,7 +947,7 @@ int gtab_get_preedit(char *str, GCIN_PREEDIT_ATTR attr[], int *pcursor, int *sub
       } else {
         last_is_en_word = FALSE;
       }
-
+#endif
       int len = strlen(s);
       int N = utf8_str_N(s);
       ch_N+=N;
@@ -991,6 +997,8 @@ int ch_to_gtab_keys(INMD *tinmd, char *ch, u_int64_t keys[]);
 
 void save_gtab_buf_phrase_idx(int idx0, int len)
 {
+  if (len > MAX_PHRASE_LEN)
+    return;
   WSP_S wsp[MAX_PHRASE_LEN];
 
   bzero(wsp, sizeof(wsp));
@@ -1184,13 +1192,26 @@ gboolean gtab_pre_select_idx(int c)
   return TRUE;
 }
 
+extern char noshi_sele[], shift_sele[];
+
 gboolean gtab_pre_select_shift(KeySym key, int kbstate)
 {
 //  dbg("gtab_pre_select_shift %c\n", key);
   if (!gtab_phrase_pre_select || !tss.pre_selN)
     return FALSE;
 
-  int c = shift_key_idx(cur_inmd->selkey, key);
+  // If the key(123) is not defined as gtab keys, the shift keys(!@#) should be used for punc, not preselect
+  int c = shift_key_idx(cur_inmd->selkey, key);  
+  if (c < 0)
+    return FALSE;
+  char *p = strchr(shift_sele, key);
+  if (!p)
+    return FALSE;
+  int idx = p - shift_sele;
+  char noshi = noshi_sele[idx];
+  if (!cur_inmd->keymap[noshi])
+    return FALSE;
+  
   return gtab_pre_select_idx(c);
 }
 

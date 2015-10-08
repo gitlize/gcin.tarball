@@ -178,7 +178,7 @@ static void init_dbgfp()
 int utf8_to_big5(char *in, char *out, int outN);
 
 #if DEBUG
-void __gcin_dbg_(char *format, ...) {
+void __gcin_dbg_(const char *format, ...) {
 #if _DBG
 	va_list ap;
 	va_start(ap, format);

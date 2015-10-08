@@ -145,7 +145,7 @@ void create_win1_gui()
   {
 	int y = idx_to_y(i);
 	int x = idx_to_x(i);
-	dbg("i:%d y:%d x:%d\n", i, y, x);
+//	dbg("i:%d y:%d x:%d\n", i, y, x);
 
     if (!tsin_tail_select_key)
       x*=2;

@@ -1,5 +1,5 @@
 %ename phonetic
-%prompt 注音符號
+%prompt ㄅ符號
 %selkey 1234567890
 %endkey abdefghiklmnoqrsuvwxyz0123456789,./;-
 %space_style 2
@@ -45,6 +45,7 @@ p ㄣ
 ; ㄤ
 / ㄥ
 - ㄦ
+` ㄦ
 7 ˙
 6 ˊ
 3 ˇ
@@ -88,6 +89,7 @@ p ㄣ
 ; ㄤ
 / ㄥ
 - ㄦ
+` ㄦ
 7 ˙
 6 ˊ
 3 ˇ

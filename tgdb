@@ -1,6 +1,6 @@
 #!/bin/bash -f
 export GCIN_IM_CLIENT_NO_AUTO_EXEC=
-export GCIN_TABLE_DIR=./data
+#export GCIN_TABLE_DIR=./data
 export GCIN_ERR_COREDUMP=
 pkill gcin.test
 export LC_ALL=zh_TW.Big5

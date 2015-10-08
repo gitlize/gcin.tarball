@@ -22,7 +22,7 @@ enum {
 
 typedef struct {
   KeySym keysym;
-  unich_t *enkey;
+  char *enkey;
   char shift_key;
   char flag;
   GtkWidget *lab, *but, *laben;
@@ -30,21 +30,21 @@ typedef struct {
 
 #define COLN 19
 static KEY keys[][COLN]={
-{{XK_Escape,_L("Esc")},{XK_F1,_L("F1")},{XK_F2,_L("F2")},{XK_F3,_L("F3")},{XK_F4,_L("F4")},{XK_F5,_L("F5")},{XK_F6,_L("F6")},{XK_F7,_L("F7")},{XK_F8,_L("F8")},{XK_F9,_L("F9")},{XK_F10,_L("F10")},{XK_F11,_L("F11")},{XK_F12,_L("F12")},{XK_Print,_L("Pr"),0,8},{XK_Scroll_Lock,_L("Slk"),0,8},{XK_Pause,_L("Pau"),0,8}},
+{{XK_Escape,"Esc"},{XK_F1,"F1"},{XK_F2,"F2"},{XK_F3,"F3"},{XK_F4,"F4"},{XK_F5,"F5"},{XK_F6,"F6"},{XK_F7,"F7"},{XK_F8,"F8"},{XK_F9,"F9"},{XK_F10,"F10"},{XK_F11,"F11"},{XK_F12,"F12"},{XK_Print,"Pr",0,8},{XK_Scroll_Lock,"Slk",0,8},{XK_Pause,"Pau",0,8}},
 
-{{'`',_L(" ` "),'~'},{'1',_L(" 1 "), '!'},{'2',_L(" 2 "),'@'},{'3',_L(" 3 "),'#'},{'4',_L(" 4 "),'$'},{'5',_L(" 5 "),'%'},{'6',_L(" 6 "),'^'},{'7',_L(" 7 "),'&'},{'8',_L(" 8 "),'*'},{'9',_L(" 9 "),'('},{'0',_L(" 0 "),')'},{'-',_L(" - "),'_'},{'=',_L(" = "),'+'},
-{XK_BackSpace,_L("←"),0, K_FILL},
-{XK_Insert,_L("Ins"),0,8},{XK_Home,_L("Ho"),0,8}, {XK_Prior,_L("P↑"),0,8}},
+{{'`'," ` ",'~'},{'1'," 1 ", '!'},{'2'," 2 ",'@'},{'3'," 3 ",'#'},{'4'," 4 ",'$'},{'5'," 5 ",'%'},{'6'," 6 ",'^'},{'7'," 7 ",'&'},{'8'," 8 ",'*'},{'9'," 9 ",'('},{'0'," 0 ",')'},{'-'," - ",'_'},{'='," = ",'+'},
+{XK_BackSpace,"←",0, K_FILL},
+{XK_Insert,"Ins",0,8},{XK_Home,"Ho",0,8}, {XK_Prior,"P↑",0,8}},
 
-{{XK_Tab, _L("Tab")}, {'q',_L(" q ")},{'w',_L(" w ")},{'e',_L(" e ")},{'r',_L(" r ")},{'t',_L(" t ")}, {'y',_L(" y ")},{'u',_L(" u ")},{'i',_L(" i ")},{'o',_L(" o ")}, {'p',_L(" p ")},{'[',_L(" [ "),'{'},{']',_L(" ] "),'}'},{'\\',_L(" \\ "),'|',K_FILL},{XK_Delete,_L("Del"),0,8},{XK_End,_L("En"),0,8},
-{XK_Next,_L("P↓"),0,8}},
+{{XK_Tab, "Tab"}, {'q'," q "},{'w'," w "},{'e'," e "},{'r'," r "},{'t'," t "}, {'y'," y "},{'u'," u "},{'i'," i "},{'o'," o "}, {'p'," p "},{'['," [ ",'{'},{']'," ] ",'}'},{'\\'," \\ ",'|',K_FILL},{XK_Delete,"Del",0,8},{XK_End,"En",0,8},
+{XK_Next,"P↓",0,8}},
 
-{{XK_Caps_Lock, _L("Caps"), 0, K_CAPSLOCK},{'a',_L(" a ")},{'s',_L(" s ")},{'d',_L(" d ")},{'f', _L(" f ")},{'g',_L(" g ")},{'h',_L(" h ")},{'j',_L(" j ")},{'k',_L(" k ")},{'l',_L(" l ")},{';',_L(" ; "),':'},{'\'',_L(" ' "),'"'},{XK_Return,_L(" Enter "),0,1},{XK_Num_Lock,_L("Num"),0,8},{XK_KP_Add,_L(" + "),0,8}},
+{{XK_Caps_Lock, "Caps", 0, K_CAPSLOCK},{'a'," a "},{'s'," s "},{'d'," d "},{'f', " f "},{'g'," g "},{'h'," h "},{'j'," j "},{'k'," k "},{'l'," l "},{';'," ; ",':'},{'\''," ' ",'"'},{XK_Return," Enter ",0,1},{XK_Num_Lock,"Num",0,8},{XK_KP_Add," + ",0,8}},
 
-{{XK_Shift_L,_L("  Shift  "),0,K_HOLD},{'z',_L(" z ")},{'x',_L(" x ")},{'c',_L(" c ")},{'v',_L(" v ")},{'b',_L(" b ")},{'n',_L(" n ")},{'m',_L(" m ")},{',',_L(" , "),'<'},{'.',_L(" . "),'>'},{'/',_L(" / "),'?'},{XK_Shift_R,_L(" Shift"),0,K_HOLD|K_FILL},{XK_KP_Multiply,_L(" * "),0,8},
-{XK_Up,_L("↑"),0,8}},
-{{XK_Control_L,_L("Ctrl"),0,K_HOLD},{XK_Super_L,_L("◆")},{XK_Alt_L,_L("Alt"),0,K_HOLD},{' ',_L("Space"),0, K_FILL}, {XK_Alt_R,_L("Alt"),0,K_HOLD},{XK_Super_R,_L("◆")},{XK_Menu,_L("■")}, {XK_Control_R,_L("Ctrl"),0,K_HOLD},
-{XK_Left, _L("←"),0,8},{XK_Down,_L("↓"),0,8},{XK_Right, _L("→"),0,8}}
+{{XK_Shift_L,"  Shift  ",0,K_HOLD},{'z'," z "},{'x'," x "},{'c'," c "},{'v'," v "},{'b'," b "},{'n'," n "},{'m'," m "},{','," , ",'<'},{'.'," . ",'>'},{'/'," / ",'?'},{XK_Shift_R," Shift",0,K_HOLD|K_FILL},{XK_KP_Multiply," * ",0,8},
+{XK_Up,"↑",0,8}},
+{{XK_Control_L,"Ctrl",0,K_HOLD},{XK_Super_L,"◆"},{XK_Alt_L,"Alt",0,K_HOLD},{' ',"Space",0, K_FILL}, {XK_Alt_R,"Alt",0,K_HOLD},{XK_Super_R,"◆"},{XK_Menu,"■"}, {XK_Control_R,"Ctrl",0,K_HOLD},
+{XK_Left, "←",0,8},{XK_Down,"↓",0,8},{XK_Right, "→",0,8}}
 };
 
 static int keysN=sizeof(keys)/sizeof(keys[0]);
@@ -226,7 +226,7 @@ static void create_win_kbm()
       GtkWidget *v = gtk_vbox_new (FALSE, 0);
       gtk_container_set_border_width (GTK_CONTAINER (v), 0);
       gtk_container_add (GTK_CONTAINER (but), v);
-      GtkWidget *laben = ppk->laben=gtk_label_new(_(ppk->enkey));
+      GtkWidget *laben = ppk->laben=gtk_label_new(ppk->enkey);
       set_label_font_size(laben, gcin_font_size_win_kbm_en);
 
       gtk_box_pack_start (GTK_BOX (v), laben, fill, fill, 0);
@@ -387,7 +387,7 @@ static void clear_kbm()
         gtk_label_set_text(GTK_LABEL(lab), NULL);
 
       if (keys[i][j].laben)
-        gtk_label_set_text(GTK_LABEL(keys[i][j].laben), _(keys[i][j].enkey));
+        gtk_label_set_text(GTK_LABEL(keys[i][j].laben), keys[i][j].enkey);
     }
   }
 }
@@ -436,7 +436,7 @@ void update_win_kbm()
 
           if (keys[i][j].lab) {
             if (kstr[0])
-              gtk_label_set_text(GTK_LABEL(keys[i][j].lab), _(keys[i][j].enkey));
+              gtk_label_set_text(GTK_LABEL(keys[i][j].lab), keys[i][j].enkey);
             set_label_font_size(keys[i][j].lab, gcin_font_size_win_kbm_en);
           }
         }
@@ -492,7 +492,7 @@ void update_win_kbm()
         if (loop==0 && !(keyname[0]&0x80))
 #else
 		if (loop==0 && !(keyname[0]&0x80) && toupper(i)==toupper(keyname[0]))
-#endif        
+#endif
           continue;
 
         if (loop==1) {

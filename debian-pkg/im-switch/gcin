@@ -2,6 +2,6 @@ XIM=gcin
 XIM_PROGRAM=/usr/bin/gcin
 XIM_ARGS=
 GTK_IM_MODULE=gcin
-QT_IM_MODULE=gcin
+export QT_IM_MODULE=gcin
 export QT4_IM_MODULE=gcin
 DEPENDS=

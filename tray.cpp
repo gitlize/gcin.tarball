@@ -19,7 +19,7 @@ static cairo_t *gc;
 GdkWindow *tray_da_win;
 static EggTrayIcon *egg_tray_icon;
 
-#define GCIN_TRAY_PNG "gcin-tray.png"
+#define GCIN_TRAY_PNG "gcin_tray.png"
 static char *pixbuf_ch_fname;
 void exec_gcin_setup();
 

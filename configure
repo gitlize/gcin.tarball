@@ -328,7 +328,7 @@ if [ $QT5_IM = 'N' ]; then
   mv gcin.spec gcin.spec.tmp
   grep -v qt5/plugins/inputmethods gcin.spec.tmp > gcin.spec
 else
-  for i in /usr/share/qt5/bin/moc /usr/lib/qt5/bin/moc /usr/lib/x86_64-linux-gnu/qt5/bin/moc /usr/lib64/qt5/bin/moc /usr/bin/moc
+  for i in /usr/share/qt5/bin/moc /usr/lib/qt5/bin/moc /usr/lib/x86_64-linux-gnu/qt5/bin/moc /usr/lib/i386-linux-gnu/qt5/bin/moc /usr/lib64/qt5/bin/moc /usr/bin/moc
   do
     [ ! -x $i ] && continue
     QT5_MOC=$i
@@ -338,7 +338,7 @@ else
 fi
 
 
-BUILD_MODULE='N'
+BUILD_MODULE='Y'
 if [ $USE_ANTHY = 'Y' ] || [ $USE_CHEWING = 'Y' ]; then
   BUILD_MODULE='Y'
 fi

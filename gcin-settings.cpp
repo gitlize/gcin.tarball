@@ -43,12 +43,12 @@ int tsin_chinese_english_toggle_key;
 int gcin_font_size_tsin_pho_in;
 int tsin_space_opt;
 int tsin_buffer_size, tsin_tail_select_key;
-int tsin_buffer_editing_mode, ini_tsin_pho_mode, tsin_shift_punc;
+int tsin_buffer_editing_mode, ini_tsin_pho_mode, tsin_shift_punc, tsin_pho_tw, tsin_parenthesis_full;
 int gcin_shift_space_eng_full;
 char *tsin_phrase_line_color;
 char *tsin_cursor_color, *gcin_sel_key_color;
-unich_t eng_full_str[]=_L("[英/全]");
-unich_t cht_full_str[]=_L("[全]");
+char eng_full_str[]="[英/全]";
+char cht_full_str[]="[全]";
 char *eng_color_full_str, *cht_color_full_str;
 int tsin_tab_phrase_end;
 int gcin_input_style, gcin_root_x, gcin_root_y, gcin_pop_up_win;
@@ -123,7 +123,13 @@ void load_setttings()
 #if WIN32
   gcin_win32_icon = GCIN_TRAY_WIN32;
 #else
-  gcin_win32_icon = get_gcin_conf_int(GCIN_WIN32_ICON, GCIN_TRAY_WIN32);
+  gcin_win32_icon = get_gcin_conf_int(GCIN_WIN32_ICON,
+#if USE_INDICATOR
+  GCIN_TRAY_INDICATOR
+#else
+  GCIN_TRAY_WIN32
+#endif
+  );
 #if !USE_INDICATOR
   if (gcin_win32_icon == GCIN_TRAY_INDICATOR)
     gcin_win32_icon = GCIN_TRAY_WIN32;
@@ -162,6 +168,8 @@ void load_setttings()
   tsin_buffer_editing_mode = get_gcin_conf_int(TSIN_BUFFER_EDITING_MODE, 1);
   tsin_use_pho_near = get_gcin_conf_int(TSIN_USE_PHO_NEAR, 0);
   tsin_shift_punc= get_gcin_conf_int(TSIN_SHIFT_PUNC, 1);
+  tsin_pho_tw = get_gcin_conf_int(TSIN_PHO_TW, 1);
+  tsin_parenthesis_full = get_gcin_conf_int(TSIN_PARENTHESIS_FULL, 1);
 
   ini_tsin_pho_mode = get_gcin_conf_int(TSIN_PHO_MODE, 1);
 
@@ -182,8 +190,8 @@ void load_setttings()
     g_free(cht_color_full_str);
   }
 
-  eng_color_full_str = g_strdup_printf("<span foreground=\"%s\">%s</span>", gcin_sel_key_color, _(eng_full_str));
-  cht_color_full_str = g_strdup_printf("<span foreground=\"%s\">%s</span>", gcin_sel_key_color, _(cht_full_str));
+  eng_color_full_str = g_strdup_printf("<span foreground=\"%s\">%s</span>", gcin_sel_key_color, eng_full_str);
+  cht_color_full_str = g_strdup_printf("<span foreground=\"%s\">%s</span>", gcin_sel_key_color, cht_full_str);
 
   get_gcin_conf_str(GCIN_WIN_COLOR_FG, &gcin_win_color_fg, "white");
   get_gcin_conf_str(GCIN_WIN_COLOR_BG, &gcin_win_color_bg, "#005BFF");

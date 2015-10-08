@@ -2,9 +2,9 @@
 
 export LC_CTYPE=zh_TW.UTF-8
 #export GTK_IM_MODULE=xim
-export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=IBUS
-#scim -d &
+export GTK_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+fcitx
 #scim-input-pad &
 #gedit --new-window &
 #mozilla-firefox

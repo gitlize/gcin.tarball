@@ -1,5 +1,5 @@
 struct PHO_KBM_NAME {
-  unich_t *name;
+  char *name;
   char *kbm;
 };
 

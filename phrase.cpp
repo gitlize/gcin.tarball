@@ -136,8 +136,10 @@ void free_phrase()
 {
   int i;
 
-  for(i=0; i < tranN; i++)
+  for(i=0; i < tranN; i++) {
     free(tran[i].str);
+    free(tran[i].str_caps);
+  }
 }
 
 #if WIN32

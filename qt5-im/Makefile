@@ -5,7 +5,9 @@ IMMODULES=$(libdir)/$(DEB_BUILD_MULTIARCH)/$(QTIM)
 
 INCS=-I../im-client -I/usr/include/X11 `pkg-config Qt5Core Qt5Gui Qt5PlatformSupport QtDBus --cflags`
 # dirty fix for ubuntu 14.04,  pkg-config Qt5Gui --cflags return -I/usr/include/qt5/QtGui, missing 5.2.1/QtGui
-INCS+=-I /usr/include/qt5/QtGui/5.2.1/QtGui
+MODVERSION=`pkg-config --modversion Qt5Gui`
+INCS+=-I/usr/include/qt5/QtGui/$(MODVERSION)/QtGui -I/usr/include/i386-linux-gnu/qt5/QtGui/$(MODVERSION)/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtGui/$(MODVERSION)/QtGui
+INCS+=-I/usr/include/x86_64-linux-gnu/qt5/QtGui/$(MODVERSION)/QtGui
 
 CXXFLAGS=$(OPTFLAGS) $(INCS) -Wall -D_REENTRANT -DUNIX=1 -fPIC  -DQT5 -DQT_SHARED -DQT_IMMODULE -DPIC -DDEBUG="0$(GCIN_DEBUG)"
 OBJS= moc_gcin-qt5.o gcin-qt5.o gcin-imcontext-qt5.o moc_qgcinplatforminputcontext.o

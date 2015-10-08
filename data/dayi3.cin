@@ -9,6 +9,7 @@
 #%selkey '[]-\6789
 %selkey '[]-\"{}_
 %space_style 1
+%flag_disp_full_match
 %keyname begin
 ,   力
 .   點

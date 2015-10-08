@@ -34,7 +34,14 @@ static void cb_inmd_menu(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 gboolean tsin_pho_mode();
 extern int tsin_half_full, gb_output;
 extern int win32_tray_disabled;
+
+#define ICON_FULL 0
+
+#if ICON_FULL
 void (*f_app_indicator_set_icon_full)(AppIndicator *self, const gchar *icon_name, const gchar *icon_desc);
+#else
+void (*f_app_indicator_set_icon)(AppIndicator *self, const gchar *icon_name);
+#endif
 
 static AppIndicator *indicator_main, *indicator_state;
 
@@ -117,7 +124,11 @@ static void create_indicator_menu(char *icon, char *icon_state)
 
   AppIndicator  *(*f_app_indicator_new_with_path) (const gchar *id, const gchar *icon_name, AppIndicatorCategory category, const gchar *icon_theme_path) = dlsym(handle, "app_indicator_new_with_path");
   void (*f_app_indicator_set_status) (AppIndicator *self, AppIndicatorStatus  status) = dlsym(handle, "app_indicator_set_status");
+  #if ICON_FULL
   f_app_indicator_set_icon_full  = dlsym(handle, "app_indicator_set_icon_full");
+  #else
+  f_app_indicator_set_icon  = dlsym(handle, "app_indicator_set_icon");
+  #endif
   void (*f_app_indicator_set_menu) (AppIndicator *self, GtkMenu *menu) = dlsym(handle, "app_indicator_set_menu");
 
   indicator_main = f_app_indicator_new_with_path ("gcin-main", icon, APP_INDICATOR_CATEGORY_APPLICATION_STATUS, GCIN_ICON_DIR);
@@ -132,32 +143,31 @@ static void create_indicator_menu(char *icon, char *icon_state)
 
 void update_item_active_unix();
 
-void update_item_active_all_indicator()
-{
-}
-
-
 void inmd_popup_tray();
 
 void toggle_half_full_char();
 
 
 
-#define GCIN_TRAY_PNG "gcin-tray.png"
+#define GCIN_TRAY_PNG "gcin_tray.png"
 
 void disp_win_screen_status(char *in_method, char *half_status);
 
 void set_indicator_icon(AppIndicator *ind, char *icon)
 {
 //	dbg("set_indicator_icon %s\n", icon);
+#if ICON_FULL
 	f_app_indicator_set_icon_full(ind, icon, "zz");
+#else
+  f_app_indicator_set_icon(ind, icon);
+#endif
 }
 
 extern gboolean capslock_on;
 
 void load_tray_icon_indicator()
 {
-//  dbg("load_tray_icon_indicator\n");
+  dbg("load_tray_icon_indicator\n");
   char *tip;
   tip="";
 
@@ -172,6 +182,7 @@ void load_tray_icon_indicator()
 
   gboolean is_tsin = current_method_type()==method_type_TSIN;
     
+   
   char tt[32];
   if (current_CS && current_CS->im_state == GCIN_STATE_CHINESE && !tsin_pho_mode()) {
     if ((current_method_type()==method_type_TSIN || current_method_type()==method_type_MODULE)) {
@@ -188,7 +199,8 @@ void load_tray_icon_indicator()
     iconame = tt;
   }
 
-//  dbg("iconame %s\n", iconame);
+  dbg("iconame %s\n", iconame);
+  
   char fname[128];
   fname[0]=0;
   if (iconame)
@@ -234,7 +246,7 @@ void load_tray_icon_indicator()
   char icon_[32];
   char icon_state_[32];
   strip_png(iconame, icon_);
-  dbg("ggg %s %s\n", iconame, icon_);
+//  dbg("ggg %s %s\n", iconame, icon_);
   strip_png(icon_st, icon_state_);
 
 
@@ -242,7 +254,7 @@ void load_tray_icon_indicator()
 	create_indicator_menu(icon_, icon_state_);
   }
 
-  dbg("%s %s\n", icon_, icon_state_);
+//  dbg("final %s %s\n", icon_, icon_state_);
 
   set_indicator_icon(indicator_main, icon_);
   set_indicator_icon(indicator_state, icon_state_);
@@ -257,4 +269,10 @@ void init_tray_indicator()
 
 void destroy_tray_indicator()
 {
+#if 1
+  if (!indicator_main)
+    return;
+  g_object_unref(indicator_main);  indicator_main = NULL;
+  g_object_unref(indicator_state);  indicator_state = NULL;
+#endif  
 }

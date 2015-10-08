@@ -128,7 +128,7 @@ static void cb_ts_export()
          }
        }
 #if UNIX
-       snprintf(cmd, sizeof(cmd), GCIN_BIN_DIR"/tsd2a32 %s -o %s", fname, selected_filename);
+       snprintf(cmd, sizeof(cmd), GCIN_BIN_DIR"/tsd2a32 %s -o \"%s\"", fname, selected_filename);
        dbg("exec %s\n", cmd);
        int res = system(cmd);
        res = 0; // some problem in system(), the exit code is not reliable
@@ -148,7 +148,7 @@ static void ts_import(const gchar *selected_filename)
 #if UNIX
    if (inmd[default_input_method].method_type==method_type_TSIN) {
      snprintf(cmd, sizeof(cmd),
-        "cd %s/.gcin && "GCIN_BIN_DIR"/tsd2a32 %s > tmpfile && cat %s >> tmpfile && "GCIN_BIN_DIR"/tsa2d32 tmpfile %s",
+        "cd %s/.gcin && "GCIN_BIN_DIR"/tsd2a32 %s > tmpfile && cat \"%s\" >> tmpfile && "GCIN_BIN_DIR"/tsa2d32 tmpfile %s",
         getenv("HOME"), tsin32_f, selected_filename, tsin32_f);
      int res = system(cmd);
      res = 0;
@@ -557,14 +557,14 @@ static void create_main_win()
   g_signal_connect (G_OBJECT (button_ts_import_sys), "clicked",
                     G_CALLBACK (cb_ts_import_sys), NULL);
 
-  GtkWidget *button_ts_contribute = gtk_button_new_with_label(_(_L("貢獻自選的詞音詞庫")));
+  GtkWidget *button_ts_contribute = gtk_button_new_with_label(_(_L("貢獻選擇的詞音詞庫")));
   gtk_box_pack_start (GTK_BOX (vbox_ts), button_ts_contribute, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (button_ts_contribute), "clicked",
                     G_CALLBACK (cb_ts_contribute), NULL);
   }
 
 
-  GtkWidget *button_ts_contribute_en = gtk_button_new_with_label(_(_L("貢獻自選的英數詞庫")));
+  GtkWidget *button_ts_contribute_en = gtk_button_new_with_label(_(_L("貢獻選擇的英數詞庫")));
   gtk_box_pack_start (GTK_BOX (vbox_ts), button_ts_contribute_en, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (button_ts_contribute_en), "clicked",
                     G_CALLBACK (cb_ts_contribute_en), NULL);
