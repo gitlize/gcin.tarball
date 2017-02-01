@@ -184,10 +184,17 @@ void create_win_save_phrase(WSP_S *wsp, int wspN)
   GtkWidget *hbox_cancel_ok = gtk_hbox_new (FALSE, 10);
   gtk_box_pack_start (GTK_BOX (vbox), hbox_cancel_ok , FALSE, FALSE, 5);
 
+#if GTK_CHECK_VERSION(3,10,0)
+  GtkWidget *button_ok = gtk_button_new_with_label ("OK");
+#else
   GtkWidget *button_ok = gtk_button_new_from_stock (GTK_STOCK_OK);
+#endif  
   gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 5);
-
+#if GTK_CHECK_VERSION(3,10,0)
+  GtkWidget *button_cancel = gtk_button_new_with_label ("取消");
+#else  
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+#endif  
   gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
 
   sess->label_countdown = gtk_label_new(NULL);

@@ -85,7 +85,11 @@ void save_tsin_eng_pho_key()
 static GtkWidget *gcin_kbm_window = NULL;
 
 static int new_select_idx_tsin_space_opt;
+#if GTK_CHECK_VERSION(3,10,0)
+static GdkRGBA tsin_phrase_line_gcolor;
+#else
 static GdkColor tsin_phrase_line_gcolor;
+#endif
 
 void save_tsin_space_opt()
 {
@@ -246,11 +250,16 @@ static void cb_save_tsin_phrase_line_color(GtkWidget *widget, gpointer user_data
 static gboolean cb_tsin_phrase_line_color( GtkWidget *widget,
                                    gpointer   data )
 {
-   GtkWidget *color_selector = gtk_color_selection_dialog_new ("詞音標示詞的底線顏色");
-
+#if GTK_CHECK_VERSION(3,10,0)
+   GtkColorChooser *color_selector = gtk_color_chooser_new("詞音標示詞的底線顏色", NULL);
+   gtk_color_chooser_set_rgba (color_selector, &tsin_phrase_line_gcolor);
+#else  
+   GtkWidget *color_selector = gtk_color_selection_dialog_new("詞音標示詞的底線顏色");
    gtk_color_selection_set_current_color(
            GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(color_selector))),
-           &tsin_phrase_line_gcolor);
+           &tsin_phrase_line_gcolor);   
+#endif   
+
 
 
 #if 0
@@ -643,12 +652,20 @@ void create_kbm_window()
   GtkWidget *hbox_cancel_ok = gtk_hbox_new (FALSE, 10);
 
   gtk_box_pack_start (GTK_BOX (vbox_top), hbox_cancel_ok , FALSE, FALSE, 5);
+#if GTK_CHECK_VERSION(3,10,0)
+   GtkWidget *button_cancel = gtk_button_new_with_label("取消");
+#else    
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+#endif  
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
   else
     gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
+#if GTK_CHECK_VERSION(3,10,0)
+   GtkWidget *button_ok = gtk_button_new_with_label("OK");
+#else        
   GtkWidget *button_ok = gtk_button_new_from_stock (GTK_STOCK_OK);
+#endif  
 
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 5);

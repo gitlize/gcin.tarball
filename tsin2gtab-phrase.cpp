@@ -12,16 +12,73 @@ ITEM64 it64[MAX_K];
 gboolean key64;
 extern gboolean is_chs;
 int itN;
+struct TableHead th;
+int kmask;
 
-int qcmp_ch(const void *aa, const void *bb)
+#define TRIM_N 5
+
+#if TRIM_N
+int gtab_klen(u_int64_t k) {
+	int klen=0;
+	for(int i=0;i<th.MaxPress;i++) {
+		if (k & kmask)
+		  klen++;
+		k>>=th.keybits;
+	}
+	return klen;
+}
+
+int qcmp_klen(unsigned char *a, unsigned char *b)
+{
+  unsigned int ka=0, kb=0;
+  memcpy(&ka, a, sizeof(ka)); memcpy(&kb, b, sizeof(kb));
+  return (gtab_klen(ka) - gtab_klen(kb));
+}
+
+int qcmp_klen64(const void *aa, const void *bb)
+{
+  ITEM64 *a = (ITEM64 *)aa, *b=(ITEM64 *)bb;
+  u_int64_t ka, kb;
+  memcpy(&ka, a->key, sizeof(ka)); memcpy(&kb, b->key, sizeof(kb));
+  return (gtab_klen(ka) - gtab_klen(kb));
+}
+#endif
+
+
+int qcmp_ch_(const void *aa, const void *bb)
 {
   return memcmp(((ITEM *)aa)->ch, ((ITEM *)bb)->ch, CH_SZ);
 }
 
-int qcmp_ch64(const void *aa, const void *bb)
+int qcmp_ch64_(const void *aa, const void *bb)
 {
   return memcmp(((ITEM64 *)aa)->ch, ((ITEM64 *)bb)->ch, CH_SZ);
 }
+
+int qcmp_ch(const void *aa, const void *bb)
+{
+  int d = memcmp(((ITEM *)aa)->ch, ((ITEM *)bb)->ch, CH_SZ);
+#if TRIM_N
+  if (d)
+    return d;
+  return qcmp_klen(((ITEM *)aa)->key, ((ITEM *)bb)->key);
+#else
+  return d;
+#endif
+}
+
+int qcmp_ch64(const void *aa, const void *bb)
+{
+  int d = memcmp(((ITEM64 *)aa)->ch, ((ITEM64 *)bb)->ch, CH_SZ);
+#if TRIM_N && 1
+  if (d)
+    return d;
+  return qcmp_klen64(aa, bb);
+#else
+  return d;
+#endif
+}
+
 
 ITEM *find_ch(char *s, int *N)
 {
@@ -30,22 +87,27 @@ ITEM *find_ch(char *s, int *N)
   bzero(t.ch, CH_SZ);
   u8cpy((char *)t.ch, s);
 
-  ITEM *p = (ITEM *)bsearch(&t, it, itN, sizeof(ITEM), qcmp_ch);
+  ITEM *p = (ITEM *)bsearch(&t, it, itN, sizeof(ITEM), qcmp_ch_);
   if (!p)
     return NULL;
 
   ITEM *q = p+1;
 
-  while (p > it && !qcmp_ch(p-1, &t))
+  while (p > it && !qcmp_ch_(p-1, &t))
     p--;
 
   ITEM *end = it + itN;
-  while (q < end && !qcmp_ch(q, &t))
+  while (q < end && !qcmp_ch_(q, &t))
     q++;
 
   *N = q - p;
   if (*N > 20)
     p_err("err");
+
+#if TRIM_N
+  if (*N > TRIM_N)
+	  *N = TRIM_N;
+#endif
 
   return p;
 }
@@ -57,22 +119,27 @@ ITEM64 *find_ch64(char *s, int *N)
   bzero(t.ch, CH_SZ);
   u8cpy((char *)t.ch, s);
 
-  ITEM64 *p = (ITEM64 *)bsearch(&t, it64, itN, sizeof(ITEM64), qcmp_ch64);
+  ITEM64 *p = (ITEM64 *)bsearch(&t, it64, itN, sizeof(ITEM64), qcmp_ch64_);
   if (!p)
     return NULL;
 
   ITEM64 *q = p+1;
 
-  while (p > it64 && !qcmp_ch64(p-1, &t))
+  while (p > it64 && !qcmp_ch64_(p-1, &t))
     p--;
 
   ITEM64 *end = it64 + itN;
-  while (q < end && !qcmp_ch64(q, &t))
+  while (q < end && !qcmp_ch64_(q, &t))
     q++;
 
   *N = q - p;
   if (*N > 20)
     p_err("err");
+
+#if TRIM_N
+  if (*N > TRIM_N)
+	  *N = TRIM_N;
+#endif
 
   return p;
 }
@@ -122,7 +189,6 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-  struct TableHead th;
   fread(&th,1, sizeof(th), fr);
 #if NEED_SWAP
   swap_byte_4(&th.version);
@@ -136,7 +202,9 @@ int main(int argc, char **argv)
     swap_byte_4(&idx1[i]);
 #endif
   int KeyNum = th.KeyS;
-  dbg("keys %d\n",KeyNum);
+  kmask = (1 << th.keybits) - 1;
+  dbg("keys %d kmask:%x\n",KeyNum, kmask);
+  dbg("th.DefC %d\n", th.DefC);
 
   if (!th.keybits)
     th.keybits = 6;
@@ -182,6 +250,8 @@ int main(int argc, char **argv)
     qsort(it, th.DefC, sizeof(ITEM), qcmp_ch);
   }
 
+  fclose(fr);
+
   itN = th.DefC;
 
 //  dbg("itN:%d\n", itN);
@@ -192,8 +262,6 @@ int main(int argc, char **argv)
   }
 #endif
 
-  fclose(fr);
-
   char fname[128];
   get_gcin_user_fname(tsin32_f, fname);
 
@@ -202,7 +270,6 @@ int main(int argc, char **argv)
     printf("Cannot open %s", fname);
     exit(-1);
   }
-
 
   while (!feof(fp)) {
     int i;
@@ -241,9 +308,20 @@ int main(int argc, char **argv)
       if (key64) {
         if (!(kk64[i].arr = find_ch64(ch, &kk64[i].N)))
           has_err = TRUE;
+
+#define M_CUT 2
+
+#if TRIM_N
+		if (i > M_CUT)
+	      kk64[i].N=1;
+#endif
       } else {
         if (!(kk[i].arr = find_ch(ch, &kk[i].N)))
           has_err = TRUE;
+#if TRIM_N
+		if (i > M_CUT)
+	      kk[i].N=1;
+#endif
       }
 
       memcpy(str+strN, ch, len);
@@ -319,5 +397,7 @@ stop:
 
   fclose(fp);
   fclose(fp_out);
+
+  dbg("finish\n");
   return 0;
 }

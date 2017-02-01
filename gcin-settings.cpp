@@ -31,7 +31,7 @@ int gtab_in_row1;
 int gtab_capslock_in_eng;
 int gtab_vertical_select;
 int gtab_unique_auto_send;
-int gtab_que_wild_card, gtab_in_area_button, gtab_auto_space;
+int gtab_que_wild_card, gtab_star_wild_card, gtab_in_area_button, gtab_auto_space;
 
 int tsin_phrase_pre_select, tsin_tone_char_input;
 int tsin_capslock_upper, tsin_use_pho_near;
@@ -54,6 +54,8 @@ int tsin_tab_phrase_end;
 int gcin_input_style, gcin_root_x, gcin_root_y, gcin_pop_up_win;
 int gcin_inner_frame;
 char *gcin_font_name, *gcin_win_color_fg, *gcin_win_color_bg;
+int destroy_window;
+
 #if TRAY_ENABLED
 int gcin_status_tray;
 #endif
@@ -99,6 +101,7 @@ void load_setttings()
 
 #if UNIX
   gcin_init_im_enabled = get_gcin_conf_int(GCIN_INIT_IM_ENABLED, 0);
+  destroy_window = get_gcin_conf_int(DESTROY_WINDOW, 0);
 #else
   gcin_init_im_enabled = true;
 #endif
@@ -152,6 +155,7 @@ void load_setttings()
   gtab_vertical_select = get_gcin_conf_int(GTAB_VERTICAL_SELECT, GTAB_OPTION_AUTO);
   gtab_unique_auto_send = get_gcin_conf_int(GTAB_UNIQUE_AUTO_SEND, GTAB_OPTION_AUTO);
   gtab_que_wild_card = get_gcin_conf_int(GTAB_QUE_WILD_CARD, 0);
+  gtab_star_wild_card = get_gcin_conf_int(GTAB_STAR_WILD_CARD, 1);
   gtab_phrase_pre_select = get_gcin_conf_int(GTAB_PHRASE_PRE_SELECT, 1);
   gtab_in_area_button = get_gcin_conf_int(GTAB_IN_AREA_BUTTON, 1);
   gtab_auto_space = get_gcin_conf_int(GTAB_AUTO_SPACE, 0);

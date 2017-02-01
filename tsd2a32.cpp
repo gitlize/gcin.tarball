@@ -50,7 +50,8 @@ int main(int argc, char **argv)
   char ts_user_fname[128];
   gboolean no_pho = FALSE;
 
-  gtk_init(&argc, &argv);
+  if (getenv("NO_GTK_INIT")==NULL)
+    gtk_init(&argc, &argv);
 
   set_is_chs();
   load_setttings();

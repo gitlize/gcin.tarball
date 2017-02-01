@@ -1,6 +1,7 @@
 wc -l *.[ch]
 #cp ~/.gcin/tsin.src data
 tsd2a32 -nousecount ~/.gcin/tsin32 > data/tsin.src
+tsd2a32 -nousecount ~/.gcin/en-american > data/en-american.src
 cd
 rm -fr gcin.tmp
 cp -a gcin gcin.tmp

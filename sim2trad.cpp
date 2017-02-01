@@ -86,7 +86,6 @@ int main(int argc, char **argv)
     dbg("trad2sim\n");
   }
 
-
   mainwin = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_has_resize_grip(GTK_WINDOW(mainwin), FALSE);
   gtk_window_set_default_size(GTK_WINDOW (mainwin), 320, 100);
@@ -110,28 +109,23 @@ int main(int argc, char **argv)
 
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-  gtk_text_buffer_create_tag (buffer,
-     "blue_background", "background", "blue", "foreground", "white", NULL);
+  gtk_text_buffer_create_tag (buffer, "blue_background", "background", "blue", "foreground", "white", NULL);
 
-  gtk_text_buffer_create_tag (buffer, "char_wrap",
-			      "wrap_mode", GTK_WRAP_CHAR, NULL);
+  gtk_text_buffer_create_tag (buffer, "char_wrap", "wrap_mode", GTK_WRAP_CHAR, NULL);
 
   hbox_buttons = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox_top), hbox_buttons, FALSE, FALSE, 0);
 
-  GtkWidget *button_fetch = gtk_button_new_with_label(_(_L("自剪貼區更新")));
+  GtkWidget *button_fetch = gtk_button_new_with_label("自剪貼區更新");
   gtk_box_pack_start (GTK_BOX (hbox_buttons), button_fetch, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (button_fetch), "clicked",
-     G_CALLBACK (cb_button_fetch), NULL);
+  g_signal_connect (G_OBJECT (button_fetch), "clicked",  G_CALLBACK (cb_button_fetch), NULL);
 
-  GtkWidget *button_exit = gtk_button_new_with_label(_(_L("離開")));
+  GtkWidget *button_exit = gtk_button_new_with_label("離開");
   gtk_box_pack_start (GTK_BOX (hbox_buttons), button_exit, FALSE, FALSE, 0);
-  g_signal_connect (G_OBJECT (button_exit), "clicked",
-     G_CALLBACK (do_exit), NULL);
+  g_signal_connect (G_OBJECT (button_exit), "clicked", G_CALLBACK (do_exit), NULL);
 
 
-  g_signal_connect (G_OBJECT (mainwin), "delete_event",
-                    G_CALLBACK (do_exit), NULL);
+  g_signal_connect (G_OBJECT (mainwin), "delete_event", G_CALLBACK (do_exit), NULL);
 
   gtk_widget_show_all(mainwin);
 
@@ -140,8 +134,6 @@ int main(int argc, char **argv)
 #else
   pclipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
 #endif
-
-
 
   req_clipboard();
 

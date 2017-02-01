@@ -166,12 +166,13 @@ void get_sys_table_file_name(char *name, char *fname)
 char *get_gcin_xim_name()
 {
   char *xim_name;
+  static char sstr[32]="gcin";
 
   if ((xim_name=getenv("XMODIFIERS"))) {
     static char find[] = "@im=";
-    static char sstr[32];
     char *p = strstr(xim_name, find);
-
+    if (!p)
+      return sstr;
     p += strlen(find);
     strncpy(sstr, p, sizeof(sstr));
     sstr[sizeof(sstr) - 1]=0;
@@ -180,10 +181,9 @@ char *get_gcin_xim_name()
       *p=0;
 
 //    dbg("Try to use name from XMODIFIERS=@im=%s\n", sstr);
-    return sstr;
   }
 
-  return "gcin";
+  return sstr;
 }
 
 Atom get_gcin_atom(Display *dpy)

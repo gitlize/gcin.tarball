@@ -264,8 +264,21 @@ extern int win_kbm_on;
 void cb_inmd_menu(GtkCheckMenuItem *checkmenuitem, gpointer dat);
 
 static MITEM mitems[] = {
-  {N_("設定"), GTK_STOCK_PREFERENCES, exec_gcin_setup_, NULL},
-  {N_("重新執行gcin"), GTK_STOCK_QUIT, restart_gcin, NULL},
+  {N_("設定"), 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else
+	  GTK_STOCK_PREFERENCES
+#endif	  
+	  , exec_gcin_setup_, NULL},
+	  
+  {N_("重新執行gcin"),
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else
+	  GTK_STOCK_QUIT
+#endif	  
+	  , restart_gcin, NULL},
   {N_("念出發音"), NULL, cb_tog_phospeak, &phonetic_speak},
 #if USE_GCB
   {N_("gcb(剪貼區暫存)"), NULL, cb_tog_gcb, &gcb_enabled},

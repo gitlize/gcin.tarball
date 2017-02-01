@@ -364,8 +364,10 @@ void gcb_main()
     hist_window = NULL;
   }
 
-  if (!gcb_enabled)
+  if (!gcb_enabled) {
+	free_gcb();
     return;
+  }
 
 //  printf("gcb_position:%d\n", gcb_position);
 
@@ -502,25 +504,29 @@ void gcb_main()
 
 void free_gcb() {
   if (mainwin != NULL) {
-	  gtk_widget_destroy(mainwin);
+	  gtk_widget_destroy(mainwin); mainwin = NULL;
   }
 
-  if (hist_window != NULL) 
-	gtk_widget_destroy(hist_window);
+  if (hist_window != NULL) {
+	gtk_widget_destroy(hist_window); hist_window = NULL;
+  }
  
-  if (snoop_button != NULL)
-	gtk_widget_destroy(snoop_button);
-	
+  if (snoop_button != NULL) {
+	gtk_widget_destroy(snoop_button); snoop_button = NULL;
+  }
+
   int i;
+  if (hist_strArr) {	
    for(i=0;i< gcb_history_n; i++)
      g_free(hist_strArr[i]);
 
-   g_free(hist_strArr);
+   g_free(hist_strArr); hist_strArr = NULL;
+  }
 
-
+  if (buttonArr) {
   for(i=0;i<gcb_button_n;i++)
-    g_free(buttonStr[i]);
-    
-  g_free(buttonStr);	
+    g_free(buttonStr[i]);    
+  g_free(buttonStr); buttonStr = NULL;
+  }
 }
 

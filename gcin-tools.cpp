@@ -97,15 +97,35 @@ static void cb_ts_export()
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯出的檔案名稱")),
                               GTK_WINDOW(main_window),
                               GTK_FILE_CHOOSER_ACTION_SAVE,
-                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(3,10,0)
+                               _("_Open")
+#else
+                               GTK_STOCK_OPEN
+#endif
+                               , GTK_RESPONSE_ACCEPT,
+#if GTK_CHECK_VERSION(3,10,0)
+                              _("_Cancel")
+#else
+							GTK_STOCK_CANCEL
+#endif
+                              , GTK_RESPONSE_CANCEL,
                               NULL);
    else
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯出的檔案名稱")),
                               GTK_WINDOW(main_window),
                               GTK_FILE_CHOOSER_ACTION_SAVE,
-                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#if GTK_CHECK_VERSION(3,10,0)
+                              _("_Cancel")
+#else
+							GTK_STOCK_CANCEL
+#endif
+                              , GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(3,10,0)
+                              _("_Open")
+#else
+							  GTK_STOCK_OPEN
+#endif
+							  , GTK_RESPONSE_ACCEPT,
                               NULL);
    if (gtk_dialog_run (GTK_DIALOG (file_selector)) == GTK_RESPONSE_ACCEPT) {
        gchar *selected_filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (file_selector));
@@ -191,15 +211,35 @@ static void cb_ts_import()
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯入的檔案名稱")),
                               GTK_WINDOW(main_window),
                               GTK_FILE_CHOOSER_ACTION_OPEN,
-                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(3,10,0)
+                               _("_Open")
+#else
+                              GTK_STOCK_OPEN
+#endif
+                              , GTK_RESPONSE_ACCEPT,
+#if GTK_CHECK_VERSION(3,10,0)
+                              _("_Cancel")
+#else
+                              GTK_STOCK_CANCEL
+#endif
+                              , GTK_RESPONSE_CANCEL,
                               NULL);
    else
        file_selector = gtk_file_chooser_dialog_new(_(_L("請輸入要匯入的檔案名稱")),
                               GTK_WINDOW(main_window),
                               GTK_FILE_CHOOSER_ACTION_OPEN,
-                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#if GTK_CHECK_VERSION(3,10,0)
+                              _("_Cancel")
+#else
+                              GTK_STOCK_CANCEL
+#endif
+                              , GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(3,10,0)
+                               _("_Open")
+#else
+                              GTK_STOCK_OPEN
+#endif
+                              , GTK_RESPONSE_ACCEPT,
                               NULL);
    if (gtk_dialog_run (GTK_DIALOG (file_selector)) == GTK_RESPONSE_ACCEPT) {
        gchar *selected_filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (file_selector));
@@ -575,13 +615,23 @@ static void create_main_win()
                     G_CALLBACK (create_about_window),  NULL);
 
 
-  GtkWidget *button_help = gtk_button_new_from_stock (GTK_STOCK_HELP);
+  GtkWidget *button_help =
+#if GTK_CHECK_VERSION(3,10,0)
+	gtk_button_new_with_label("問題");
+#else
+  gtk_button_new_from_stock (GTK_STOCK_HELP);
+#endif
   gtk_box_pack_start (GTK_BOX (vbox), button_help, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (button_help), "clicked",
                     G_CALLBACK (cb_help), NULL);
 
 
-  GtkWidget *button_quit = gtk_button_new_from_stock (GTK_STOCK_QUIT);
+  GtkWidget *button_quit =
+#if GTK_CHECK_VERSION(3,10,0)
+	gtk_button_new_with_label("離開");
+#else
+  gtk_button_new_from_stock (GTK_STOCK_QUIT);
+#endif
   gtk_box_pack_start (GTK_BOX (vbox), button_quit, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (button_quit), "clicked",
                     G_CALLBACK (close_application), NULL);

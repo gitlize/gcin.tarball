@@ -188,8 +188,6 @@ gboolean inc_tsin_use_count(TSIN_HANDLE *th, void *pho, char *ch, int prlen);
 gboolean inc_tsin_use_count_en(char *s, int len);
 void lookup_gtabn(char *ch, char *);
 
-
-
 static void putbuf(int len)
 {
   u_char tt[CH_SZ * (MAX_PH_BF_EXT+1) + 1];
@@ -221,6 +219,7 @@ static void putbuf(int len)
       phokey_t pho[MAX_PHRASE_LEN];
       char ch[MAX_PHRASE_LEN * CH_SZ * 2];
 
+	  dbg("phrlen %d\n", phrlen);
 	  if (BITON(tss.chpho[i].flag, FLAG_CHPHO_EN_PHRASE)) {
 		dbg("FLAG_CHPHO_EN_PHRASE\n");
         extract_pho(TRUE, i, phrlen, pho);
@@ -390,6 +389,18 @@ void flush_tsin_buffer()
     hide_win0();
 
   if (tss.c_len) {
+	int i;
+    for(i=0;i<tss.c_len;i++) {
+	  tss.chpho[i].flag|= FLAG_CHPHO_FIXED;
+	   if (BITON(tss.chpho[i].flag, FLAG_CHPHO_EN_PHRASE)) {
+		 if (tss.chpho[i].flag & FLAG_CHPHO_PHRASE_USER_HEAD) {
+			 tss.chpho[i].flag |= FLAG_CHPHO_PHRASE_HEAD;
+//			 dbg("FLAG_CHPHO_PHRASE_USER_HEAD %d", i);
+		 }
+	   } else
+	     tss.chpho[i].flag &= ~FLAG_CHPHO_PHRASE_USER_HEAD;
+	}
+    tsin_parse();
     putbuf(tss.c_len);
     compact_win0();
     clear_ch_buf_sel_area();
@@ -422,8 +433,6 @@ void nputs(u_char *s, u_char len)
   tt[len*CH_SZ]=0;
   dbg("%s", tt);
 }
-
-
 static void dump_tsidx(int i)
 {
   phokey_t pho[MAX_PHRASE_LEN];
@@ -442,8 +451,6 @@ static void dump_tsidx(int i)
   nputs(ch, len);
   dbg("\n");
 }
-
-
 static void dump_tsidx_all()
 {
   int i;
@@ -458,7 +465,6 @@ static void dump_tsidx_all()
     dump_tsidx(hashidx[i]);
   }
 }
-
 #endif
 
 void load_tab_pho_file();
@@ -562,6 +568,7 @@ void save_phrase(int save_frm, int len)
 
 static void set_fixed(int idx, int len)
 {
+  dbg("-------------------------------- set_fixed %d %d\n", idx, len);
   int i;
   for(i=idx; i < idx+len; i++) {
     tss.chpho[i].flag |= FLAG_CHPHO_FIXED;
@@ -769,15 +776,15 @@ static void get_sel_phrase()
   get_sel_phrase0(tss.c_idx, FALSE);
 }
 
-static void get_sel_pho()
-{
-  int idx = tss.c_idx==tss.c_len?tss.c_idx-1:tss.c_idx;
-  phokey_t key = tss.chpho[idx].pho;
 
+int get_idx_pho_idx(int idx, char *rneed_mark, int *ri, phokey_t *rkey) {
+  phokey_t key = tss.chpho[idx].pho;
+  *rkey = key;
   if (!key)
-    return;
+    return -1;
 
   char need_mask = pin_juyin && !(tss.chpho[idx].flag & FLAG_CHPHO_PINYIN_TONE);
+  *rneed_mark = need_mask;
 //  dbg("need_mask %d\n", need_mask);
 
   int i=hash_pho[key>>9];
@@ -793,16 +800,39 @@ static void get_sel_pho()
     i++;
   }
 
+  *ri = i;
   if (ttt!=key) {
-    return;
+    return -1;
   }
 
-  tss.startf = idx_pho[i].start;
+  return idx_pho[i].start;
+}
+
+char *get_first_pho(int idx) {
+	char need_mask;
+	int i;
+	phokey_t key;
+	int pidx = get_idx_pho_idx(idx, &need_mask, &i, &key);
+	if (pidx<0)
+		return NULL;
+
+	return pho_idx_str(pidx);
+}
+
+static void get_sel_pho()
+{
+  int idx = tss.c_idx==tss.c_len?tss.c_idx-1:tss.c_idx, i;
+  char need_mask;
+  phokey_t key;
+  int ph_idx = get_idx_pho_idx(idx, &need_mask, &i, &key);
+  if (ph_idx < 0)
+	  return;
+  tss.startf = ph_idx;
   int end;
 
   if (need_mask) {
     while (i<idxnum_pho) {
-      ttt=idx_pho[i].key;
+      phokey_t ttt=idx_pho[i].key;
 
       if (need_mask)
         ttt &= ~7;
@@ -1855,11 +1885,11 @@ int feedkey_tsin(KeySym xkey, int kbstate)
      case XK_KP_Left:
 #endif
         if (tss.sel_pho) {
-#if 0			
+#if 0
 		  pho_menu_idx_left();
 #else
 		  tsin_page_up();
-#endif		  
+#endif
           return TRUE;
         } else
           return cursor_left();
@@ -1868,9 +1898,9 @@ int feedkey_tsin(KeySym xkey, int kbstate)
      case XK_KP_Right:
 #endif
         if (tss.sel_pho) {
-#if 0			
+#if 0
 		  pho_menu_idx_right();
-#else		  
+#else
 		  tsin_page_down();
 #endif
           return TRUE;
@@ -2208,7 +2238,7 @@ asc_char:
           tstr[0] = tt;
         }
 
-        dbg("en %s\n", tstr);
+//        dbg("en %s\n", tstr);
 
         if (!tss.c_len && !en_pre_select) {
           dbg("ret a\n");

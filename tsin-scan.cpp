@@ -532,15 +532,18 @@ u_char scanphr_en(TSIN_HANDLE *th, gboolean is_gtab, int chpho_idx, int plen,  i
 
     memcpy(sel[selN].str, mtch, match_len);
     sel[selN].str[match_len]=0;
-
+	dbg("%s %d\n", sel[selN].str, usecount);
 	for(i=0;i<selN;i++)
-      if (!strcmp(sel[i].str, sel[selN].str))
+		if (!strcmp(sel[i].str, sel[selN].str))
 		break;
-	if (i < selN)
+	if (i < selN) {
+	  if (sel[i].usecount<usecount)
+		sel[i].usecount=usecount;
 	  continue;
+	}
 
     bzero(sel[selN].phkey, sizeof(sel[selN].phkey));
-    
+
 #if 0
 	for(i=0;i<match_len;) {
 	  char t[CH_SZ + 1];
@@ -556,13 +559,15 @@ u_char scanphr_en(TSIN_HANDLE *th, gboolean is_gtab, int chpho_idx, int plen,  i
   }
 
   dbg("SelN:%d  maxlen:%d\n", selN, maxlen);
-
   qsort(sel, selN, sizeof(PRE_SEL), qcmp_pre_sel_usecount);
-
   dbg("selN:%d\n", selN);
-
+#if 0
+  for(int i=0;i<selN;i++) {
+	  dbg("%s:%d ", sel[i].str, sel[i].usecount);
+  }
+  dbg("\n");
+#endif
   tss.pre_selN = Min(selN, wselkeyN);
-
   dbg("tss.pre_selN %d\n", tss.pre_selN);
   memcpy(tss.pre_sel, sel, sizeof(PRE_SEL) * tss.pre_selN);
 

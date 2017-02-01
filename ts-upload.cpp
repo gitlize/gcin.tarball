@@ -1,4 +1,5 @@
 #if UNIX
+#include <sys/types.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

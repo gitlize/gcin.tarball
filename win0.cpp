@@ -3,12 +3,6 @@
 #include "win-sym.h"
 #include "gst.h"
 
-#if GTK_CHECK_VERSION(2,91,0)
-int destroy_window = TRUE;
-#else
-int destroy_window = FALSE;
-#endif
-
 GtkWidget *gwin0 = NULL;
 extern GtkWidget *gwin1;
 extern Display *dpy;

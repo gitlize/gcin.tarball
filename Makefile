@@ -31,8 +31,8 @@ OBJS_JUYIN_LEARN=juyin-learn.o locale.o util.o pho-util.o pho-sym.o pho2pinyin.o
 OBJS_sim2trad=sim2trad.o util.o gcin2.so locale.o gcin-conf.o gcin-icon.o
 OBJS_phod2a=phod2a.o pho-util.o gcin-conf.o pho-sym.o table-update.o pho-dbg.o locale.o \
              gcin-settings.o util.o
-OBJS_tsa2d32=tsa2d32.o gcin-send.o util.o pho-sym.o gcin-conf.o locale.o pho-lookup.o \
-pinyin.o pho2pinyin.o pho-dbg.o gcin-settings.o lang.o
+OBJS_tsa2d32=tsa2d32.o gcin-send.o util.o pho-sym.o gcin-conf.o locale.o pho-lookup.o pinyin.o pho2pinyin.o pho-dbg.o gcin-settings.o lang.o
+OBJS_gtab_db_gen=gtab-db-gen.o gcin-send.o util.o pho-sym.o gcin-conf.o locale.o pho-lookup.o pinyin.o pho2pinyin.o pho-dbg.o gcin-settings.o lang.o
 OBJS_phoa2d=phoa2d.o pho-sym.o gcin-send.o gcin-conf.o locale.o pho-lookup.o util.o pho-dbg.o
 OBJS_kbmcv=kbmcv.o pho-sym.o util.o locale.o
 OBJS_tsd2a32=tsd2a32.o pho-sym.o pho-dbg.o locale.o util.o gtab-dbg.o pho2pinyin.o \
@@ -82,10 +82,12 @@ CFLAGS += -DUSE_GCB=1
 OBJS += gcb.o
 endif
 
+GCIN_LDFLAGS = $(LDFLAGS)
+
 ifeq ($(USE_INDICATOR),Y)
 CFLAGS += -DUSE_INDICATOR=1 $(INDICATOR_INC)
 OBJS += tray-indicator.o
-LDFLAGS += $(INDICATOR_LIB)
+#GCIN_LDFLAGS += $(INDICATOR_LIB)
 endif
 
 OBJ_IMSRV=im-addr.o im-dispatch.o im-srv.o gcin-crypt.o
@@ -93,7 +95,7 @@ OBJ_IMSRV=im-addr.o im-dispatch.o im-srv.o gcin-crypt.o
 PROGS=gcin tsd2a32 tsa2d32 phoa2d phod2a tslearn gcin-tools gcin2tab \
 	juyin-learn sim2trad gcin-gb-toggle gcin-message gtab-merge \
 	gcin-kbm-toggle tsin2gtab-phrase gcin-exit ts-edit ts-contribute \
-	txt2gtab-phrase
+	txt2gtab-phrase gtab-db-gen
 PROGS_SYM=trad2sim
 PROGS_CV=kbmcv pin-juyin
 
@@ -111,7 +113,7 @@ all:	$(PROGS) trad2sim $(GCIN_SO) $(DATA) $(PROGS_CV) gcin.spec gcin-fedora.spec
 #gcc_ld_run_path=-Wl,-rpath,$(gcin_ld_run_path)
 
 gcin:   $(OBJS) $(IMdkitLIB) $(OBJ_IMSRV)
-	$(CCLD) $(EXTRA_LDFLAGS) $(gcc_ld_run_path) -o $@ $(OBJS) $(IMdkitLIB) $(OBJ_IMSRV) -lXtst $(LDFLAGS) -L/usr/X11R6/$(LIB)
+	$(CCLD) $(EXTRA_LDFLAGS) $(gcc_ld_run_path) -o $@ $(OBJS) $(IMdkitLIB) $(OBJ_IMSRV) -lXtst $(GCIN_LDFLAGS) -L/usr/X11R6/$(LIB)
 	rm -f core.* vgcore.*
 	ln -sf $@ $@.test
 
@@ -150,8 +152,11 @@ phod2a: $(OBJS_phod2a)
 tsa2d32:  $(OBJS_tsa2d32) im-client/libgcin-im-client.so
 	$(CCLD) $(gcc_ld_run_path) -o $@ $(OBJS_tsa2d32) -L./im-client -lgcin-im-client $(LDFLAGS)
 
-tsd2a:  $(OBJS_tsd2a)
-	$(CCLD) -o $@ $(OBJS_tsd2a) $(LDFLAGS)
+gtab-db-gen:  $(OBJS_gtab_db_gen) im-client/libgcin-im-client.so
+	$(CCLD) $(gcc_ld_run_path) -o $@ $(OBJS_gtab_db_gen) -L./im-client -lgcin-im-client $(LDFLAGS)
+
+#tsd2a:  $(OBJS_tsd2a)
+#	$(CCLD) -o $@ $(OBJS_tsd2a) $(LDFLAGS)
 
 tsd2a32:  $(OBJS_tsd2a32)
 	$(CCLD) -o $@ $(OBJS_tsd2a32) $(LDFLAGS)

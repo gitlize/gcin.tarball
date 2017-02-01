@@ -88,11 +88,11 @@ void disp_int(int index, char *intcode)
   gtk_label_set_text(GTK_LABEL(labels_int[index]), intcode);
 }
 
-static unich_t full_space[]=_L("　");
+static char full_space[]="　";
 
 void clear_int_code(int index)
 {
-  gtk_label_set_text(GTK_LABEL(labels_int[index]), _(full_space));
+  gtk_label_set_text(GTK_LABEL(labels_int[index]), full_space);
 }
 
 
@@ -180,7 +180,7 @@ void create_win_intcode()
 
   int i;
   for(i=0; i < MAX_INTCODE;i ++) {
-    GtkWidget *label = gtk_label_new(_(full_space));
+    GtkWidget *label = gtk_label_new(full_space);
     labels_int[i] = label;
     gtk_box_pack_start (GTK_BOX (hbox_int), label, FALSE, FALSE, 0);
     gmf.mf_set_label_font_size(label, *gmf.mf_gcin_font_size);

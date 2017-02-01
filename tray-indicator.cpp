@@ -73,13 +73,37 @@ static GtkWidget *tray_menu=NULL, *tray_menu_state=NULL;
 
 
 static MITEM mitems_main[] = {
-  {"關於gcin/常見問題", GTK_STOCK_ABOUT, cb_about_window},
-  {"設定/工具", GTK_STOCK_PREFERENCES, exec_gcin_setup_},
+  {"關於gcin/常見問題", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_ABOUT
+#endif	  
+	  , cb_about_window},
+  {"設定/工具", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_PREFERENCES
+#endif	  
+	  , exec_gcin_setup_},
   {"gcb(剪貼區暫存)", NULL, cb_tog_gcb, &gcb_enabled},
-  {"重新執行gcin", GTK_STOCK_QUIT, restart_gcin},
+  {"重新執行gcin", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_QUIT
+#endif	  
+	  , restart_gcin},
   {"念出發音", NULL, cb_tog_phospeak, &phonetic_speak},
   {"小鍵盤", NULL, kbm_toggle_, &win_kbm_on},
-  {"選擇輸入法", GTK_STOCK_INDEX, cb_inmd_menu, NULL},
+  {"選擇輸入法", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_INDEX
+#endif	  
+	  , cb_inmd_menu, NULL},
   {NULL}
 };
 

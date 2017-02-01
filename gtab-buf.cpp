@@ -1196,22 +1196,29 @@ extern char noshi_sele[], shift_sele[];
 
 gboolean gtab_pre_select_shift(KeySym key, int kbstate)
 {
-//  dbg("gtab_pre_select_shift %c\n", key);
+  dbg("gtab_pre_select_shift %c\n", key);
   if (!gtab_phrase_pre_select || !tss.pre_selN)
     return FALSE;
 
   // If the key(123) is not defined as gtab keys, the shift keys(!@#) should be used for punc, not preselect
-  int c = shift_key_idx(cur_inmd->selkey, key);  
+  int c;
+  char *p;
+  if (p=strchr(cur_inmd->selkey, key)) {
+    c = p - cur_inmd->selkey;
+    return gtab_pre_select_idx(c);
+  } else
+    c = shift_key_idx(cur_inmd->selkey, key);
+
   if (c < 0)
     return FALSE;
-  char *p = strchr(shift_sele, key);
+  p = strchr(shift_sele, key);
   if (!p)
     return FALSE;
   int idx = p - shift_sele;
   char noshi = noshi_sele[idx];
   if (!cur_inmd->keymap[noshi])
     return FALSE;
-  
+
   return gtab_pre_select_idx(c);
 }
 

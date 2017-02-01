@@ -650,6 +650,8 @@ void disp_selection0(gboolean phrase_selected, gboolean force_disp)
   tt[0]=0;
   char uu[MAX_CIN_PHR];
 
+  dbg("wild %d %d\n", ggg.wild_mode, ggg.wild_mode);
+
   int ofs;
   if (!ggg.wild_mode && ggg.exa_match && (_gtab_space_auto_first & GTAB_space_auto_first_any)) {
     strcat(tt, htmlspecialchars(seltab[0], uu));
@@ -932,11 +934,16 @@ static gboolean cb_timeout_auto_space(gpointer data)
 	return FALSE;
 }
 
+void clear_handle_timeout_auto_space() {
+	if (!handle_timeout_auto_space)
+		return;
+	g_source_remove(handle_timeout_auto_space);
+	handle_timeout_auto_space = 0;
+}
+
 static void add_timeout_auto_space()
 {
-	if (handle_timeout_auto_space)
-		g_source_remove(handle_timeout_auto_space);
-
+	clear_handle_timeout_auto_space();
 	handle_timeout_auto_space = g_timeout_add(gtab_auto_space, cb_timeout_auto_space, NULL);
 }
 
@@ -950,6 +957,19 @@ gboolean output_gbuf_();
 void flush_en() {
 	if (!gtab_phrase_on_() && ggg.gbufN) // may true if en_pre_select is on
 		output_gbuf_();
+}
+
+void gen_kval() {
+    ggg.kval=0;
+    int i;
+    for(i=0; i < Max_tab_key_num; i++) {
+      ggg.kval|= (u_int64_t)ggg.inch[i] << (KeyBits * (Max_tab_key_num - 1 - i));
+    }
+
+    if (cur_inmd->keybits==6)
+      vmaskci = cur_inmd->key64 ? vmask64[ggg.ci]:vmask[ggg.ci];
+    else
+      vmaskci = cur_inmd->key64 ? vmask64_7[ggg.ci]:vmask_7[ggg.ci];
 }
 
 gboolean feedkey_gtab(KeySym key, int kbstate)
@@ -1060,22 +1080,23 @@ en_char:
     return 1;
   }
 
-
   int lcase;
   lcase = tolower(key);
   int ucase;
   ucase = toupper(key);
-  if (key < 127 && cur_inmd && cur_inmd->keymap && cur_inmd->keymap[key]) {
-     if (key < 'A' || key > 'z' || key > 'Z'  && key < 'a' )
+  if (!strchr(cur_inmd->selkey, key) && key < 127 && cur_inmd && cur_inmd->keymap && cur_inmd->keymap[key]) {
+     if (key < 'A' || key > 'z' || key > 'Z'  && key < 'a' ) {
        goto shift_proc;
-     if (cur_inmd->keymap[lcase] != cur_inmd->keymap[ucase])
+	 }
+     if (cur_inmd->keymap[lcase] != cur_inmd->keymap[ucase]) {
        goto next;
-
+	 }
   }
 
 shift_proc:
   if (shift_m && !strchr(cur_inmd->selkey, key) && !ggg.more_pg && key>=' ' && key < 0x7e &&
        key!='*' && (key!='?' || gtab_shift_phrase_key && !ggg.ci)) {
+
     if (gtab_shift_phrase_key) {
       if (tss.pre_selN && shift_char_proc(key, kbstate))
         return TRUE;
@@ -1127,6 +1148,7 @@ shift_proc:
 
         ggg.defselN=cur_inmd->M_DUP_SEL;
         DispInArea();
+        gtab_scan_pre_select(TRUE);
         goto Disp_opt;
       } else
       if (ggg.ci==2 && cur_inmd->use_quick) {
@@ -1139,6 +1161,7 @@ shift_proc:
 
         ggg.defselN=cur_inmd->M_DUP_SEL;
         DispInArea();
+        gtab_scan_pre_select(TRUE);
         goto Disp_opt;
       }
 
@@ -1385,6 +1408,9 @@ direct_select:
 //        dbg("%d %d\n", inkey, cur_inmd->WILD_STAR);
         goto next;
       }
+
+	  if (!gtab_star_wild_card)
+		  return FALSE;
       if (ggg.ci< cur_inmd->MaxPress) {
         ggg.inch[ggg.ci++]=inkey;
         DispInArea();
@@ -1443,14 +1469,14 @@ direct_select:
       }
     default:
 next:
+	  dbg("next:\n");
 
       if (key < 0x7f)
         inkey= cur_inmd->keymap[key];
       else
         inkey = 0;
 
-      if (shift_m && !inkey && !tss.ctrl_pre_sel &&
-        tss.pre_selN && shift_char_proc(key, kbstate))
+      if (shift_m && !inkey && !tss.ctrl_pre_sel && tss.pre_selN && shift_char_proc(key, kbstate))
         return TRUE;
 
       clear_gtab_input_error_color();
@@ -1492,6 +1518,8 @@ keypad_proc:
       char *pendkey = strchr(cur_inmd->endkey, key);
 
       pselkey=ptr_selkey(key);
+
+	  dbg("pselkey %p %c:%x\n", pselkey, key, key);
 
       if (!pselkey && (key < 32 || key > 0x7e) && (gtab_full_space_auto_first || ggg.spc_pressed)) {
 //        dbg("%x %x ggg.sel1st_i:%d  '%c'\n", pselkey, key, ggg.sel1st_i, seltab[ggg.sel1st_i][0]);
@@ -1593,6 +1621,7 @@ keypad_proc:
         ggg.inch[ggg.ci++]=inkey;
         hide_gtab_pre_sel();
 
+        gen_kval();
         if (gcin_pop_up_win)
           show_win_gtab();
         ggg.last_full=0;
@@ -1607,6 +1636,7 @@ keypad_proc:
               }
               ggg.defselN=cur_inmd->M_DUP_SEL;
               DispInArea();
+              gtab_scan_pre_select(TRUE);
               goto Disp_opt;
             }
           } else
@@ -1619,6 +1649,7 @@ keypad_proc:
 
               ggg.defselN=cur_inmd->M_DUP_SEL;
               DispInArea();
+			  gtab_scan_pre_select(TRUE);
               goto Disp_opt;
             }
           }
@@ -1673,11 +1704,13 @@ keypad_proc:
 
   DispInArea();
 
+#if 0
   ggg.kval=0;
-
   for(i=0; i < Max_tab_key_num; i++) {
     ggg.kval|= (u_int64_t)ggg.inch[i] << (KeyBits * (Max_tab_key_num - 1 - i));
   }
+#endif
+  gen_kval();
 
 #if 1
   if (ggg.last_idx)
@@ -1688,13 +1721,41 @@ keypad_proc:
 
 //  dbg("--------- ch:%d %d val %llx  ggg.S1:%d\n", ggg.inch[0], Max_tab_key_num, ggg.kval, ggg.S1);
 
+
   int oE1;
   oE1=cur_inmd->idx1[ggg.inch[0]+1];
+
+  int b0=ggg.S1;
+  int b1=oE1;
+  int mid;
+  do {
+	 mid = (b0+b1)/2;
+	 u_int64_t v = CONVT2(cur_inmd, mid);
+	 if (v < ggg.kval)
+		 b0 = mid+1;
+	 else
+	 if (v > ggg.kval)
+		 b1 = mid-1;
+	 else
+		 break;
+  } while (b0 < b1);
+
+  i = mid;
+  while (i > ggg.S1) {
+	u_int64_t v = CONVT2(cur_inmd, i);
+	if (v < ggg.kval)
+		break;
+	i--;
+  }
+  ggg.S1 = i;
+
+
+#if 0
   if (cur_inmd->keybits==6)
     vmaskci = cur_inmd->key64 ? vmask64[ggg.ci]:vmask[ggg.ci];
   else
     vmaskci = cur_inmd->key64 ? vmask64_7[ggg.ci]:vmask_7[ggg.ci];
-
+#endif
   if (gtab_phrase_on_())
 	gtab_scan_pre_select(TRUE);
 
@@ -1956,8 +2017,12 @@ Disp_opt:
        disp_selection(phrase_selected);
   }
 
-  if (gtab_auto_space && ggg.ci && seltab[0][0])
-    add_timeout_auto_space();
+  if (gtab_auto_space) {
+	  if (ggg.ci && seltab[0][0])
+		add_timeout_auto_space();
+	  else
+		clear_handle_timeout_auto_space();
+  }
 
   return 1;
 }

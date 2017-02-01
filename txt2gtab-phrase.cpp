@@ -6,22 +6,82 @@
 #include "lang.h"
 
 #define MAX_K (500000)
-
+struct TableHead th;
 ITEM it[MAX_K];
 ITEM64 it64[MAX_K];
 gboolean key64;
 extern gboolean is_chs;
 int itN;
+int kmask;
 
-int qcmp_ch(const void *aa, const void *bb)
+#define TRIM_N 5
+
+#if TRIM_N
+int gtab_klen(u_int64_t k) {
+	int klen=0;
+#if 1
+	for(int i=0;i<th.MaxPress;i++) {
+		if (k & kmask)
+		  klen++;
+		k>>=th.keybits;
+	}
+#endif
+//	dbg("klen %llx %d\n", k, klen);
+	return klen;
+}
+
+int qcmp_klen(const void *aa, const void *bb)
+{
+  ITEM *a = (ITEM *)aa, *b=(ITEM *)bb;
+  int ka, kb;
+  memcpy(&ka, a->key, sizeof(ka)); memcpy(&kb, b->key, sizeof(kb));
+  return (gtab_klen(ka) - gtab_klen(kb));
+}
+
+int qcmp_klen64(const void *aa, const void *bb)
+{
+  ITEM64 *a = (ITEM64 *)aa, *b=(ITEM64 *)bb;
+  u_int64_t ka, kb;
+  memcpy(&ka, a->key, sizeof(ka)); memcpy(&kb, b->key, sizeof(kb));
+  return (gtab_klen(ka) - gtab_klen(kb));
+}
+#endif
+
+
+int qcmp_ch_(const void *aa, const void *bb)
 {
   return memcmp(((ITEM *)aa)->ch, ((ITEM *)bb)->ch, CH_SZ);
 }
 
-int qcmp_ch64(const void *aa, const void *bb)
+int qcmp_ch64_(const void *aa, const void *bb)
 {
   return memcmp(((ITEM64 *)aa)->ch, ((ITEM64 *)bb)->ch, CH_SZ);
 }
+
+int qcmp_ch(const void *aa, const void *bb)
+{
+  int d = memcmp(((ITEM *)aa)->ch, ((ITEM *)bb)->ch, CH_SZ);
+#if TRIM_N
+  if (d)
+    return d;
+  return qcmp_klen(aa, bb);
+#else
+  return d;
+#endif
+}
+
+int qcmp_ch64(const void *aa, const void *bb)
+{
+  int d = memcmp(((ITEM64 *)aa)->ch, ((ITEM64 *)bb)->ch, CH_SZ);
+#if TRIM_N
+  if (d)
+    return d;
+  return qcmp_klen64(aa, bb);
+#else
+  return d;
+#endif
+}
+
 
 ITEM *find_ch(char *s, int *N)
 {
@@ -30,22 +90,27 @@ ITEM *find_ch(char *s, int *N)
   bzero(t.ch, CH_SZ);
   u8cpy((char *)t.ch, s);
 
-  ITEM *p = (ITEM *)bsearch(&t, it, itN, sizeof(ITEM), qcmp_ch);
+  ITEM *p = (ITEM *)bsearch(&t, it, itN, sizeof(ITEM), qcmp_ch_);
   if (!p)
     return NULL;
 
   ITEM *q = p+1;
 
-  while (p > it && !qcmp_ch(p-1, &t))
+  while (p > it && !qcmp_ch_(p-1, &t))
     p--;
 
   ITEM *end = it + itN;
-  while (q < end && !qcmp_ch(q, &t))
+  while (q < end && !qcmp_ch_(q, &t))
     q++;
 
   *N = q - p;
   if (*N > 20)
     p_err("err");
+
+#if TRIM_N
+  if (*N > TRIM_N)
+	  *N = TRIM_N;
+#endif
 
   return p;
 }
@@ -57,20 +122,26 @@ ITEM64 *find_ch64(char *s, int *N)
   bzero(t.ch, CH_SZ);
   u8cpy((char *)t.ch, s);
 
-  ITEM64 *p = (ITEM64 *)bsearch(&t, it64, itN, sizeof(ITEM64), qcmp_ch64);
+  ITEM64 *p = (ITEM64 *)bsearch(&t, it64, itN, sizeof(ITEM64), qcmp_ch64_);
   if (!p)
     return NULL;
 
   ITEM64 *q = p+1;
 
-  while (p > it64 && !qcmp_ch64(p-1, &t))
+  while (p > it64 && !qcmp_ch64_(p-1, &t))
     p--;
 
   ITEM64 *end = it64 + itN;
-  while (q < end && !qcmp_ch64(q, &t))
+  while (q < end && !qcmp_ch64_(q, &t))
     q++;
 
   *N = q - p;
+
+#if TRIM_N
+  if (*N > TRIM_N)
+	  *N = TRIM_N;
+#endif
+
   if (*N > 20)
     p_err("err");
 
@@ -97,6 +168,7 @@ void init_gcin_program_files();
 
 int main(int argc, char **argv)
 {
+  dbg("main\n");
   gtk_init(&argc, &argv);
   set_is_chs();
 
@@ -108,6 +180,8 @@ int main(int argc, char **argv)
   char *infile = argv[2];
   char *outfile = argv[3];
 
+  p_err("skip");
+
   FILE *fr;
   if ((fr=fopen(infile, "rb"))==NULL)
       p_err("cannot err open %s", infile);
@@ -118,7 +192,6 @@ int main(int argc, char **argv)
     exit(-1);
   }
 
-  struct TableHead th;
   fread(&th,1, sizeof(th), fr);
 #if NEED_SWAP
   swap_byte_4(&th.version);
@@ -132,6 +205,7 @@ int main(int argc, char **argv)
     swap_byte_4(&idx1[i]);
 #endif
   int KeyNum = th.KeyS;
+  kmask = (1 << th.keybits) - 1;
   dbg("keys %d\n",KeyNum);
 
   if (!th.keybits)
@@ -168,6 +242,7 @@ int main(int argc, char **argv)
   }
 
   fprintf(fp_out,TSIN_GTAB_KEY" %d %d %s\n", th.keybits, th.MaxPress, keymap+1);
+  dbg("th.DefC %d\n", th.DefC);
 
   if (key64) {
     fread(it64, sizeof(ITEM64), th.DefC, fr);
@@ -232,9 +307,20 @@ int main(int argc, char **argv)
       if (key64) {
         if (!(kk64[clen].arr = find_ch64(ch, &kk64[clen].N)))
           has_err = TRUE;
+
+#define M_CUT 2
+
+#if TRIM_N
+		if (clen > M_CUT)
+	      kk64[clen].N=1;
+#endif
       } else {
         if (!(kk[clen].arr = find_ch(ch, &kk[clen].N)))
           has_err = TRUE;
+#if TRIM_N
+		if (clen > M_CUT)
+	      kk[clen].N=1;
+#endif
       }
 
       ch+=len;

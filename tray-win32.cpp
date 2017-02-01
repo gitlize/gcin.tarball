@@ -56,6 +56,20 @@ void do_exit();
 
 void restart_gcin(GtkCheckMenuItem *checkmenuitem, gpointer dat)
 {
+#if UNIX && 0
+  // doesn't work, why ?
+  if (fork()==0) {
+    sleep(5);
+    char exe[512];    
+    int len;
+    if ((len=readlink("/proc/self/exe", exe, sizeof(exe)))>0) {
+	  exe[len]=0;	  
+	  dbg("exe %s\n", exe);
+	  //putenv("GCIN_DAEMON=");
+      execl(exe, "gcin", NULL);  
+	}
+  }
+#endif
   do_exit();
 }
 
@@ -112,12 +126,30 @@ extern gboolean win_kbm_inited;
 extern int win_kbm_on;
 
 static MITEM mitems_main[] = {
-  {"關於gcin/常見問題", GTK_STOCK_ABOUT, cb_about_window},
-  {"設定/工具", GTK_STOCK_PREFERENCES, exec_gcin_setup_},
+  {"關於gcin/常見問題", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_ABOUT
+#endif
+	  , cb_about_window},
+  {"設定/工具", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_PREFERENCES
+#endif
+	  , exec_gcin_setup_},
 #if USE_GCB
   {"gcb(剪貼區暫存)", NULL, cb_tog_gcb, &gcb_enabled},
 #endif
-  {"重新執行gcin", GTK_STOCK_QUIT, restart_gcin},
+  {"重新執行gcin", 
+#if GTK_CHECK_VERSION(3,10,0)
+	NULL
+#else	  
+	  GTK_STOCK_QUIT
+#endif
+	  , restart_gcin},
   {"念出發音", NULL, cb_tog_phospeak, &phonetic_speak},
   {"小鍵盤", NULL, kbm_toggle_, &win_kbm_on},
 #if UNIX && 0
@@ -189,12 +221,13 @@ GtkWidget *create_tray_menu(MITEM *mitems)
 
     if (!mitems[i].name)
       continue;
-
+#if !GTK_CHECK_VERSION(3,10,0)
     if (mitems[i].stock_id) {
       item = gtk_image_menu_item_new_with_label (mitems[i].name);
       gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), gtk_image_new_from_stock(mitems[i].stock_id, GTK_ICON_SIZE_MENU));
     }
     else
+#endif    
     if (mitems[i].check_dat) {
       item = gtk_check_menu_item_new_with_label (mitems[i].name);
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), *mitems[i].check_dat);

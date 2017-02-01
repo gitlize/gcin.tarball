@@ -6,10 +6,11 @@
 //typedef HWND Window;
 typedef unsigned int Window; // HWND is actual a pointer, this breaks 64-bit IME & 32-bit gcin
 typedef void Display;
-typedef unsigned int u_int;
 typedef u_int KeySym;
-typedef unsigned char u_char;
 typedef unsigned int CARD32;
+typedef unsigned int u_int;
+typedef unsigned char u_char;
+typedef unsigned short u_short;
 typedef __int64 u_int64_t;
 bool win32exec(char *s);
 int win32exec_script(char *s, char *para=NULL);

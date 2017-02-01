@@ -1,4 +1,5 @@
 !!!!tsin-en-word
+3D	0
 A	0
 A's	0
 AA's	0
@@ -459,6 +460,7 @@ Alonzo	0
 Alonzo's	0
 Alpert	0
 Alpert's	0
+AlphaGo	0
 Alphard	0
 Alphard's	0
 Alphecca	0
@@ -657,6 +659,8 @@ Andrianampoinimerina's	0
 Android	0
 Android 4.3	0
 Android 4.4	0
+Android 5.1	0
+Android Studio	0
 Android's	0
 Andromache	0
 Andromeda	0
@@ -733,6 +737,7 @@ Annapolis's	0
 Annapurna	0
 Annapurna's	0
 Anne	0
+Anne Hathaway	0
 Annette	0
 Annette's	0
 Annie	0
@@ -892,6 +897,8 @@ Arctic's	0
 Arcturus	0
 Arcturus's	0
 Arden	0
+Are they	0
+Are you	0
 Are you going to	0
 Arequipa	0
 Ares	0
@@ -1934,6 +1941,9 @@ Blucher's	0
 Bluebeard	0
 Bluebeard's	0
 Bluetooth	0
+Bluetooth headphone	0
+Bluetooth keyboard	0
+Bluetooth speaker	0
 Bluetooth's	0
 Blvd	0
 Blythe	0
@@ -2792,6 +2802,7 @@ Carthage's	0
 Carthaginian	0
 Carthaginian's	0
 Cartier	0
+Cartoon Network	0
 Cartwright	0
 Caruso	0
 Carver	0
@@ -3841,6 +3852,7 @@ DNA	0
 DNA's	0
 DOS's	0
 DP's	0
+DPP	0
 DRAM	0
 Dacca	0
 Dacca's	0
@@ -4215,6 +4227,7 @@ Dickson	0
 Dickson's	0
 Dictaphone	0
 Dictaphone's	0
+Did you	0
 Diderot	0
 Dido	0
 Dido's	0
@@ -4264,6 +4277,7 @@ Dirk	0
 Dirk's	0
 Dis	0
 Dis's	0
+Discovery Channel	0
 Disney	0
 Disneyland	0
 Disraeli	0
@@ -4287,6 +4301,7 @@ Dmitri's	0
 Dnepropetrovsk	0
 Dnieper	0
 Dniester	0
+Do you	0
 Dobbin	0
 Dobbin's	0
 Doberman	0
@@ -4304,6 +4319,10 @@ Dodoma's	0
 Dodson	0
 Dodson's	0
 Doe	0
+Does he	0
+Does she 	0
+Doesn't he	0
+Doesn't she 	0
 Doha	0
 Doha's	0
 Dolby	0
@@ -4334,6 +4353,7 @@ Dominique's	0
 Domitian	0
 Don	0
 Don's	0
+Don't you 	0
 Dona	0
 Donahue	0
 Donahue's	0
@@ -4682,6 +4702,7 @@ Eisenhower's	0
 Eisenstein	0
 Eisner	0
 Eisner's	0
+El Paso	0
 Elaine	0
 Elam	0
 Elanor	0
@@ -5119,6 +5140,7 @@ F	0
 F's	0
 FAT32	0
 FBI's	0
+FDA	0
 FDIC's	0
 FDR	0
 FDR's	0
@@ -5386,6 +5408,7 @@ Formosan	0
 Formosan's	0
 Forrest	0
 Forster	0
+Fort Wayne	0
 Fort Worth	0
 Fortaleza	0
 Fosse	0
@@ -5566,6 +5589,7 @@ GMail	0
 GNP's	0
 GOP's	0
 GP's	0
+GPS	0
 GTE	0
 GTE's	0
 Ga	0
@@ -6265,21 +6289,27 @@ Göteborg	0
 Göteborg's	0
 H	0
 H's	0
+HBO	0
+HDMI	0
 HF power	0
 HF's	0
 HIV's	0
 HMO's	0
 HP	0
 HP's	0
+HPV	0
 HQ's	0
 HRV	0
 HSBC	0
 HSBC's	0
 HSPA+	0
 HTC	0
+HTC Butterfly	0
 HTC Desire	0
 HTC Desire Eye	0
+HTC M9	0
 HTC's	0
+HTML	0
 HTML's	0
 HTML5	0
 HUD's	0
@@ -6506,6 +6536,10 @@ Hazel's	0
 Hazlitt	0
 He	0
 He doesn't	0
+He has 	0
+He is	0
+He was	0
+He will	0
 He's	0
 Head	0
 Head's	0
@@ -6720,6 +6754,7 @@ Hilfiger	0
 Hilfiger's	0
 Hill	0
 Hillary	0
+Hillary Clinton	0
 Hillel	0
 Hilton	0
 Himalaya	0
@@ -6914,6 +6949,12 @@ Houyhnhnm	0
 Houyhnhnm's	0
 Hovhaness	0
 Hovhaness's	0
+How many	0
+How many 	0
+How much	0
+How much 	0
+How old 	0
+How tall 	0
 Howard	0
 Howe	0
 Howell	0
@@ -7017,11 +7058,21 @@ Hz's	0
 Héloise	0
 Héloise's	0
 I	0
+I am	0
+I can 	0
+I could 	0
 I didn't	0
 I don't	0
 I don't know	0
+I hate	0
 I have	0
+I like	0
+I like 	0
+I love 	0
+I must	0
+I was	0
 I will	0
+I wish 	0
 I'd	0
 I'll	0
 I'm	0
@@ -7252,6 +7303,7 @@ Irvin's	0
 Irving	0
 Irwin	0
 Irwin's	0
+Is he	0
 Isaac	0
 Isaac's	0
 Isabel	0
@@ -7305,6 +7357,7 @@ Istanbul's	0
 Isuzu	0
 Isuzu's	0
 It	0
+It was	0
 Itaipu	0
 Itaipu's	0
 Italian	0
@@ -7674,6 +7727,8 @@ Johannes	0
 Johannesburg	0
 Johannesburg's	0
 John	0
+John Denver	0
+John Lennon	0
 John's	0
 Johnathan	0
 Johnathan's	0
@@ -7837,6 +7892,8 @@ K's	0
 KFC	0
 KFC's	0
 KKK's	0
+KMT	0
+KTV	0
 Kaaba	0
 Kabul	0
 Kabul's	0
@@ -7967,6 +8024,7 @@ Katowice	0
 Katrina	0
 Katrina's	0
 Katy	0
+Katy Perry	0
 Katy's	0
 Kauai	0
 Kauai's	0
@@ -8402,10 +8460,12 @@ LBJ	0
 LBJ's	0
 LCD's	0
 LED's	0
+LG	0
 LINE	0
 LPN's	0
 LSD's	0
 LTE	0
+LTPS	0
 La	0
 La's	0
 Laban	0
@@ -8957,6 +9017,7 @@ Loews	0
 Loews's	0
 Logan	0
 Logan's	0
+Logitech	0
 Lohengrin	0
 Loire	0
 Loire's	0
@@ -9222,6 +9283,7 @@ MBA's	0
 MCI	0
 MCI's	0
 MD's	0
+MG149	0
 MGM	0
 MGM's	0
 MHz	0
@@ -9234,6 +9296,8 @@ MS's	0
 MSG's	0
 MST's	0
 MT's	0
+MTP	0
+MTV	0
 MVP's	0
 Maalox	0
 Maalox's	0
@@ -10239,6 +10303,8 @@ Milford	0
 Milford's	0
 Milken	0
 Milken's	0
+Milky Way	0
+Milky Way Galaxy	0
 Mill	0
 Millard	0
 Millard's	0
@@ -10320,6 +10386,7 @@ Mir's	0
 Mira	0
 Mira's	0
 Mirabeau	0
+Miracast	0
 Mirach	0
 Mirach's	0
 Miranda	0
@@ -10755,7 +10822,9 @@ NASCAR	0
 NASCAR's	0
 NASDAQ's	0
 NATO's	0
+NBA	0
 NE's	0
+NFL	0
 NORAD	0
 NORAD's	0
 NT$	0
@@ -10860,6 +10929,7 @@ Nathaniel	0
 Nathaniel's	0
 Nathans	0
 Nation	0
+Nation Geographic Channel	0
 National Palace Museum	0
 National Taiwan University	0
 Nationwide	0
@@ -10996,6 +11066,7 @@ New Hampshire	0
 New Jersey	0
 New Orleans	0
 New York	0
+New York City	0
 New York Times	0
 New Yorker	0
 New Zealand	0
@@ -11598,6 +11669,7 @@ PAC's	0
 PBS's	0
 PC's	0
 PChome	0
+PHILIPS	0
 PM's	0
 PMS's	0
 POW's	0
@@ -11669,6 +11741,7 @@ Palmolive	0
 Palmolive's	0
 Palmyra	0
 Palmyra's	0
+Palo Alto	0
 Palomar	0
 Palomar's	0
 Pam	0
@@ -12803,6 +12876,7 @@ Rice	0
 Rich	0
 Rich's	0
 Richard	0
+Richard Clayderman	0
 Richards	0
 Richardson	0
 Richelieu	0
@@ -13238,6 +13312,7 @@ SE's	0
 SIDS's	0
 SIM	0
 SIM card	0
+SOD	0
 SOP's	0
 SOS's	0
 SW's	0
@@ -13381,9 +13456,11 @@ Samuel	0
 Samuelson	0
 Samuelson's	0
 San	0
+San Antonio	0
 San Diego	0
 San Francisco	0
 San Jose	0
+SanDisk	0
 Sana	0
 Sana's	0
 Sanchez	0
@@ -13852,6 +13929,8 @@ Shawnee's	0
 Shcharansky	0
 Shcharansky's	0
 She	0
+She is	0
+She was	0
 Shea	0
 Shea's	0
 Sheba	0
@@ -14200,6 +14279,7 @@ Souphanouvong's	0
 Sousa	0
 Sousa's	0
 South	0
+South Africa	0
 South's	0
 Southampton	0
 Southeast	0
@@ -14639,10 +14719,12 @@ T'ang	0
 T's	0
 TB's	0
 TKO's	0
+TLC	0
 TLC's	0
 TNT's	0
 TSMC	0
 TV's	0
+TVBS	0
 TWA	0
 TWA's	0
 Ta	0
@@ -14934,6 +15016,7 @@ Thanh	0
 Thanh's	0
 Thank you	0
 Thank you very much	0
+Thanks for	0
 Thanksgiving	0
 Thanksgiving's	0
 Thanksgivings	0
@@ -14962,6 +15045,7 @@ Theodosius	0
 Theodosius's	0
 Theosophy	0
 Theravada	0
+There is	0
 Theresa	0
 Therese	0
 Therese's	0
@@ -14983,6 +15067,7 @@ Thessaly's	0
 Thieu	0
 Thieu's	0
 Thimbu	0
+This is	0
 Thomas	0
 Thomas's	0
 Thomism	0
@@ -15445,6 +15530,7 @@ USA	0
 USA Today	0
 USA's	0
 USB OTG	0
+USB Type-C	0
 USSR's	0
 UT's	0
 UV's	0
@@ -15539,6 +15625,7 @@ Uruguayans	0
 Urumqi	0
 Usenet	0
 Usenet's	0
+Ushuaia	0
 Ustinov	0
 Utah	0
 Utah's	0
@@ -15565,6 +15652,7 @@ V's	0
 VAT's	0
 VCR's	0
 VD's	0
+VDSL	0
 VHF's	0
 VI's	0
 VIP's	0
@@ -16067,6 +16155,8 @@ Weyden's	0
 Wezen	0
 Wezen's	0
 Wharton	0
+What is	0
+What time	0
 What's	0
 Wheaties	0
 Wheaties's	0
@@ -16076,9 +16166,14 @@ Wheeler	0
 Wheeler's	0
 Wheeling	0
 Wheeling's	0
+When will you	0
+Where are 	0
+Where is	0
+Which one 	0
 Whig	0
 Whig's	0
 Whigs	0
+Whiney Houston	0
 Whipple	0
 Whipple's	0
 Whirlpool	0
@@ -16107,6 +16202,7 @@ Whitsunday	0
 Whitsunday's	0
 Whitsundays	0
 Whittier	0
+Who is 	0
 Wi-Fi	0
 WiFi	0
 Wicca	0
@@ -16158,6 +16254,9 @@ Wilkins	0
 Wilkinson	0
 Wilkinson's	0
 Will	0
+Will he 	0
+Will she 	0
+Will you	0
 Will's	0
 Willa	0
 Willa's	0
@@ -16368,6 +16467,7 @@ Xuzhou	0
 Xuzhou's	0
 Y	0
 Y's	0
+YaST	0
 Yacc	0
 Yacc's	0
 Yahoo	0
@@ -16470,7 +16570,10 @@ Yosemite's	0
 Yossarian	0
 Yossarian's	0
 You	0
+You are	0
 You are welcome.	0
+You must	0
+You should	0
 YouTube	0
 YouTube's	0
 Young	0
@@ -16562,6 +16665,7 @@ Zen	0
 Zen's	0
 ZenFone	0
 ZenFone 5 LTE	0
+ZenFone 6	0
 Zenfone 5	0
 Zenfone 5 LTE	0
 Zenger	0
@@ -18595,6 +18699,7 @@ alpaca	0
 alpaca's	0
 alpacas	0
 alpha	0
+alpha channel	0
 alpha's	0
 alphabet	0
 alphabet's	0
@@ -20088,6 +20193,7 @@ arena	0
 arena's	0
 arenas	0
 ares	0
+arginine	0
 argon	0
 argon's	0
 argosies	0
@@ -22776,6 +22882,7 @@ bellwether	0
 bellwether's	0
 bellwethers	0
 belly	0
+belly button	0
 belly's	0
 bellyache	0
 bellyache's	0
@@ -26958,6 +27065,7 @@ carbohydrate	0
 carbohydrate's	0
 carbohydrates	0
 carbon	0
+carbon dioxide	0
 carbon's	0
 carbonate	0
 carbonate's	0
@@ -28367,6 +28475,7 @@ checkroom	0
 checkroom's	0
 checkrooms	0
 checks	0
+checksum	0
 checkup	0
 checkup's	0
 checkups	0
@@ -30348,6 +30457,7 @@ coloreds	0
 colorfast	0
 colorful	0
 colorfully	0
+colorfulness	0
 coloring	0
 coloring's	0
 colorless	0
@@ -34275,6 +34385,7 @@ cuttlefishes	0
 cutup	0
 cutup's	0
 cutups	0
+cyan	0
 cyanide	0
 cyanide's	0
 cybernetic	0
@@ -42063,6 +42174,7 @@ execrating	0
 execs	0
 executable	0
 execute	0
+execute me	0
 executed	0
 executes	0
 executing	0
@@ -42768,6 +42880,7 @@ facade's	0
 facades	0
 face	0
 face's	0
+facebook.com	0
 faced	0
 faceless	0
 facelift	0
@@ -44324,6 +44437,7 @@ flared	0
 flares	0
 flaring	0
 flash	0
+flash memory	0
 flash's	0
 flashback	0
 flashback's	0
@@ -47483,6 +47597,7 @@ gismos	0
 gist	0
 gist's	0
 give	0
+give up	0
 give's	0
 giveaway	0
 giveaway's	0
@@ -47766,6 +47881,7 @@ glumness	0
 glumness's	0
 glut	0
 glut's	0
+glutamate	0
 gluten	0
 gluten's	0
 glutinous	0
@@ -47819,6 +47935,7 @@ gnu	0
 gnu's	0
 gnus	0
 go	0
+go home	0
 go's	0
 goad	0
 goad's	0
@@ -47998,6 +48115,8 @@ goober's	0
 goobers	0
 good	0
 good day	0
+good morning	0
+good night	0
 good's	0
 goodby	0
 goodby's	0
@@ -48030,6 +48149,7 @@ goofing	0
 goofs	0
 goofy	0
 google	0
+google.com	0
 gooier	0
 gooiest	0
 gook	0
@@ -51614,6 +51734,7 @@ hothouse	0
 hothouse's	0
 hothouses	0
 hotly	0
+hotmail.com	0
 hotness	0
 hotness's	0
 hotshot	0
@@ -51710,6 +51831,9 @@ hovered	0
 hovering	0
 hovers	0
 how	0
+how many	0
+how many 	0
+how much	0
 how to	0
 how's	0
 howdah	0
@@ -57471,6 +57595,10 @@ lassoes	0
 lassoing	0
 lassos	0
 last	0
+last month	0
+last night	0
+last week	0
+last year	0
 last's	0
 lasted	0
 lasting	0
@@ -58792,6 +58920,7 @@ livability	0
 livability's	0
 livable	0
 live	0
+live.com	0
 liveable	0
 lived	0
 livelier	0
@@ -63512,6 +63641,8 @@ mown	0
 mows	0
 mozzarella	0
 mozzarella's	0
+mp3	0
+mp4	0
 ms	0
 mu	0
 much	0
@@ -66139,7 +66270,13 @@ omnivore's	0
 omnivores	0
 omnivorous	0
 on	0
+on Friday	0
+on Monday	0
+on Saturday	0
 on Sunday	0
+on Thursday	0
+on Tuesday	0
+on Wednesday	0
 once	0
 once's	0
 oncology	0
@@ -66214,6 +66351,7 @@ opaquest	0
 opaquing	0
 open	0
 open's	0
+openSUSE	0
 opened	0
 opener	0
 opener's	0
@@ -67929,6 +68067,7 @@ papaya	0
 papaya's	0
 papayas	0
 paper	0
+paper mulberry	0
 paper's	0
 paperback	0
 paperback's	0
@@ -69282,6 +69421,7 @@ periodically	0
 periodicals	0
 periodicity	0
 periodontal	0
+periodontitis	0
 periods	0
 peripatetic	0
 peripatetic's	0
@@ -69892,6 +70032,7 @@ phosphors	0
 phosphorus	0
 phosphorus's	0
 photo	0
+photo editor	0
 photo's	0
 photocopied	0
 photocopier	0
@@ -71530,6 +71671,7 @@ populist	0
 populist's	0
 populists	0
 populous	0
+popup	0
 porcelain	0
 porcelain's	0
 porch	0
@@ -73136,6 +73278,7 @@ projector	0
 projector's	0
 projectors	0
 projects	0
+prolapse	0
 proletarian	0
 proletarian's	0
 proletarians	0
@@ -78556,6 +78699,7 @@ risks	0
 risky	0
 risqué	0
 rite	0
+rite of passage	0
 rite's	0
 rites	0
 ritual	0
@@ -83998,6 +84142,7 @@ smarting	0
 smartly	0
 smartness	0
 smartness's	0
+smartphone	0
 smarts	0
 smarts's	0
 smash	0
@@ -84931,6 +85076,7 @@ sorrowfully	0
 sorrowing	0
 sorrows	0
 sorry	0
+sorry for 	0
 sort	0
 sort's	0
 sorta	0
@@ -85083,6 +85229,7 @@ sown	0
 sows	0
 sox	0
 soy	0
+soy sauce	0
 soy's	0
 soya	0
 soya's	0
@@ -89458,6 +89605,8 @@ tainting	0
 taints	0
 take	0
 take away	0
+take care	0
+take care of 	0
 take off	0
 take's	0
 takeaways	0
@@ -89492,6 +89641,7 @@ talisman	0
 talisman's	0
 talismans	0
 talk	0
+talk to	0
 talk's	0
 talkative	0
 talkativeness	0
@@ -90548,6 +90698,7 @@ thawed	0
 thawing	0
 thaws	0
 the	0
+the last 	0
 theater	0
 theater's	0
 theaters	0
@@ -95337,6 +95488,7 @@ use	0
 use's	0
 useable	0
 used	0
+used to	0
 useful	0
 usefully	0
 usefulness	0
@@ -97415,6 +97567,7 @@ wed	0
 wedded	0
 wedder	0
 wedding	0
+wedding anniversary	0
 wedding's	0
 weddings	0
 wedge	0
@@ -97700,6 +97853,8 @@ whelped	0
 whelping	0
 whelps	0
 when	0
+when I 	0
+when you	0
 when's	0
 whence	0
 whenever	0
@@ -97735,6 +97890,7 @@ whew	0
 whey	0
 whey's	0
 which	0
+which one	0
 whichever	0
 whiff	0
 whiff's	0
@@ -98003,6 +98159,7 @@ widest	0
 widgeon	0
 widgeon's	0
 widgeons	0
+widget	0
 widow	0
 widow's	0
 widowed	0
@@ -98028,7 +98185,6 @@ wife's	0
 wifelier	0
 wifeliest	0
 wifely	0
-wifi	0
 wig	0
 wig's	0
 wigeon	0
@@ -99030,6 +99186,7 @@ yacking	0
 yacks	0
 yahoo	0
 yahoo's	0
+yahoo.com	0
 yahoos	0
 yak	0
 yak's	0
@@ -99439,3 +99596,4 @@ zwieback's	0
 zygote	0
 zygote's	0
 zygotes	0
+YouBike	0

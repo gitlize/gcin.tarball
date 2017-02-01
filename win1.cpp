@@ -136,8 +136,11 @@ void create_win1_gui()
     tablecolN *= 2;
 
   c_config = current_config();
-
+#if GTK_CHECK_VERSION(3,10,0)
+	GtkWidget *table = gtk_grid_new();
+#else
   GtkWidget *table = gtk_table_new(c_rowN, tablecolN, FALSE);
+#endif  
   gtk_box_pack_start (GTK_BOX (vbox_top), table, FALSE, FALSE, 0);
 
   int i;
@@ -151,7 +154,11 @@ void create_win1_gui()
       x*=2;
 
     GtkWidget *align = gtk_alignment_new(0,0,0,0);
+#if GTK_CHECK_VERSION(3,10,0)
+	gtk_grid_attach(GTK_GRID(table),align, x,x+1,y,y+1);
+#else    
     gtk_table_attach_defaults(GTK_TABLE(table),align, x,x+1,y,y+1);
+#endif    
     GtkWidget *event_box_pho = gtk_event_box_new();
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(event_box_pho), FALSE);
     GtkWidget *label = gtk_label_new(NULL);
@@ -166,7 +173,11 @@ void create_win1_gui()
 
     if (!tsin_tail_select_key) {
       GtkWidget *alignR = gtk_alignment_new(0,0,0,0);
+#if GTK_CHECK_VERSION(3,10,0)
+      gtk_grid_attach(GTK_GRID(table), alignR, x+1,x+2,y,y+1);
+#else      
       gtk_table_attach_defaults(GTK_TABLE(table), alignR, x+1,x+2,y,y+1);
+#endif      
       GtkWidget *event_box_phoR = gtk_event_box_new();
       gtk_event_box_set_visible_window (GTK_EVENT_BOX(event_box_phoR), FALSE);
       GtkWidget *labelR = gtk_label_new(NULL);

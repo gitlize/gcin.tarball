@@ -41,7 +41,11 @@ static GtkWidget *opt_im_toggle_keys, *check_button_gcin_remote_client,
        *check_button_gcin_ctrl_punc,
        *check_button_ini_tsin_pho_mode,
        *check_button_gcin_escape_clear_edit_buffer,
-       *check_button_gcin_buffer_select_char_auto_right, *check_button_en_pre_select;
+       *check_button_gcin_buffer_select_char_auto_right, *check_button_en_pre_select
+#if UNIX
+       ,*check_button_destroy_window
+#endif
+       ;
 #if USE_GCB
 static GtkWidget *spinner_gcb_position_x, *spinner_gcb_position_y;
 static GtkWidget *spinner_gcb_history_n, *spinner_gcb_button_n;
@@ -301,8 +305,9 @@ static void cb_ok (GtkWidget *button, gpointer data)
 
   save_gcin_conf_int(EN_PRE_SELECT,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_en_pre_select)));
-
 #if UNIX
+  save_gcin_conf_int(DESTROY_WINDOW,
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_destroy_window)));
   save_gcin_conf_int(GCIN_SINGLE_STATE,
     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_gcin_single_state)));
 #endif
@@ -892,7 +897,15 @@ void create_gtablist_window (void)
   check_button_en_pre_select = gtk_check_button_new ();
   gtk_box_pack_start (GTK_BOX (hbox_en_pre_select),check_button_en_pre_select,  FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_en_pre_select), en_pre_select);
-
+#if UNIX
+  GtkWidget *hbox_destroy_window = gtk_hbox_new (FALSE, 10);
+  gtk_box_pack_start (GTK_BOX (vboxR), hbox_destroy_window, FALSE, FALSE, 0);
+  GtkWidget *label_destroy_window = gtk_label_new(_("重建輸入視窗"));
+  gtk_box_pack_start (GTK_BOX (hbox_destroy_window), label_destroy_window,  FALSE, FALSE, 0);
+  check_button_destroy_window = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_destroy_window),check_button_destroy_window,  FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_destroy_window), destroy_window);
+#endif
 
 #if USE_GCB
   GtkWidget *hbox_gcb_pos = gtk_hbox_new (FALSE, 10);
@@ -979,16 +992,22 @@ void create_gtablist_window (void)
 
   hbox = gtk_hbox_new (TRUE, 4);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
+#if GTK_CHECK_VERSION(3,10,0)
+	button = gtk_button_new_with_label("取消");
+#else
   button = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+#endif
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (cb_cancel), treeview);
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox), button, TRUE, TRUE, 0);
   else
     gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
-
+#if GTK_CHECK_VERSION(3,10,0)
+	button2 = gtk_button_new_with_label("OK");
+#else
   button2 = gtk_button_new_from_stock (GTK_STOCK_OK);
+#endif
   g_signal_connect (G_OBJECT (button2), "clicked",
                     G_CALLBACK (cb_ok), model);
   if (button_order)

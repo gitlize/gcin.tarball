@@ -352,8 +352,11 @@ GtkWidget *create_pho_sel_area()
   gtk_box_pack_start (GTK_BOX (hbox_pho_sel), button_ok, FALSE, FALSE, 20);
   g_signal_connect (G_OBJECT (button_ok), "clicked",
      G_CALLBACK (cb_button_ok), NULL);
-
+#if GTK_CHECK_VERSION(3,10,0)
+  GtkWidget *button_cancel = gtk_button_new_with_label ("取消");
+#else
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+#endif  
   gtk_box_pack_start (GTK_BOX (hbox_pho_sel), button_cancel, FALSE, FALSE, 20);
   g_signal_connect (G_OBJECT (button_cancel), "clicked",
      G_CALLBACK (cb_button_cancel), NULL);
@@ -512,8 +515,11 @@ int main(int argc, char **argv)
   g_signal_connect (G_OBJECT (button_add), "clicked",
      G_CALLBACK (cb_button_add), NULL);
 
-
+#if GTK_CHECK_VERSION(3,10,0)
+  GtkWidget *button_quit = gtk_button_new_with_label ("離開");
+#else
   GtkWidget *button_quit = gtk_button_new_from_stock (GTK_STOCK_QUIT);
+#endif  
   gtk_box_pack_start (GTK_BOX (hbox_buttons), button_quit, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT (button_quit), "clicked",
      G_CALLBACK (do_exit), NULL);

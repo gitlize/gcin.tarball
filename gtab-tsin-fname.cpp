@@ -50,7 +50,7 @@ gboolean init_tsin_table_fname(INMD *p, char *fname)
       get_gcin_user_or_sys_fname(p->phrase_txt, phrase_txt);
       unix_exec(GCIN_BIN_DIR"/txt2gtab-phrase %s %s %s", phrase_txt, gtabfname, gtab_phrase_src);     
     } else {
-     unix_exec(GCIN_BIN_DIR"/tsin2gtab-phrase %s %s", gtabfname, gtab_phrase_src);
+      unix_exec(GCIN_BIN_DIR"/tsin2gtab-phrase %s %s", gtabfname, gtab_phrase_src);
     }
         
     unix_exec(GCIN_BIN_DIR"/tsa2d32 %s %s", gtab_phrase_src, fname);

@@ -77,8 +77,8 @@ void big5_utf8(char *s, char out[])
 }
 
 
-static unich_t *dstr[]={
-_L("０"),_L("１"),_L("２"),_L("３"),_L("４"),_L("５"),_L("６"),_L("７"),_L("８"),_L("９"),_L("Ａ"),_L("Ｂ"),_L("Ｃ"),_L("Ｄ"),_L("Ｅ"),_L("Ｆ")
+static char *dstr[]={
+"０", "１","２","３","４","５","６","７","８","９","Ａ","Ｂ","Ｃ","Ｄ","Ｅ","Ｆ"
 };
 
 void disp_int(int index, char *intcode);
@@ -138,7 +138,7 @@ dispIn:
 #endif
 
   for(i=0;i<intcode_cin;i++) {
-    disp_int(i, _(dstr[h2i(inch[i])]));
+    disp_int(i, dstr[h2i(inch[i])]);
   }
 
   if ((current_intcode==INTCODE_BIG5 && intcode_cin==4 ||

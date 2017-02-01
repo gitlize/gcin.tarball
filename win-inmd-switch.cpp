@@ -39,6 +39,7 @@ void create_inmd_switch()
 #endif
 
     GtkWidget *item = gtk_image_menu_item_new_with_label (tt);
+#if !GTK_CHECK_VERSION(3,10,0)    
     if (inmd[i].icon) {
       char fname[512];
       get_icon_path(inmd[i].icon, fname);
@@ -46,7 +47,7 @@ void create_inmd_switch()
       if (img)
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), img);
     }
-
+#endif
     g_signal_connect (G_OBJECT (item), "activate",
                       G_CALLBACK (cb_update_menu_select), GINT_TO_POINTER(i));
 

@@ -265,6 +265,7 @@ void destroy_inmd_menu();
 void load_gtab_list(gboolean);
 void change_win1_font();
 void set_wselkey();
+void toggle_im_enabled();
 
 static void reload_data()
 {
@@ -284,6 +285,9 @@ static void reload_data()
 
   destroy_inmd_menu();
   load_gtab_list(TRUE);
+  // after inmd is reloaded, toogle twice to reload *.gtab if necessary
+  toggle_im_enabled();
+  toggle_im_enabled();
 
   update_item_active_all();
 #if USE_GCB

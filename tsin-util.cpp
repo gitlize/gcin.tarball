@@ -296,7 +296,7 @@ static int phseq(TSIN_HANDLE *th, u_char *a, u_char *b)
   memcpy(ka, a, th->ph_key_sz * mlen);
   memcpy(kb, b, th->ph_key_sz * mlen);
 
-  int d = phokey_t_seq(th, a, b, mlen);
+  int d = phokey_t_seq(th, ka, kb, mlen);
   if (d)
     return d;
 
@@ -800,7 +800,7 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
   char len;
   usecount_t usecount;
 
-#if 1
+#if 0
   dbg("tsin_seek_en %d\n", plen);
 #endif
 
@@ -814,7 +814,7 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
   ss[plen]=0; // fake upperbound string
   tsin_seek_en_1(ss, plen+1, &u_idx);
 
-  dbg("u_idx %d\n", u_idx);
+//  dbg("u_idx %d\n", u_idx);
 
 //  dbg("<--\n");
   gboolean found=FALSE;
@@ -822,7 +822,7 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
   for(sti = u_idx; sti>=0; sti--) {
     load_tsin_entry_ex(th, sti, &len, &usecount, stk, NULL);
 
-    u_char mlen;
+    u_char mlen=0;
     if (len > plen)
       mlen=plen;
     else
@@ -864,7 +864,7 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
   for(edi = l_idx; edi < th->phcount; edi++) {
     load_tsin_entry_ex(th, edi, &len, &usecount, stk, NULL);
 
-    u_char mlen;
+    u_char mlen=0;
     if (len > plen)
       mlen=plen;
     else
