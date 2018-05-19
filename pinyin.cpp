@@ -52,17 +52,17 @@ gboolean pin2juyin(gboolean full_match)
 }
 
 
-gboolean inph_typ_pho_pinyin(int newkey)
+int inph_typ_pho_pinyin(int newkey)
 {
   int i=0;
 
-//  dbg("inph_typ_pho_pinyin '%c'\n", newkey);
+  dbg("inph_typ_pho_pinyin '%c'\n", newkey);
 
   if (newkey != ' ') {
     char num = phkbm.phokbm[newkey][0].num;
     int typ = phkbm.phokbm[newkey][0].typ;
 
-//    dbg("cccc num %d typ:%d\n", num, typ);
+    dbg("cccc num %d typ:%d\n", num, typ);
 
     if (typ==3) {
       pin2juyin(TRUE);
@@ -105,13 +105,16 @@ gboolean inph_typ_pho_pinyin(int newkey)
   for(j=0; j < pin_juyinN; j++)
     if (pin_juyin[j].pinyin[0]==newkey)
       break;
-
-  pin2juyin(FALSE);
+            
+  pin2juyin(FALSE);  
+  
   if (j==pin_juyinN)
     return PHO_STATUS_REJECT;
 
   bzero(poo.inph, sizeof(poo.inph));
   poo.inph[0]=newkey;
+//  pin2juyin(FALSE);
+  dbg("PHO_STATUS_OK_NEW|PHO_STATUS_PINYIN_LEFT\n");
   return PHO_STATUS_OK_NEW|PHO_STATUS_PINYIN_LEFT;
 }
 
@@ -123,7 +126,7 @@ void load_pin_juyin()
   char pinfname[128];
 
   get_sys_table_file_name("pin-juyin.xlt", pinfname);
-//  dbg("pinyin kbm %s\n", pinfname);
+  dbg("pinyin kbm %s\n", pinfname);
 
   FILE *fr;
   if ((fr=fopen(pinfname,"rb"))==NULL)

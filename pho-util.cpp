@@ -120,7 +120,9 @@ void pho_load()
 char *pho_idx_str2(int idx, int *is_phrase)
 {
   static char tt[CH_SZ+1];
-
+  tt[0]=0;
+  if (idx>=ch_phoN)
+	  return tt;
   unsigned char *p = (u_char *)ch_pho[idx].ch;
 
   if (*p==PHO_PHRASE_ESCAPE) {
@@ -141,6 +143,11 @@ char *pho_idx_str(int idx)
 {
   int is_phrase;
   return pho_idx_str2(idx, &is_phrase);
+}
+
+int pho_idx_use_count(int idx)
+{
+  return ch_pho[idx].count;
 }
 
 void free_pho_mem()

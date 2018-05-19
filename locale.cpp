@@ -97,6 +97,15 @@ void utf8_putchar_fp(FILE *fp, char *s)
     fputc(s[i], fp);
 }
 
+void utf8_dbg(char *s)
+{
+  int i;
+  int len = utf8_sz(s);
+  char tt[5];
+  utf8cpy(tt, s);
+  dbg("%s", tt);
+}
+
 
 void utf8_putchar(char *s)
 {

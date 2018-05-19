@@ -205,12 +205,15 @@ int write_enc(HANDLE fd, void *p, int n)
   if (gcin_clients[fd].type == Connection_type_tcp) {
     __gcin_enc_mem(tmp, n, &srv_ip_port.passwd, &gcin_clients[fd].seed);
   }
-  int r =  write(fd, tmp, n);
 
-#if DBG
-  if (r < 0)
-    perror("write_enc");
-#endif
+  int r = 0;
+  for(int i=0;i<10;i++) {
+	  r =  write(fd, tmp, n);
+	  if (r>=0)
+		  break;
+	  else
+		  usleep(100000);
+  }
 
   free(tmp);
 

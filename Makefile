@@ -13,7 +13,7 @@ OBJS=gcin.o eve.o util.o gcin-conf.o gcin-settings.o locale.o gcin-icon.o about.
      gcin-exec-script.o $(GCIN_SO) pho-play.o cache.o gtk_bug_fix.o phrase-save-menu.o \
      $(gcin_pho_o) $(gcin_gtab_o) gcin-common.o phrase.o t2s-lookup.o gtab-use-count.o \
      win-save-phrase.o unix-exec.o pho-kbm-name.o statistic.o tsin-scan.o gcin-module.o lang.o \
-     gcin-module-cb.o gtab-init.o fullchar.o gtab-tsin-fname.o win-screen-status.o
+     gcin-module-cb.o gtab-init.o fullchar.o gtab-tsin-fname.o win-screen-status.o en-miss-cand.o
 
 
 OBJS_TSLEARN=tslearn.o util.o gcin-conf.o pho-util.o tsin-util.o gcin-send.o pho-sym.o \
@@ -125,7 +125,7 @@ tslearn:        $(OBJS_TSLEARN)
 	$(CCLD) $(gcc_ld_run_path) -o $@ $(OBJS_TSLEARN) -L./im-client -lgcin-im-client $(LDFLAGS)
 
 ts-edit:        $(OBJS_TS_EDIT)
-	$(CCLD) $(gcc_ld_run_path) -o $@ $(OBJS_TS_EDIT) -L./im-client -lgcin-im-client $(LDFLAGS)
+	$(CCLD) $(gcc_ld_run_path) -o $@ $(OBJS_TS_EDIT) -L./im-client -lgcin-im-client -lcurl $(LDFLAGS)
 
 ts-contribute:	ts-edit
 	ln -s $< $@

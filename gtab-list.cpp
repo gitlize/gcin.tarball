@@ -27,7 +27,7 @@ void free_gtab_list_sub() {
     free(pinmd->cname); pinmd->cname=NULL;
     free(pinmd->icon); pinmd->icon=NULL;
     free(pinmd->phrase_txt); pinmd->phrase_txt=NULL;
-  }	
+  }
 }
 #endif
 
@@ -48,15 +48,15 @@ void free_gtab()
     free(inp->keyname); inp->keyname = NULL;
     free(inp->idx1); inp->idx1 = NULL;
 
-    
+
     free(inp->filename); inp->filename=NULL;
     free(inp->cname); inp->cname=NULL;
     free(inp->icon); inp->icon=NULL;
     free(inp->phrase_txt); inp->phrase_txt=NULL;
-    free(inp->endkey); inp->endkey=NULL;        
-    free(inp->selkey); inp->selkey=NULL;            
+    free(inp->endkey); inp->endkey=NULL;
+    free(inp->selkey); inp->selkey=NULL;
   }
-  free(inmd); inmd=NULL;    
+  free(inmd); inmd=NULL;
   inmdN = 0;
 }
 
@@ -79,7 +79,7 @@ void load_gtab_list(gboolean skip_disabled)
 
   skip_utf8_sigature(fp);
 
-  
+
   free_gtab();
 
   inmdN = 0;
@@ -200,7 +200,7 @@ void load_gtab_list(gboolean skip_disabled)
 int gcin_switch_keys_lookup(int key)
 {
   int i;
-
+  dbg("inmdN %d key:%c %x\n", inmdN, key, key);
   for(i=0;i<inmdN;i++)
     if (inmd[i].key_ch==key)
       return i;

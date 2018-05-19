@@ -4,6 +4,7 @@
 #include "win1.h"
 #include "tsin.h"
 
+extern gboolean test_mode;
 GtkWidget *gwin1;
 static GtkWidget *frame;
 char *wselkey;
@@ -140,7 +141,7 @@ void create_win1_gui()
 	GtkWidget *table = gtk_grid_new();
 #else
   GtkWidget *table = gtk_table_new(c_rowN, tablecolN, FALSE);
-#endif  
+#endif
   gtk_box_pack_start (GTK_BOX (vbox_top), table, FALSE, FALSE, 0);
 
   int i;
@@ -156,9 +157,9 @@ void create_win1_gui()
     GtkWidget *align = gtk_alignment_new(0,0,0,0);
 #if GTK_CHECK_VERSION(3,10,0)
 	gtk_grid_attach(GTK_GRID(table),align, x,x+1,y,y+1);
-#else    
+#else
     gtk_table_attach_defaults(GTK_TABLE(table),align, x,x+1,y,y+1);
-#endif    
+#endif
     GtkWidget *event_box_pho = gtk_event_box_new();
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(event_box_pho), FALSE);
     GtkWidget *label = gtk_label_new(NULL);
@@ -175,9 +176,9 @@ void create_win1_gui()
       GtkWidget *alignR = gtk_alignment_new(0,0,0,0);
 #if GTK_CHECK_VERSION(3,10,0)
       gtk_grid_attach(GTK_GRID(table), alignR, x+1,x+2,y,y+1);
-#else      
+#else
       gtk_table_attach_defaults(GTK_TABLE(table), alignR, x+1,x+2,y,y+1);
-#endif      
+#endif
       GtkWidget *event_box_phoR = gtk_event_box_new();
       gtk_event_box_set_visible_window (GTK_EVENT_BOX(event_box_phoR), FALSE);
       GtkWidget *labelR = gtk_label_new(NULL);
@@ -310,7 +311,7 @@ gboolean timeout_minimize_win1(gpointer data)
 extern int dpy_x_ofs, dpy_y_ofs;
 void set_win_pos_size(GtkWidget *win, int x, int y, int xl, int yl)
 {
-  dbg("set_win_size %d,%d %d %d\n", x, y, xl, yl);
+  dbg("set_win_pos_size %d,%d %d %d\n", x, y, xl, yl);
   HWND hwnd=(HWND)gdk_win32_drawable_get_handle(win->window);
 #if 1
   SetWindowPos(hwnd, HWND_TOP, x + dpy_x_ofs, y + dpy_y_ofs, xl, yl, SWP_SHOWWINDOW);
@@ -323,6 +324,7 @@ void set_win_pos_size(GtkWidget *win, int x, int y, int xl, int yl)
 void getRootXY(Window win, int wx, int wy, int *tx, int *ty);
 void disp_selections(int x, int y)
 {
+  dbg("disp_selections %d,%d\n", x, y);
   if (!gwin1)
     p_err("disp_selections !gwin1");
 
@@ -336,6 +338,7 @@ void disp_selections(int x, int y)
 
   int win1_xl, win1_yl;
   get_win_size(gwin1, &win1_xl, &win1_yl);
+  dbg("get_win_size gwin1 %d,%d\n", win1_xl, win1_yl);
 
   if (x < 0) {
     x = win_x + win_xl - win1_xl;
@@ -355,6 +358,7 @@ void disp_selections(int x, int y)
 
   if (y < 0)
     y = 0;
+  dbg("x:%d,%d\n", x, y);
 
   gtk_window_move(GTK_WINDOW(gwin1), x, y);
 
@@ -383,6 +387,10 @@ void disp_selections(int x, int y)
 void hide_selections_win()
 {
 //  dbg("hide_selections_win\n");
+#if WIN32
+  if (test_mode)
+	  return;
+#endif
   if (!gwin1)
     return;
 #if WIN32 && 0
@@ -481,7 +489,7 @@ static void set_wselkey_str(char *s)
     wselkey = strdup(s);
     wselkeyN = strlen(s);
     recreate_win1_if_nessary();
-//    dbg("set_wselkey %s\n", s);
+    dbg("set_wselkey %s\n", s);
   }
 }
 
@@ -489,6 +497,7 @@ static void set_wselkey_str(char *s)
 
 char *ch_mode_selkey(gboolean is_gtab)
 {
+  dbg("ch_mode_selkey %d\n", is_gtab);
   char *s;
   if (is_gtab && cur_inmd && cur_inmd->selkey)
     s = cur_inmd->selkey;
@@ -502,7 +511,8 @@ char *en_sel_keys(gboolean is_gtab);
 void gtab_set_win1_cb(), tsin_set_win1_cb();
 
 void set_wselkey()
-{
+{ 
+  dbg("set_wselkey\n");
   gboolean is_gtab = current_method_type()==method_type_GTAB;
   char *s;
   if (tsin_pho_mode()) {

@@ -1,0 +1,7 @@
+#!/bin/sh
+gcindir=`basename $PWD`
+
+for i in $* 
+do
+  cat win32-utf8-signature.txt $i > ../gcin-win32/$i
+done

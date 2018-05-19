@@ -1,6 +1,6 @@
 #include "gcin.h"
 #include "pho.h"
-
+extern gboolean test_mode;
 void load_tab_pho_file();
 
 #if UNIX
@@ -10,8 +10,6 @@ gboolean test_mode;
 int pho_play(phokey_t key)
 {
   if (!phonetic_speak)
-    return 0;
-  if (test_mode)
     return 0;
 
   static char ogg123[]="/usr/bin/ogg123";
@@ -60,7 +58,7 @@ extern "C" {
 void ErrorExit(LPTSTR lpszFunction);
 void pho_play(phokey_t key)
 {
-  if (!phonetic_speak)
+  if (!phonetic_speak || test_mode)
     return;
 
 #if 0

@@ -479,14 +479,17 @@ if (b_contrib) {
 
 Display *dpy;
 
-void do_exit()
-{
+void send_reload_tsin_db() {
   send_gcin_message(
 #if UNIX
     dpy,
 #endif
-     RELOAD_TSIN_DB);
+     RELOAD_TSIN_DB);	
+}	
 
+void do_exit()
+{
+  send_reload_tsin_db();
   exit(0);
 }
 
@@ -681,11 +684,12 @@ void load_tsin_contrib(gboolean is_en, char *private_phrases, char *contributed_
 void ts_download();
 
 static void cb_button_download(GtkButton *button, gpointer user_data)
-{
+{	
   ts_download();
   load_ts_phrase();
   gtk_range_set_range(GTK_RANGE(scroll_bar), 0, tsN);
   disp_page();
+  send_reload_tsin_db();
 }
 
 #define DOWNLOADED_PHRASES "downloaded-phrases"
@@ -707,7 +711,7 @@ GtkWidget *gtk_vscrollbar_new (GtkAdjustment *adjustment);
 
 int main(int argc, char **argv)
 {
-#if WIN32
+#if WIN32 && 0
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;

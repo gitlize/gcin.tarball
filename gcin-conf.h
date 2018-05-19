@@ -93,7 +93,7 @@
 
 #define PHO_HIDE_ROW2 "pho-hide-row2"
 #define PHO_IN_ROW1 "pho-in-row1"
-
+#define PHO_NO_TONE "pho-no-tone"
 
 #define PHONETIC_KEYBOARD "phonetic-keyboard2"
 #define PHONETIC_KEYBOARD_BAK "phonetic-keyboard-bak"
@@ -159,7 +159,7 @@ extern int gcin_init_im_enabled, gcin_win32_icon;
 extern int gcb_enabled, gcb_position, gcb_position_x, gcb_position_y, gcb_button_n, gcb_history_n;
 extern int gcin_edit_display;
 extern char *pho_kbm_name, *pho_selkey, *gcin_str_im_cycle;
-extern int pho_candicate_col_N, pho_candicate_R2L;
+extern int pho_candicate_col_N, pho_candicate_R2L, pho_no_tone;
 
 gboolean get_gcin_user_fname(char *name, char fname[]);
 void get_gcin_conf_str(char *name, char **rstr, char *default_str);

@@ -4,6 +4,7 @@
 
 static int current_gcin_inner_frame;
 static int current_pho_in_row1;
+extern gboolean test_mode;
 
 GtkWidget *gwin_pho;
 static GtkWidget *top_bin, *hbox_row2;
@@ -11,6 +12,7 @@ static GtkWidget *label_pho_sele;
 static GtkWidget *label_pho;
 static GtkWidget *label_full;
 static GtkWidget *label_key_codes;
+static GtkWidget *event_box_pho;
 
 void change_pho_font_size(), toggle_win_sym();
 void disp_pho_sub(GtkWidget *label, int index, char *pho);
@@ -160,7 +162,7 @@ void create_win_pho_gui_simple()
 
   GtkWidget *vbox_top = gtk_vbox_new (FALSE, 0);
 
-  GtkWidget *event_box_pho;
+//  GtkWidget *event_box_pho;
   if (gtab_in_area_button)
 	event_box_pho = gtk_button_new();
   else {
@@ -266,6 +268,8 @@ gboolean pho_has_input();
 
 void show_win_pho()
 {
+  if (test_mode)
+	  return;
 //  dbg("show_win_pho\n");
   create_win_pho();
   create_win_pho_gui();
@@ -365,6 +369,17 @@ void change_pho_font_size()
   set_label_font_size(label_pho_sele, gcin_font_size);
 
   change_win_fg_bg(gwin_pho, label_pho_sele);
+}
+
+void hide_show_pho_in(gboolean show) {
+	dbg("hide_show_pho_in %d\n", show);
+	if (show) {
+		gtk_widget_show(label_pho);
+		gtk_widget_show(event_box_pho);
+	} else {
+		gtk_widget_hide(label_pho);
+		gtk_widget_hide(event_box_pho);
+	}
 }
 
 #if 0

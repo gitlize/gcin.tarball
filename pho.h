@@ -74,3 +74,4 @@ char *pho_idx_str2(int idx, int *is_phrase);
 
 #define PHO_PHRASE_ESCAPE 0x1b
 #define PHO_PINYIN_TONE1 -1
+

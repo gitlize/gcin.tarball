@@ -4,7 +4,7 @@
 #if USE_TSIN
 void flush_tsin_buffer();
 #endif
-
+extern gboolean test_mode;
 PIN_JUYIN *pin_juyin;
 
 int text_pho_N=3;
@@ -15,6 +15,10 @@ static char text_pho[6][CH_SZ];
 
 void bell()
 {
+#if WIN32
+  if (test_mode)
+    return;
+#endif
   if (gcin_bell_off)
     return;
 

@@ -1043,11 +1043,7 @@ void gcin_im_client_clear_flags(GCIN_client_handle *handle, int flags, int *ret_
 }
 
 
-int gcin_im_client_get_preedit(GCIN_client_handle *handle, char **str, GCIN_PREEDIT_ATTR att[], int *cursor
-#if WIN32 || 1
-    ,int *sub_comp_len
-#endif
-    )
+int gcin_im_client_get_preedit(GCIN_client_handle *handle, char **str, GCIN_PREEDIT_ATTR att[], int *cursor,int *sub_comp_len)
 {
   *str=NULL;
   if (!handle)
@@ -1100,12 +1096,11 @@ err_ret:
     goto err_ret;
   }
 
-//  dbg("attrN:%d\n", attN);
+  dbg("preedit str:%s attrN:%d\n", *str, attN);
 
   if (attN>0 && handle_read(handle, att, sizeof(GCIN_PREEDIT_ATTR)*attN)<=0) {
     goto err_ret;
   }
-
 
   tcursor=0;
   if (handle_read(handle, &tcursor, sizeof(tcursor))<=0) {

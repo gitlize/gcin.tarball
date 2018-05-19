@@ -356,6 +356,7 @@ void kbm_toggle()
 
 
 void reload_tsin_db();
+void reload_en_db();
 void do_exit();
 
 void message_cb(char *message)
@@ -379,6 +380,7 @@ void message_cb(char *message)
 #endif
    if (!strcmp(message, RELOAD_TSIN_DB)) {
      reload_tsin_db();
+     reload_en_db();
    } else
    if (!strcmp(message, GCIN_EXIT_MESSAGE)) {
      do_exit();

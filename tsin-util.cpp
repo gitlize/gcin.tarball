@@ -221,13 +221,13 @@ inline static int get_phidx(TSIN_HANDLE *ptsin_hand, int i)
   return t;
 }
 
-inline int phokey_t_seq8(u_char *a, u_char *b, int len)
+inline static int phokey_t_seq8(u_char *a, u_char *b, int len)
 {
   return memcmp(a, b, len);
 }
 
 
-inline int phokey_t_seq16(phokey_t *a, phokey_t *b, int len)
+inline static int phokey_t_seq16(phokey_t *a, phokey_t *b, int len)
 {
   int i;
 
@@ -241,7 +241,7 @@ inline int phokey_t_seq16(phokey_t *a, phokey_t *b, int len)
 }
 
 
-inline int phokey_t_seq32(u_int *a, u_int *b, int len)
+inline static int phokey_t_seq32(u_int *a, u_int *b, int len)
 {
   int i;
 
@@ -255,7 +255,7 @@ inline int phokey_t_seq32(u_int *a, u_int *b, int len)
 }
 
 
-inline int phokey_t_seq64(u_int64_t *a, u_int64_t *b, int len)
+inline static int phokey_t_seq64(u_int64_t *a, u_int64_t *b, int len)
 {
   int i;
 
@@ -501,6 +501,31 @@ void mask_tone(phokey_t *pho, int plen, char *tone_mask)
 }
 
 
+// tone_mask : 1 -> pho has tone, pho[i] longer than refpho[i] is clipped.
+void mask_pho_ref(phokey_t *pho, phokey_t *refpho, int plen, char *tone_mask)
+{
+  int i;
+//  dbg("mask_tone\n");
+  if (!tone_mask)
+    return;
+
+  for(i=0; i < plen; i++) {
+   if (!tone_mask[i]) {
+	 pho[i] &= (~7);
+	 phokey_t r = refpho[i];
+#define K1 (0xf<<3) // ㄚㄛㄜ
+	 if ((r&K1)==0) {
+		pho[i]&=~K1;
+
+#define K2 (0x3<<7) // ㄧㄨㄩ
+		if ((r&K2)==0)
+			pho[i]&=~K2;
+	 }
+   }
+  }
+}
+
+
 // ***  r_sti<=  range  < r_edi
 gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_edi, char *tone_mask)
 {
@@ -510,8 +535,20 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
   usecount_t usecount;
   int hashi;
 
+  if (tone_mask) {
+	int i;
+	for(i=0;i<plen;i++)
+	  if (!tone_mask[i])
+		  break;
+	if (i==plen)
+		tone_mask=NULL;
+  }
+
 #if 0
   dbg("tsin_seek %d\n", plen);
+  dbg("> ");
+  prphs((phokey_t *)pho, plen);
+  dbg("\n");
 #endif
 
 #if 0
@@ -553,6 +590,9 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
     else
       mlen=len;
 
+    if (tone_mask)
+	  mask_pho_ref((phokey_t *)ss, (phokey_t *)pho, mlen, tone_mask);
+
 //    prphs(ss, mlen);
 //    mask_tone((phokey_t *)ss, mlen, tone_mask);
 
@@ -588,7 +628,7 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
   }
 
   if (cmp && !tone_mask) {
- //   dbg("no match %d\n", cmp);
+//    dbg("no match %d\n", cmp);
     return FALSE;
   }
 
@@ -600,6 +640,13 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
   for(sti = mid; sti>=0; sti--) {
     load_tsin_entry_ex(th, sti, &len, &usecount, stk, NULL);
 
+#if 0
+    int j;
+    dbg("%d] %d*> ", sti, len);
+    prphs((phokey_t *)stk, len);
+    dbg("\n");
+#endif
+
     u_char mlen;
     if (len > plen)
       mlen=plen;
@@ -608,42 +655,72 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
 #if 0
     prphs(stk, len);
 #endif
+#if 0
     mask_tone((phokey_t *)stk, mlen, tone_mask);
+#else
+    if (tone_mask) {
+//	  mask_pho_ref((phokey_t *)stk, (phokey_t *)pho, mlen, tone_mask);
+//	  for(int i=0; i < plen; i++) 
+	  for(int i=0; i < mlen; i++) 
+	  {
+		phokey_t r=((phokey_t*)stk)[i];
+		if ((r&K1)==0) {
+		  r|=K1;
+		  if ((r&K2)==0)
+			  r|=K2;
+		}
+		r|=7;
+		((phokey_t*)stk)[i]=r;
+	  }
+	}
+#endif
 
     int v = phokey_t_seq(th, stk, pho, mlen);
 //    if (!v)
 //      found = TRUE;
 
-#if 0
-    int j;
-    dbg("%d] %d*> ", sti, mlen);
-    prphs(stk, len);
-    dbg(" v:%d\n", v);
-#endif
+    if (!tone_mask) {
+      if (!v && len>=plen)
+        continue;
+    } else {
+      if (v>0 || !v && len >= plen)
+		continue;
+	}
 
-    if ((!tone_mask && !v && len>=plen) ||
-        (tone_mask && v>0 || !v && len >= plen))
-      continue;
     break;
   }
   sti++;
 
   // seek to the tail
+#if 0
+  char tt[CH_SZ*MAX_PHRASE_LEN];
+#define TTCH (u_char *)tt
+#else
+#define TTCH NULL
+#endif
 
   if (tone_mask) {
     int top=th->hashidx[hashi];
     int bot=th->hashidx[hashi+1];
 
     if (top>=th->phcount) {
-  //    dbg("top>=phcount\n");
+//      dbg("top>=phcount\n");
       return FALSE;
     }
 
     phokey_t tpho[MAX_PHRASE_LEN];
 
-    int i;
-    for(i=0; i < plen; i++)
-      tpho[i]=((phokey_t*)pho)[i] | 7;
+    for(int i=0; i < plen; i++) {
+	  phokey_t r = ((phokey_t*)pho)[i];
+	  if ((r&K1)==0) {
+		r|=K1;
+		if ((r&K2)==0)
+		  r|=K2;
+	  }
+	  r|=7;
+//      tpho[i]=((phokey_t*)pho)[i] | 7;
+	  tpho[i]=r;
+	}
 
     while (top <= bot) {
       mid=(top+bot)/ 2;
@@ -664,6 +741,8 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
       dbg("\n");
 #endif
 
+//	  mask_pho_ref((phokey_t *)ss, (phokey_t *)pho, mlen, tone_mask);
+
       cmp=phokey_t_seq(th, ss, tpho, mlen);
 
       if (!cmp && len < plen)
@@ -677,11 +756,49 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
       else
         break;
     }
+
+    int edi;
+	for(edi = mid; edi < th->phcount; edi++) {
+	  load_tsin_entry_ex(th, edi, &len, &usecount, stk, TTCH);
+
+	  u_char mlen;
+	  if (len > plen)
+		mlen=plen;
+	  else
+		mlen=len;
+#if 0
+		prphs(stk, len);
+#endif
+#if 0
+		mask_tone((phokey_t *)stk, mlen, tone_mask);
+#else
+		mask_pho_ref((phokey_t *)stk, (phokey_t *)tpho, mlen, tone_mask);
+#endif
+
+		int v = phokey_t_seq(th, stk, tpho, mlen);
+
+#if 0
+		dbg("^ %s edi%d -> ", tt, edi);
+		prphs((phokey_t *)stk, len);
+		dbg(" v:%d\n", v);
+#endif
+		if (v<=0)
+		  continue;
+		break;
+	  }
+
+#if 0
+	  dbg("sti%d edi:%d\n", sti, edi);
+#endif
+
+	  *r_sti = sti;
+	  *r_edi = edi;
+	  return edi > sti;
   }
 
   int edi;
   for(edi = mid; edi < th->phcount; edi++) {
-    load_tsin_entry_ex(th, edi, &len, &usecount, stk, NULL);
+    load_tsin_entry_ex(th, edi, &len, &usecount, stk, TTCH);
 
     u_char mlen;
     if (len > plen)
@@ -689,27 +806,25 @@ gboolean tsin_seek_ex(TSIN_HANDLE *th, void *pho, int plen, int *r_sti, int *r_e
     else
       mlen=len;
 #if 0
-    prphs(stk, len);
+    prphs((phokey_t *)stk, len); dbg("%s\n", tt);
 #endif
-    mask_tone((phokey_t *)stk, mlen, tone_mask);
 
     int v = phokey_t_seq(th, stk, pho, mlen);
 //    if (!v)
 //      found = TRUE;
 #if 0
     dbg("edi%d -> ", edi);
-    prphs(stk, len);
+    prphs((phokey_t *)stk, len);
     dbg(" v:%d\n", v);
 #endif
 
-    if ((!tone_mask && !v && len >= plen)
-      || (tone_mask && v<0 || !v && len >= plen))
+    if (v <= 0)
       continue;
     break;
   }
 
 #if 0
-  dbg("sti%d edi:%d found:%d\n", sti, edi, found);
+  dbg("@@ sti%d edi:%d\n", sti, edi);
 #endif
 
   *r_sti = sti;
@@ -795,7 +910,7 @@ static gboolean tsin_seek_en_1(u_char *pho, int plen, int *ridx)
 gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
 {
   TSIN_HANDLE *th = &en_hand;
-  int cmp;
+//  int cmp;
   u_char ss[MAX_PHRASE_STR_LEN], stk[MAX_PHRASE_STR_LEN];
   char len;
   usecount_t usecount;
@@ -858,7 +973,7 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
   ss[plen]=127;
   tsin_seek_en_1(ss, plen+1, &l_idx);
 
-  dbg("l_idx:%d\n", l_idx);
+//  dbg("l_idx:%d\n", l_idx);
 
   int edi;
   for(edi = l_idx; edi < th->phcount; edi++) {
@@ -869,9 +984,6 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
       mlen=plen;
     else
       mlen=len;
-#if 0
-    prphs(stk, len);
-#endif
 
     int v = phokey_t_seq8(stk, pho, mlen);
 	if (v < 0)
@@ -881,7 +993,6 @@ gboolean tsin_seek_en(u_char *pho, int plen, int *r_sti, int *r_edi)
 //      found = TRUE;
 #if 0
     dbg("edi%d -> ", edi);
-    prphs(stk, len);
     dbg(" v:%d\n", v);
 #endif
 

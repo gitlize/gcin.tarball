@@ -25,6 +25,7 @@ static GtkWidget *check_button_tsin_phrase_pre_select,
                  *check_button_tsin_shift_punc,
 				 *check_button_tsin_pho_tw,
 				 *check_button_tsin_parenthesis_full,
+				 *check_button_pho_no_tone,
                  *spinner_tsin_buffer_size,
                  *spinner_pho_candicate_col_N;
 
@@ -113,8 +114,14 @@ static gboolean cb_ok( GtkWidget *widget,
 
   dbg("pho_candicate_col_N %d\n", pho_candicate_col_N);
 
+  char *kbd;
   char tt[128];
-  sprintf(tt, "%s %s %d %d", kbm_sel[idx].kbm, selkeys[idx_selkeys].kstr, pho_candicate_col_N, selkeys[idx_selkeys].RL);
+  sprintf(tt, "%s %s %d %d", kbd=kbm_sel[idx].kbm, selkeys[idx_selkeys].kstr, pho_candicate_col_N, selkeys[idx_selkeys].RL);
+  static char non41[]="et26 hsu pinyin pinyin-no-tone";
+  if (strstr(non41, kbd)) {
+	pho_no_tone=FALSE;
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button_pho_no_tone), FALSE);
+  }
 
   char phokbm_name[128];
   get_gcin_conf_fstr(PHONETIC_KEYBOARD, phokbm_name, "");
@@ -167,6 +174,9 @@ static gboolean cb_ok( GtkWidget *widget,
 
  save_gcin_conf_int(TSIN_PARENTHESIS_FULL,
        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_tsin_parenthesis_full)));
+
+ save_gcin_conf_int(PHO_NO_TONE,
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button_pho_no_tone)));
 
   tsin_buffer_size = (int) gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinner_tsin_buffer_size));
   save_gcin_conf_int(TSIN_BUFFER_SIZE, tsin_buffer_size);
@@ -253,12 +263,12 @@ static gboolean cb_tsin_phrase_line_color( GtkWidget *widget,
 #if GTK_CHECK_VERSION(3,10,0)
    GtkColorChooser *color_selector = gtk_color_chooser_new("詞音標示詞的底線顏色", NULL);
    gtk_color_chooser_set_rgba (color_selector, &tsin_phrase_line_gcolor);
-#else  
+#else
    GtkWidget *color_selector = gtk_color_selection_dialog_new("詞音標示詞的底線顏色");
    gtk_color_selection_set_current_color(
            GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(color_selector))),
-           &tsin_phrase_line_gcolor);   
-#endif   
+           &tsin_phrase_line_gcolor);
+#endif
 
 
 
@@ -527,7 +537,6 @@ void create_kbm_window()
   gtk_toggle_button_set_active(
      GTK_TOGGLE_BUTTON(check_button_pho_hide_row2), pho_hide_row2);
 
-
   GtkWidget *hbox_pho_in_row1 = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox_l), hbox_pho_in_row1 , TRUE, TRUE, 1);
   GtkWidget *label_pho_in_row1 = gtk_label_new(_(_L("注音輸入顯示移至第一列")));
@@ -539,6 +548,17 @@ void create_kbm_window()
   gtk_toggle_button_set_active(
      GTK_TOGGLE_BUTTON(check_button_pho_in_row1), pho_in_row1);
 
+
+  GtkWidget *hbox_pho_no_tone = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox_l), hbox_pho_no_tone , TRUE, TRUE, 1);
+  GtkWidget *label_pho_no_tone = gtk_label_new(_(_L("41鍵可無聲調注音")));
+  gtk_widget_set_hexpand (label_pho_no_tone, TRUE);
+  gtk_widget_set_halign (label_pho_no_tone, GTK_ALIGN_CENTER);
+  gtk_box_pack_start (GTK_BOX (hbox_pho_no_tone), label_pho_no_tone , TRUE, TRUE, 0);
+  check_button_pho_no_tone = gtk_check_button_new ();
+  gtk_box_pack_start (GTK_BOX (hbox_pho_no_tone), check_button_pho_no_tone, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(
+     GTK_TOGGLE_BUTTON(check_button_pho_no_tone), pho_no_tone);
 
   GtkWidget *hbox_phonetic_huge_tab = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox_r), hbox_phonetic_huge_tab , TRUE, TRUE, 1);
@@ -654,18 +674,18 @@ void create_kbm_window()
   gtk_box_pack_start (GTK_BOX (vbox_top), hbox_cancel_ok , FALSE, FALSE, 5);
 #if GTK_CHECK_VERSION(3,10,0)
    GtkWidget *button_cancel = gtk_button_new_with_label("取消");
-#else    
+#else
   GtkWidget *button_cancel = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
-#endif  
+#endif
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
   else
     gtk_box_pack_start (GTK_BOX (hbox_cancel_ok), button_cancel, TRUE, TRUE, 0);
 #if GTK_CHECK_VERSION(3,10,0)
    GtkWidget *button_ok = gtk_button_new_with_label("OK");
-#else        
+#else
   GtkWidget *button_ok = gtk_button_new_from_stock (GTK_STOCK_OK);
-#endif  
+#endif
 
   if (button_order)
     gtk_box_pack_end (GTK_BOX (hbox_cancel_ok), button_ok, TRUE, TRUE, 5);

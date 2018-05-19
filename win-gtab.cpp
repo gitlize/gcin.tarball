@@ -1,6 +1,7 @@
 #include "gcin.h"
 #include "gtab.h"
 #include "win-sym.h"
+#include "pho.h"
 #include "gst.h"
 
 #if WIN32
@@ -889,6 +890,10 @@ void hide_selections_win();
 
 void hide_gtab_pre_sel()
 {
+#if WIN32
+  if (test_mode)
+	return;
+#endif
   if (use_tsin_sel_win())
     hide_selections_win();
 

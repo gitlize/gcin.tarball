@@ -31,7 +31,7 @@ int gtab_in_row1;
 int gtab_capslock_in_eng;
 int gtab_vertical_select;
 int gtab_unique_auto_send;
-int gtab_que_wild_card, gtab_star_wild_card, gtab_in_area_button, gtab_auto_space;
+int gtab_que_wild_card, gtab_star_wild_card, gtab_in_area_button, gtab_auto_space, pho_no_tone;
 
 int tsin_phrase_pre_select, tsin_tone_char_input;
 int tsin_capslock_upper, tsin_use_pho_near;
@@ -184,6 +184,7 @@ void load_setttings()
 
   pho_hide_row2 = get_gcin_conf_int(PHO_HIDE_ROW2, 0);
   pho_in_row1 = get_gcin_conf_int(PHO_IN_ROW1, 1);
+  pho_no_tone = get_gcin_conf_int(PHO_NO_TONE, 0);
 
   get_gcin_conf_str(TSIN_PHRASE_LINE_COLOR, &tsin_phrase_line_color, "blue");
   get_gcin_conf_str(TSIN_CURSOR_COLOR, &tsin_cursor_color, "blue");

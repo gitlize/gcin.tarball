@@ -5,7 +5,7 @@
 #include "tsin.h"
 
 int phcount;
-void prph2(FILE *fp, phokey_t kk);
+void prph2_fp(FILE *fp, phokey_t kk);
 
 #if WIN32
 void init_gcin_program_files();
@@ -305,7 +305,7 @@ fou:
 //          dbg("z %s\n", t);
             fprintf(fp_out, "%s", t);
           } else
-            prph2(fp_out, phbuf[i]);
+            prph2_fp(fp_out, phbuf[i]);
         } else {
           u_int64_t k;
           if (phsz==4)

@@ -59,7 +59,6 @@ use_qt3='N'
 use_qt4='Y'
 use_qt5='Y'
 use_gtk3='Y'
-use_uigtk3='N'
 
 if [ "$GCIN_USE_XIM" ]; then
   use_xim=$GCIN_USE_XIM
@@ -91,8 +90,6 @@ for opt do
   ;;
   --use_gtk3*) use_gtk3=`echo $opt | cut -d '=' -f 2`
   ;;
-  --use_uigtk3*) use_uigtk3=`echo $opt | cut -d '=' -f 2`
-  ;;
   --gcinlibdir*) gcinlibdir=`echo $opt | cut -d '=' -f 2`
   ;;
   --doc_version_dir*) doc_version_dir=`echo $opt | cut -d '=' -f 2`
@@ -100,14 +97,9 @@ for opt do
 done
 
 echo "prefix: $prefix"
-testgtk="gtk+-2.0 gtk+-3.0"
-echo $use_uigtk3
-if [ $use_uigtk3 = 'Y' ]; then
-  testgtk="gtk+-3.0"
-fi 
 
 #for i in gtk+-3.0 gtk+-2.0
-for i in $testgtk 
+for i in gtk+-2.0 gtk+-3.0
 do
   echo -n ".... Testing $i : "
   GTKINC=`pkg-config --cflags $i 2>/dev/null`
@@ -337,16 +329,10 @@ if [ $QT5_IM = 'N' ]; then
   grep -v qt5/plugins/inputmethods gcin.spec.tmp > gcin.spec
 else
   cd qt5-im
-  qtver=`pkg-config --modversion Qt5Core` 
-  minv=`echo $qtver | cut -d. -f2` 
-  if [ $minv -ge 5 ]; then
-    echo "You have Qt > 5.5.1 "
+  pkg-config --modversion Qt5Core | grep 5.5.1 > /dev/null 2> /dev/null
+  if [ $? = 0 ]; then
+    echo "You have Qt
     sed -e "s/FactoryInterface/FactoryInterface.5.1/" < gcin-qt5.h.in > gcin-qt5.h
-    if [ $minv -ge 9 ]; then
- 	cp -a Makefile59 Makefile	
-    else
- 	cp -a Makefile55 Makefile	
-    fi
   else
     cp gcin-qt5.h.in gcin-qt5.h
   fi

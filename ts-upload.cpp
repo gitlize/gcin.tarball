@@ -1,3 +1,6 @@
+#define USE_HTTP 1
+
+#if !USE_HTTP
 #if UNIX
 #include <sys/types.h>
 #include <netdb.h>
@@ -9,6 +12,7 @@ typedef int SOCKET;
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #define write(a,b,c) send(a,b,c,0);
+#endif
 #endif
 #include "gcin.h"
 #include "pho.h"
@@ -36,6 +40,7 @@ char *sock_err_strA()
 }
 #endif
 
+#if !USE_HTTP
 int connect_ts_share_svr()
 {
     SOCKET ConnectSocket = -1;
@@ -84,6 +89,7 @@ int connect_ts_share_svr()
     freeaddrinfo(result);
     return ConnectSocket;
 }
+#endif
 
 extern char contributed_file_src[];
 extern gboolean b_en;
@@ -105,7 +111,7 @@ void write_tsin_src(FILE *fw, char len, phokey_t *pho, char *s)
 	fprintf(fw, " 0\n");
 }
 
-
+#if !USE_HTTP
 void send_format(SOCKET sock)
 {
   REQ_FORMAT format;
@@ -123,7 +129,7 @@ void send_format(SOCKET sock)
 #endif
   write(sock, (char *)&format, sizeof(format));
 }
-
+#endif
 
 FILE *en_file_head(char *fname)
 {
@@ -145,11 +151,43 @@ FILE *en_file_head(char *fname)
   return fp;
 }
 
+#if USE_HTTP
+#include <curl/curl.h>
+#endif
+
 
 void ts_upload()
 {
-  int sock = connect_ts_share_svr();
   int i;
+#if USE_HTTP
+#if UNIX
+  char tmpf[128]="/tmp/gcin-uploadXXXXXX";
+  int fd = mkstemp(tmpf);
+  if (fd < 0)
+	p_err("mkstemp %s", tmpf);
+  FILE *fu;
+  if (!(fu=fdopen(fd, "wb+")))
+	p_err("create %s failed", tmpf);
+#else
+  DWORD dwRetVal = 0;
+  UINT uRetVal   = 0;
+  char tmpf[MAX_PATH];
+  char lpTempPathBuffer[MAX_PATH];
+  dwRetVal = GetTempPathA(MAX_PATH, lpTempPathBuffer); // buffer for path
+  if (dwRetVal > MAX_PATH || (dwRetVal == 0))
+	p_err("GetTempPath failed");
+  uRetVal = GetTempFileNameA(lpTempPathBuffer, // directory for tmp files
+                              "gcin",     // temp file name prefix
+                              0,                // create unique name
+                              tmpf);  // buffer for name
+    if (uRetVal == 0)
+		p_err("GetTempFileName failed\n");
+  FILE *fu;
+  if (!(fu=fopen(tmpf, "wb")))
+	  p_err("cannot create %s", tmpf);
+#endif
+#else
+  int sock = connect_ts_share_svr();
 
   REQ_HEAD head;
   bzero(&head, sizeof(head));
@@ -164,8 +202,8 @@ void ts_upload()
   bzero(&req, sizeof(req));
   strcpy(req.tag, get_tag());
   write(sock, (char *)&req, sizeof(req));
-
   send_format(sock);
+#endif
 
   int key_sz = get_key_sz();
 
@@ -187,24 +225,111 @@ void ts_upload()
     load_tsin_at_ts_idx(i, &len, &usecount, pho, (u_char *)s);
     slen = strlen(s);
 
+#if USE_HTTP
+	fwrite(&len, 1, sizeof(len), fu);
+	fwrite((char *)pho, key_sz, len, fu);
+#else
     write(sock, &len, sizeof(len));
-	write(sock, (char *)pho, len * key_sz);
-	if (!b_en) {
+    write(sock, (char *)pho, len * key_sz);
+#endif
+
+    if (!b_en) {
+#if USE_HTTP
+	  fwrite(&slen, 1, sizeof(slen), fu);
+	  fwrite(s, 1, slen, fu);
+#else
       write(sock, &slen, sizeof(slen));
       write(sock, s, slen);
-	}
+#endif
+    }
 
-	if (b_en) {
-		char *p = (char *)pho;
-		p[len]=0;
-		write_tsin_src(fw, len, NULL, p);
-	} else
-		write_tsin_src(fw, len, pho, s);
+#if 1
+    if (b_en) {
+      char *p = (char *)pho;
+      p[len]=0;
+      write_tsin_src(fw, len, NULL, p);
+    } else
+      write_tsin_src(fw, len, pho, s);
+#endif
   }
-
+  fclose(fu);
   fclose(fw);
 
+#if USE_HTTP
+  CURL *curl;
+  CURLcode res;
+
+  struct curl_httppost *formpost=NULL;
+  struct curl_httppost *lastptr=NULL;
+  struct curl_slist *headerlist=NULL;
+  static const char buf[] = "Expect:";
+
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  curl_formadd(&formpost,
+               &lastptr,
+               CURLFORM_COPYNAME, "tag",
+               CURLFORM_COPYCONTENTS, get_tag(),
+               CURLFORM_END);
+  char ksz[4];
+  sprintf(ksz, "%d", key_sz);
+  curl_formadd(&formpost,
+               &lastptr,
+               CURLFORM_COPYNAME, "key_sz",
+               CURLFORM_COPYCONTENTS, ksz,
+               CURLFORM_END);
+
+  /* Fill in the file upload field */
+  curl_formadd(&formpost,
+               &lastptr,
+               CURLFORM_COPYNAME, "data",
+               CURLFORM_FILE, tmpf,
+               CURLFORM_END);
+
+
+  /* Fill in the submit field too, even if this is rarely needed */
+  curl_formadd(&formpost,
+               &lastptr,
+               CURLFORM_COPYNAME, "submit",
+               CURLFORM_COPYCONTENTS, "send",
+               CURLFORM_END);
+
+
+  curl = curl_easy_init();
+
+  /* initialize custom header list (stating that Expect: 100-continue is not
+     wanted */
+  headerlist = curl_slist_append(headerlist, buf);
+  if(curl) {
+    /* what URL that receives this POST */
+    curl_easy_setopt(curl, CURLOPT_URL, "http://hyperrate.com/ts-share/u.php");
+#if 0
+    if((argc == 2) && (!strcmp(argv[1], "noexpectheader")))
+      /* only disable 100-continue header if explicitly requested */
+      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+#endif
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+    /* Perform the request, res will get the return code */
+    res = curl_easy_perform(curl);
+    /* Check for errors */
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+
+    /* then cleanup the formpost chain */
+    curl_formfree(formpost);
+    /* free slist */
+    curl_slist_free_all(headerlist);
+  }
+
+  unlink(tmpf);
+#else
   char end_mark=0;
   write(sock, &end_mark, sizeof(end_mark));
   closesocket(sock);
+#endif
 }

@@ -339,6 +339,7 @@ void disp_tsin_select(int index)
 //  dbg("gcin_edit_display_ap_only() %d\n", gcin_edit_display_ap_only());
 
   if (gcin_edit_display_ap_only()) {
+	dbg("spot %d,%d\n", current_CS->spot_location.x, current_CS->spot_location.y);
     getRootXY(current_CS->client_win, current_CS->spot_location.x, current_CS->spot_location.y, &x, &y);
   } else {
 #if 1
@@ -409,7 +410,7 @@ GtkWidget *gwin_sym;
 
 void move_win0(int x, int y)
 {
-//  dbg("--- gwin0:%x move_win0 %d,%d\n", gwin0, x,y);
+  dbg("--- gwin0:%x move_win0 %d,%d\n", gwin0, x,y);
   best_win_x = x;
   best_win_y = y;
 
@@ -640,7 +641,12 @@ void get_win0_geom()
 {
   if (!gwin0)
     return;
+#if WIN32 && 0
+  if (!GTK_WIDGET_VISIBLE(gwin0))
+	  return;
+#endif
   gtk_window_get_position(GTK_WINDOW(gwin0), &win_x, &win_y);
+  dbg("win_xy %d,%d\n");
   get_win_size(gwin0, &win_xl, &win_yl);
 }
 

@@ -29,6 +29,8 @@ typedef struct {
   char typ_pho[4];
   char inph[8];
   SAME_PHO_QUERY same_pho_query_state;
+  unsigned int vv, ii;
+  phokey_t key;
 } PHO_ST;
 extern PHO_ST poo;
 

@@ -16,6 +16,7 @@ int main()
   PIN_JUYIN pinju[1024];
   short pinjuN=0;
 
+  bzero(pinju, sizeof(pinju));
   if ((fp=fopen(fnamein, "r"))==NULL)
     p_err("cannot open %s", fnamein);
 
@@ -30,7 +31,6 @@ int main()
     char pin[16], ju[64];
     bzero(pin, sizeof(pin));
     sscanf(tt, "%s %s",pin, ju);
-
     phokey_t kk=0;
     int len = strlen(ju);
     int i=0;
